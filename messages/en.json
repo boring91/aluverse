@@ -1,0 +1,12 @@
+{
+    "Common": {
+        "appName": "AluVerse",
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "financialAccounts": "Financial Accounts",
+        "consolidations": "Consolidations"
+    },
+    "HomePage": {
+        "title": "Hello world!"
+    }
+}
