@@ -4,7 +4,20 @@
         "dashboard": "Dashboard",
         "projects": "Projects",
         "financialAccounts": "Financial Accounts",
-        "consolidations": "Consolidations"
+        "consolidations": "Consolidations",
+        "unknownErrorHasOccurred": "Unknown error has occurred",
+        "logout": "Logout",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "areYouSureYouWantToLogout": "Are you sure you want to logout?"
+    },
+    "Login": {
+        "pageTitle": "Login",
+        "login": "Login",
+        "email": "Email",
+        "password": "Password",
+        "invalidEmailOrPassword": "Invalid email or password",
+        "loggedInSuccessfully": "Logged in successfully"
     },
     "HomePage": {
         "title": "Hello world!"

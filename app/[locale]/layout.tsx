@@ -8,6 +8,7 @@ import { DirectionProvider } from "@radix-ui/react-direction";
 import { getLocale } from "next-intl/server";
 import { Providers } from "./_components/providers";
 import { getDir } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 export const dynamic = "force-dynamic"; // no full-route cache
 export const revalidate = 0; // no ISR
@@ -50,7 +51,10 @@ const RootLayout = async ({
                             defaultTheme="system"
                             disableTransitionOnChange
                         >
-                            <Providers>{children}</Providers>
+                            <Providers>
+                                <Toaster />
+                                {children}
+                            </Providers>
                         </ThemeProvider>
                     </NextIntlClientProvider>
                 </TRPCReactProvider>

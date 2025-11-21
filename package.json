@@ -10,7 +10,8 @@
     "db:generate": "drizzle-kit generate --config db/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config db/drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config db/drizzle.config.ts",
-    "auth:generate": "pnpm dlx @better-auth/cli generate --config lib/auth.ts"
+    "auth:generate": "pnpm dlx @better-auth/cli generate --config lib/auth.ts",
+    "auth:seed": "tsx scripts/seed-admin.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
