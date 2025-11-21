@@ -14,7 +14,9 @@
         "edit": "Edit",
         "details": "Details",
         "delete": "Delete",
-        "areYouSureYouWantToDeleteThisItem": "Are you sure you want to delete this item?"
+        "areYouSureYouWantToDeleteThisItem": "Are you sure you want to delete this item?",
+        "name": "Name",
+        "save": "Save"
     },
     "Login": {
         "pageTitle": "Login",
@@ -24,7 +26,8 @@
         "invalidEmailOrPassword": "Invalid email or password",
         "loggedInSuccessfully": "Logged in successfully"
     },
-    "HomePage": {
-        "title": "Hello world!"
+    "FinancialAccounts": {
+        "createNewFinancialAccount": "Crate new financial account",
+        "updateExistingFinancialAccount": "Update existing financial account"
     }
 }

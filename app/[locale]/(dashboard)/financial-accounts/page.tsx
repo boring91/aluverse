@@ -4,41 +4,92 @@ import { Button } from "@/components/ui/button";
 import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2Icon, PlusIcon } from "lucide-react";
+import { Edit3Icon, Loader2Icon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { CreateFinancialAccount } from "./_components/create-financial-account";
+import { useState } from "react";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Page = () => {
     const tc = useTranslations("Common");
     useTitle(tc("financialAccounts"));
+
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    const [updatingItemId, setUpdatingItemId] = useState<string | undefined>(
+        undefined
+    );
 
     const trpc = useTRPC();
     const { data, isLoading } = useQuery(
         trpc.financialAccounts.list.queryOptions()
     );
 
+    const handleCreate = () => {
+        setUpdatingItemId(undefined);
+        setIsCreateSheetOpen(true);
+    };
+
+    const handleUpdate = (itemId: string) => {
+        setUpdatingItemId(itemId);
+        setIsCreateSheetOpen(true);
+    };
+
     return (
-        <div className="p-8 flex flex-col gap-8">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <h1 className="font-bold text-2xl">
-                    {tc("financialAccounts")}
-                </h1>
+        <>
+            <CreateFinancialAccount
+                open={isCreateSheetOpen}
+                onOpenChange={setIsCreateSheetOpen}
+                itemId={updatingItemId}
+            />
+            <div className="p-8 flex flex-col gap-8">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <h1 className="font-bold text-2xl">
+                        {tc("financialAccounts")}
+                    </h1>
 
-                <Button>
-                    <PlusIcon />
-                    {tc("createNew")}
-                </Button>
+                    <Button onClick={handleCreate}>
+                        <PlusIcon />
+                        {tc("createNew")}
+                    </Button>
+                </div>
+
+                {/* Content */}
+                {isLoading ? (
+                    <Loader2Icon className="animate-spin" />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {data?.map(account => {
+                            return (
+                                <Card key={account.id}>
+                                    <CardHeader className="flex items-center justify-between gap-2">
+                                        <CardTitle>{account.name}</CardTitle>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-muted-foreground"
+                                                onClick={() =>
+                                                    handleUpdate(account.id)
+                                                }
+                                            >
+                                                <Edit3Icon />
+                                            </Button>
+                                            <Button
+                                                variant="ghostDestructive"
+                                                size="icon-sm"
+                                            >
+                                                <Trash2Icon />
+                                            </Button>
+                                        </div>
+                                    </CardHeader>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
-
-            {/* Content */}
-            {isLoading ? (
-                <Loader2Icon className="animate-spin" />
-            ) : (
-                data?.map(account => {
-                    return <div key={account.id}>{account.name}</div>;
-                })
-            )}
-        </div>
+        </>
     );
 };
 

@@ -80,7 +80,7 @@ const UserNav = () => {
 
 export const AppHeader = () => {
     return (
-        <header className="h-12 flex items-center px-4 border-b w-full justify-between">
+        <header className="h-16 flex items-center px-4 border-b w-full justify-between">
             <SidebarTrigger />
 
             <div className="flex items-center gap-2">

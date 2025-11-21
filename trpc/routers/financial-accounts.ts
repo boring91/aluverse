@@ -1,6 +1,7 @@
 import { db, financialAccounts } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
+import { z } from "zod";
 
 export const financialAccountsRouter = createTRPCRouter({
     list: protectedProcedure.query(async () => {
@@ -8,4 +9,41 @@ export const financialAccountsRouter = createTRPCRouter({
             orderBy: [desc(financialAccounts.updatedAt)],
         });
     }),
+
+    get: protectedProcedure
+        .input(
+            z.object({
+                id: z.uuid(),
+            })
+        )
+        .query(async ({ input }) => {
+            return await db.query.financialAccounts.findFirst({
+                where: eq(financialAccounts.id, input.id),
+            });
+        }),
+
+    create: protectedProcedure
+        .input(
+            z.object({
+                name: z.string(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            return await db.insert(financialAccounts).values(input).returning();
+        }),
+
+    update: protectedProcedure
+        .input(
+            z.object({
+                id: z.uuid(),
+                name: z.string(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            return await db
+                .update(financialAccounts)
+                .set(input)
+                .where(eq(financialAccounts.id, input.id))
+                .returning();
+        }),
 });
