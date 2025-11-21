@@ -1,5 +1,6 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uuid } from "drizzle-orm/pg-core";
 
+// Better auth
 export const users = pgTable("users", {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
@@ -58,4 +59,15 @@ export const verifications = pgTable("verifications", {
         .defaultNow()
         .$onUpdate(() => /* @__PURE__ */ new Date())
         .notNull(),
+});
+
+// Financial accounts:
+export const financialAccounts = pgTable("financial_accounts", {
+    id: uuid().primaryKey().defaultRandom(),
+    name: text().notNull(),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
 });

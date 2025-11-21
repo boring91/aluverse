@@ -24,7 +24,8 @@ function getQueryClient() {
     return browserQueryClient;
 }
 function getUrl() {
-    return `${process.env.APP_URL!}/api/trpc`;
+    console.log(process.env.NEXT_PUBLIC_APP_URL!)
+    return `${process.env.NEXT_PUBLIC_APP_URL!}/api/trpc`;
 }
 export function TRPCReactProvider(
     props: Readonly<{

@@ -9,7 +9,12 @@
         "logout": "Logout",
         "confirm": "Confirm",
         "cancel": "Cancel",
-        "areYouSureYouWantToLogout": "Are you sure you want to logout?"
+        "areYouSureYouWantToLogout": "Are you sure you want to logout?",
+        "createNew": "Create new",
+        "edit": "Edit",
+        "details": "Details",
+        "delete": "Delete",
+        "areYouSureYouWantToDeleteThisItem": "Are you sure you want to delete this item?"
     },
     "Login": {
         "pageTitle": "Login",
