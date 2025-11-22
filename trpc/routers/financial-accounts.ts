@@ -17,9 +17,11 @@ export const financialAccountsRouter = createTRPCRouter({
             })
         )
         .query(async ({ input }) => {
-            return await db.query.financialAccounts.findFirst({
+            const item = await db.query.financialAccounts.findFirst({
                 where: eq(financialAccounts.id, input.id),
             });
+
+            return item ?? null;
         }),
 
     create: protectedProcedure

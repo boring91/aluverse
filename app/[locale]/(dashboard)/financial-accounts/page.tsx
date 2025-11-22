@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit3Icon, Loader2Icon, PlusIcon, Trash2Icon } from "lucide-react";
+import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateFinancialAccount } from "./_components/create-financial-account";
 import { useState } from "react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
+import { FinancialAccountsGrid } from "./_components/financial-accounts-grid";
 
 const Page = () => {
     const tc = useTranslations("Common");
@@ -107,46 +107,12 @@ const Page = () => {
                 {isLoading ? (
                     <Loader2Icon className="animate-spin" />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {data?.map(account => {
-                            return (
-                                <Card key={account.id}>
-                                    <CardHeader className="flex items-center justify-between gap-2">
-                                        <CardTitle>{account.name}</CardTitle>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-muted-foreground"
-                                                onClick={() =>
-                                                    handleUpdate(account.id)
-                                                }
-                                                disabled={currentlyDeleting.has(
-                                                    account.id
-                                                )}
-                                            >
-                                                <Edit3Icon />
-                                            </Button>
-                                            <Button
-                                                variant="ghostDestructive"
-                                                size="icon-sm"
-                                                onClick={() =>
-                                                    setDeletingItemId(
-                                                        account.id
-                                                    )
-                                                }
-                                                disabled={currentlyDeleting.has(
-                                                    account.id
-                                                )}
-                                            >
-                                                <Trash2Icon />
-                                            </Button>
-                                        </div>
-                                    </CardHeader>
-                                </Card>
-                            );
-                        })}
-                    </div>
+                    <FinancialAccountsGrid
+                        items={data!}
+                        onClickForUpdate={itemId => handleUpdate(itemId)}
+                        onClickForDelete={itemId => setDeletingItemId(itemId)}
+                        currentlyProcessing={currentlyDeleting}
+                    />
                 )}
             </div>
         </>
