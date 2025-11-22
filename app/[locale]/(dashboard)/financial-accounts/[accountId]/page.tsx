@@ -11,6 +11,7 @@ import { useTranslations } from "next-intl";
 import { TransactionsList } from "./_components/transactions-list";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { PageContainer } from "@/components/page-container";
 
 const Page = () => {
     const params = useParams();
@@ -31,7 +32,11 @@ const Page = () => {
     useTitle(data ? data.name : tc("loading"));
 
     if (isLoading) {
-        return <Loader2 className="animate-spin" />;
+        return (
+            <PageContainer>
+                <Loader2 className="animate-spin" />
+            </PageContainer>
+        );
     }
 
     if (!data) {
@@ -40,35 +45,33 @@ const Page = () => {
     }
 
     return (
-        <>
-            <div className="p-8 flex flex-col gap-8">
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" asChild>
-                        <Link href="/financial-accounts">
-                            <ArrowLeft className="rtl:-scale-x-100" />
-                        </Link>
-                    </Button>
-                    <div className="font-bold grow flex flex-col gap-1">
-                        <h1 className="text-2xl">{data.name}</h1>
-                        <span className="font-mono text-muted-foreground">
-                            {formatCurrency(data.balance)}
-                        </span>
-                    </div>
-
-                    <Button onClick={() => setIsCreateTransactionOpen(true)}>
-                        <PlusIcon />
-                        {t("createNewTransaction")}
-                    </Button>
+        <PageContainer>
+            <div className="flex items-center gap-4">
+                <Button variant="outline" size="icon" asChild>
+                    <Link href="/financial-accounts">
+                        <ArrowLeft className="rtl:-scale-x-100" />
+                    </Link>
+                </Button>
+                <div className="font-bold grow flex flex-col gap-1">
+                    <h1 className="text-2xl">{data.name}</h1>
+                    <span className="font-mono text-muted-foreground">
+                        {formatCurrency(data.balance)}
+                    </span>
                 </div>
 
-                {/* Transactions */}
-                <TransactionsList
-                    accountId={accountId}
-                    openCreateSheet={isCreateTransactionOpen}
-                    onOpenCreateSheetChange={setIsCreateTransactionOpen}
-                />
+                <Button onClick={() => setIsCreateTransactionOpen(true)}>
+                    <PlusIcon />
+                    {t("createNewTransaction")}
+                </Button>
             </div>
-        </>
+
+            {/* Transactions */}
+            <TransactionsList
+                accountId={accountId}
+                openCreateSheet={isCreateTransactionOpen}
+                onOpenCreateSheetChange={setIsCreateTransactionOpen}
+            />
+        </PageContainer>
     );
 };
 

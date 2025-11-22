@@ -11,6 +11,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
 import { FinancialAccountsGrid } from "./_components/financial-accounts-grid";
+import { PageContainer } from "@/components/page-container";
 
 const Page = () => {
     const tc = useTranslations("Common");
@@ -90,7 +91,7 @@ const Page = () => {
                 onOpenChange={setIsCreateSheetOpen}
                 itemId={updatingItemId}
             />
-            <div className="p-8 flex flex-col gap-8">
+            <PageContainer>
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h1 className="font-bold text-2xl">
@@ -114,7 +115,7 @@ const Page = () => {
                         currentlyProcessing={currentlyDeleting}
                     />
                 )}
-            </div>
+            </PageContainer>
         </>
     );
 };
