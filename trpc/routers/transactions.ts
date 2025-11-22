@@ -2,6 +2,9 @@ import { db, transactions } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
 import { desc, eq } from "drizzle-orm";
+import { createTransactionSchema } from "@/lib/trpc-schemas";
+import { getTranslations } from "next-intl/server";
+import { transactionTypes } from "@/lib/constants";
 
 export const transactionsRouter = createTRPCRouter({
     list: protectedProcedure
@@ -21,5 +24,55 @@ export const transactionsRouter = createTRPCRouter({
                 offset: (pageNumber ?? 0) * (pageSize ?? 0),
                 limit: pageSize,
             });
+        }),
+
+    get: protectedProcedure
+        .input(z.object({ id: z.uuid() }))
+        .query(async ({ input }) => {
+            const item = await db.query.transactions.findFirst({
+                where: eq(transactions.id, input.id),
+            });
+
+            return item ?? null;
+        }),
+
+    create: protectedProcedure
+        .input(
+            createTransactionSchema.omit({ id: true }).transform(v => ({
+                ...v,
+                amount: v.amount * 100,
+                date: v.date.toISOString(),
+            }))
+        )
+        .mutation(async ({ input }) => {
+            return await db.insert(transactions).values(input).returning();
+        }),
+
+    update: protectedProcedure
+        .input(
+            createTransactionSchema
+                // .omit({ accountId: true })
+                .required({ id: true })
+                .transform(v => ({
+                    ...v,
+                    amount: v.amount * 100,
+                    date: v.date.toISOString(),
+                }))
+        )
+        .mutation(async ({ input }) => {
+            return await db
+                .update(transactions)
+                .set(input)
+                .where(eq(transactions.id, input.id))
+                .returning();
+        }),
+
+    delete: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .mutation(async ({ input }) => {
+            return await db
+                .delete(transactions)
+                .where(eq(transactions.id, input.id))
+                .returning();
         }),
 });

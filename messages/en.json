@@ -36,6 +36,11 @@
     "FinancialAccounts": {
         "createNewFinancialAccount": "Create new financial account",
         "updateExistingFinancialAccount": "Update existing financial account",
-        "amount": "Amount"
+        "amount": "Amount",
+        "createNewTransaction": "Create new transaction",
+        "updateExistingTransaction": "Update existing transaction",
+        "transactionType": "Transaction type",
+        "income": "Income",
+        "expense": "Expense"
     }
 }

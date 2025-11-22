@@ -1,3 +1,4 @@
+import { transactionTypes } from "@/lib/constants";
 import {
     pgTable,
     text,
@@ -82,15 +83,14 @@ export const financialAccounts = pgTable("financial_accounts", {
         .$onUpdate(() => new Date()),
 });
 
-export const transactionType = pgEnum("transaction_type", [
-    "income",
-    "expense",
-]);
+export const transactionType = pgEnum("transaction_type", transactionTypes);
 export const transactions = pgTable("transactions", {
     id: uuid().primaryKey().defaultRandom(),
-    accountId: uuid().references(() => financialAccounts.id, {
-        onDelete: "cascade",
-    }),
+    accountId: uuid()
+        .references(() => financialAccounts.id, {
+            onDelete: "cascade",
+        })
+        .notNull(),
     date: date().notNull(),
     description: varchar({
         length: 1024,
