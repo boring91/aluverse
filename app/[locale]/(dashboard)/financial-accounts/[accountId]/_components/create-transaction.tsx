@@ -264,7 +264,11 @@ export const CreateTransaction = ({
                                             {...field}
                                             onChange={v =>
                                                 field.onChange(
-                                                    parseFloat(v.target.value)
+                                                    v.target.value
+                                                        ? parseFloat(
+                                                              v.target.value
+                                                          )
+                                                        : ""
                                                 )
                                             }
                                         />

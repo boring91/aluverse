@@ -1,7 +1,7 @@
 import { db, transactions } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
-import { desc, eq, sql } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
 
 export const transactionsRouter = createTRPCRouter({
@@ -9,14 +9,14 @@ export const transactionsRouter = createTRPCRouter({
         .input(
             z.object({
                 accountId: z.uuid(),
-                pageNumber: z.number().optional(),
-                pageSize: z.number().optional(),
+                pageIndex: z.number().default(0),
+                pageSize: z.number().default(20),
             })
         )
         .query(async ({ input }) => {
-            const { accountId, pageNumber, pageSize } = input;
+            const { accountId, pageIndex, pageSize } = input;
 
-            return db
+            const items = await db
                 .select({
                     id: transactions.id,
                     date: transactions.date,
@@ -26,9 +26,22 @@ export const transactionsRouter = createTRPCRouter({
                 })
                 .from(transactions)
                 .where(eq(transactions.accountId, accountId))
-                .orderBy(desc(transactions.createdAt));
-            // .offset((pageNumber ?? 0) * (pageSize ?? 0))
-            // .limit(pageSize ?? 0);
+                .orderBy(desc(transactions.createdAt))
+                .offset(pageIndex * pageSize)
+                .limit(pageSize);
+
+            const { c } = (
+                await db
+                    .select({ c: count() })
+                    .from(transactions)
+                    .where(eq(transactions.accountId, accountId))
+                    .limit(1)
+            )[0];
+
+            return {
+                items,
+                count: c,
+            };
         }),
 
     get: protectedProcedure

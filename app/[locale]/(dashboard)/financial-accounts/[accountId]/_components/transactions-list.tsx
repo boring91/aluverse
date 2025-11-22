@@ -9,8 +9,13 @@ import {
 import { cn, formatCurrency } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { AppRouter } from "@/trpc/routers/_app";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ColumnDef } from "@tanstack/react-table";
+import {
+    keepPreviousData,
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
+import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { MoreVerticalIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -20,7 +25,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
 
 type Transaction =
-    inferRouterOutputs<AppRouter>["transactions"]["list"][number];
+    inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
 
 type Props = {
     accountId: string;
@@ -45,13 +50,23 @@ export const TransactionsList = ({
     const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
         new Set()
     );
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 100,
+    });
 
     const queryClient = useQueryClient();
     const trpc = useTRPC();
-    const { data: transactions } = useQuery(
-        trpc.transactions.list.queryOptions({
-            accountId,
-        })
+    const { data } = useQuery(
+        trpc.transactions.list.queryOptions(
+            {
+                accountId,
+                ...pagination,
+            },
+            {
+                placeholderData: keepPreviousData,
+            }
+        )
     );
 
     const deleteMutation = useMutation(
@@ -187,7 +202,12 @@ export const TransactionsList = ({
                 }}
                 itemId={currentlyUpdatingItemId}
             />
-            <DataTable columns={columns} data={transactions ?? []} />
+            <DataTable
+                columns={columns}
+                data={data}
+                pagination={pagination}
+                setPagination={setPagination}
+            />
         </>
     );
 };
