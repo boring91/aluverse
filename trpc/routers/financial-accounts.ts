@@ -46,4 +46,17 @@ export const financialAccountsRouter = createTRPCRouter({
                 .where(eq(financialAccounts.id, input.id))
                 .returning();
         }),
+
+    delete: protectedProcedure
+        .input(
+            z.object({
+                id: z.uuid(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            return await db
+                .delete(financialAccounts)
+                .where(eq(financialAccounts.id, input.id))
+                .returning();
+        }),
 });

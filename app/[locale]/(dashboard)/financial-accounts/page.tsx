@@ -3,12 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc/client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit3Icon, Loader2Icon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateFinancialAccount } from "./_components/create-financial-account";
 import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { toast } from "sonner";
 
 const Page = () => {
     const tc = useTranslations("Common");
@@ -18,10 +20,40 @@ const Page = () => {
     const [updatingItemId, setUpdatingItemId] = useState<string | undefined>(
         undefined
     );
+    const [deletingItemId, setDeletingItemId] = useState<string | undefined>(
+        undefined
+    );
+    const [currentlyDeleting, setCurrentlyDeleting] = useState<Set<string>>(
+        new Set()
+    );
 
     const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
     const { data, isLoading } = useQuery(
         trpc.financialAccounts.list.queryOptions()
+    );
+    const deleteMutation = useMutation(
+        trpc.financialAccounts.delete.mutationOptions({
+            onSuccess: data => {
+                const id = data[0].id;
+                queryClient.invalidateQueries(
+                    trpc.financialAccounts.list.queryOptions()
+                );
+                queryClient.invalidateQueries(
+                    trpc.financialAccounts.get.queryOptions({ id })
+                );
+                setCurrentlyDeleting(set => {
+                    set.delete(id);
+                    return new Set(set);
+                });
+                toast.success(tc("deletedSuccessfully"));
+            },
+
+            onError: error => {
+                toast.error(error.message);
+            },
+        })
     );
 
     const handleCreate = () => {
@@ -34,8 +66,25 @@ const Page = () => {
         setIsCreateSheetOpen(true);
     };
 
+    const handleDelete = async () => {
+        if (!deletingItemId) return;
+        deleteMutation.mutate({ id: deletingItemId });
+        setCurrentlyDeleting(set => {
+            set.add(deletingItemId);
+            return new Set(set);
+        });
+        setDeletingItemId(undefined);
+    };
+
     return (
         <>
+            <ConfirmDialog
+                title={tc("delete")}
+                description={tc("areYouSureYouWantToDeleteThisItem")}
+                onConfirm={handleDelete}
+                open={!!deletingItemId}
+                onOpenChange={() => setDeletingItemId(undefined)}
+            />
             <CreateFinancialAccount
                 open={isCreateSheetOpen}
                 onOpenChange={setIsCreateSheetOpen}
@@ -72,12 +121,23 @@ const Page = () => {
                                                 onClick={() =>
                                                     handleUpdate(account.id)
                                                 }
+                                                disabled={currentlyDeleting.has(
+                                                    account.id
+                                                )}
                                             >
                                                 <Edit3Icon />
                                             </Button>
                                             <Button
                                                 variant="ghostDestructive"
                                                 size="icon-sm"
+                                                onClick={() =>
+                                                    setDeletingItemId(
+                                                        account.id
+                                                    )
+                                                }
+                                                disabled={currentlyDeleting.has(
+                                                    account.id
+                                                )}
                                             >
                                                 <Trash2Icon />
                                             </Button>

@@ -16,7 +16,9 @@
         "delete": "Delete",
         "areYouSureYouWantToDeleteThisItem": "Are you sure you want to delete this item?",
         "name": "Name",
-        "save": "Save"
+        "save": "Save",
+        "deletedSuccessfully": "Deleted successfully",
+        "savedSuccessfully": "Saved successfully"
     },
     "Login": {
         "pageTitle": "Login",
@@ -27,7 +29,7 @@
         "loggedInSuccessfully": "Logged in successfully"
     },
     "FinancialAccounts": {
-        "createNewFinancialAccount": "Crate new financial account",
+        "createNewFinancialAccount": "Create new financial account",
         "updateExistingFinancialAccount": "Update existing financial account"
     }
 }

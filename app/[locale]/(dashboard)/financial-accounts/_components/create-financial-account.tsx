@@ -65,11 +65,11 @@ export const CreateFinancialAccount = ({
         },
     });
 
-    type Test = Parameters<
+    type CreateMutationOptions = Parameters<
         typeof trpc.financialAccounts.create.mutationOptions
     >[number];
 
-    const mutationOptions = useMemo<Test>(() => {
+    const mutationOptions = useMemo<CreateMutationOptions>(() => {
         return {
             onSuccess: () => {
                 queryClient.invalidateQueries(
@@ -82,12 +82,13 @@ export const CreateFinancialAccount = ({
                 }
                 form.reset();
                 onOpenChange(false);
+                toast.success(tc("savedSuccessfully"));
             },
             onError: e => {
                 toast.error(e.message);
             },
         } as const;
-    }, [queryClient, trpc, isUpdate, itemId, form, onOpenChange]);
+    }, [queryClient, trpc, isUpdate, itemId, form, onOpenChange, tc]);
 
     trpc.financialAccounts.update.mutationOptions(mutationOptions);
 
