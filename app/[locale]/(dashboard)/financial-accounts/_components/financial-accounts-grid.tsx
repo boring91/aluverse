@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
+import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { Edit3Icon, Trash2Icon } from "lucide-react";
@@ -61,6 +62,9 @@ export const FinancialAccountsGrid = ({
                                     </Button>
                                 </div>
                             </CardHeader>
+                            <CardContent className="text-2xl font-mono font-bold">
+                                {formatCurrency(account.balance)}
+                            </CardContent>
                         </Card>
                     </Link>
                 );

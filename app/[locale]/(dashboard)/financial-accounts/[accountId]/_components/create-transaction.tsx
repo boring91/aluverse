@@ -66,7 +66,6 @@ export const CreateTransaction = ({
             description: "",
             amount: 0.0,
             type: "expense",
-            accountId: accountId,
         },
     });
 
@@ -85,6 +84,12 @@ export const CreateTransaction = ({
     const onSuccess = () => {
         queryClient.invalidateQueries(
             trpc.transactions.list.queryOptions({ accountId })
+        );
+        queryClient.invalidateQueries(
+            trpc.financialAccounts.list.queryOptions()
+        );
+        queryClient.invalidateQueries(
+            trpc.financialAccounts.get.queryOptions({ id: accountId })
         );
 
         if (isUpdate && itemId) {
@@ -121,14 +126,10 @@ export const CreateTransaction = ({
             updateMutation.mutate({
                 ...values,
                 id: itemId,
-                accountId: accountId,
             });
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, ...createValues } = values;
-
             createMutation.mutate({
-                ...createValues,
+                ...values,
                 accountId: accountId,
             });
         }
@@ -137,7 +138,7 @@ export const CreateTransaction = ({
     useEffect(() => {
         if (!data || !isUpdate) return;
 
-        fillForm(form, data);
+        fillForm(form, { ...data, amount: data.amount / 100 });
     }, [data, form, isUpdate, open, accountId]);
 
     const isPending = createMutation.isPending || updateMutation.isPending;

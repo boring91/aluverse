@@ -1,7 +1,7 @@
 import { db, transactions } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
 
 export const transactionsRouter = createTRPCRouter({
@@ -16,30 +16,49 @@ export const transactionsRouter = createTRPCRouter({
         .query(async ({ input }) => {
             const { accountId, pageNumber, pageSize } = input;
 
-            return await db.query.transactions.findMany({
-                where: eq(transactions.accountId, accountId),
-                orderBy: [desc(transactions.createdAt)],
-                offset: (pageNumber ?? 0) * (pageSize ?? 0),
-                limit: pageSize,
-            });
+            return db
+                .select({
+                    id: transactions.id,
+                    date: transactions.date,
+                    amount: sql<number>`${transactions.amount}`,
+                    type: transactions.type,
+                    description: transactions.description,
+                })
+                .from(transactions)
+                .where(eq(transactions.accountId, accountId))
+                .orderBy(desc(transactions.createdAt));
+            // .offset((pageNumber ?? 0) * (pageSize ?? 0))
+            // .limit(pageSize ?? 0);
         }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            const item = await db.query.transactions.findFirst({
-                where: eq(transactions.id, input.id),
-            });
+            const items = await db
+                .select({
+                    id: transactions.id,
+                    date: transactions.date,
+                    amount: sql<number>`${transactions.amount}`,
+                    type: transactions.type,
+                    description: transactions.description,
+                })
+                .from(transactions)
+                .where(eq(transactions.id, input.id))
+                .limit(1);
 
-            return item ?? null;
+            return items[0] ?? null;
         }),
 
     create: protectedProcedure
         .input(
-            createTransactionSchema.omit({ id: true }).transform(v => ({
-                ...v,
-                amount: v.amount * 100,
-            }))
+            createTransactionSchema
+                .extend({
+                    accountId: z.uuid(),
+                })
+                .transform(v => ({
+                    ...v,
+                    amount: v.amount * 100,
+                }))
         )
         .mutation(async ({ input }) => {
             return await db.insert(transactions).values(input).returning();
@@ -48,8 +67,9 @@ export const transactionsRouter = createTRPCRouter({
     update: protectedProcedure
         .input(
             createTransactionSchema
-                // .omit({ accountId: true })
-                .required({ id: true })
+                .extend({
+                    id: z.uuid(),
+                })
                 .transform(v => ({
                     ...v,
                     amount: v.amount * 100,

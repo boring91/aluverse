@@ -64,6 +64,12 @@ export const TransactionsList = ({
                 queryClient.invalidateQueries(
                     trpc.transactions.get.queryOptions({ id })
                 );
+                queryClient.invalidateQueries(
+                    trpc.financialAccounts.list.queryOptions()
+                );
+                queryClient.invalidateQueries(
+                    trpc.financialAccounts.get.queryOptions({ id: accountId })
+                );
                 setCurrentlyProcessing(set => {
                     set.delete(id);
                     return new Set(set);

@@ -10,6 +10,7 @@ import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
 import { TransactionsList } from "./_components/transactions-list";
 import { useState } from "react";
+import { formatCurrency } from "@/lib/utils";
 
 const Page = () => {
     const params = useParams();
@@ -47,7 +48,12 @@ const Page = () => {
                             <ArrowLeft className="rtl:-scale-x-100" />
                         </Link>
                     </Button>
-                    <h1 className="font-bold text-2xl grow">{data.name}</h1>
+                    <div className="font-bold grow flex flex-col gap-1">
+                        <h1 className="text-2xl">{data.name}</h1>
+                        <span className="font-mono text-muted-foreground">
+                            {formatCurrency(data.balance)}
+                        </span>
+                    </div>
 
                     <Button onClick={() => setIsCreateTransactionOpen(true)}>
                         <PlusIcon />

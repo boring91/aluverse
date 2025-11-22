@@ -6,8 +6,6 @@ export const createFinancialAccountSchema = z.object({
 });
 
 export const createTransactionSchema = z.object({
-    id: z.uuid().optional(),
-    accountId: z.uuid(),
     date: z.date(),
     description: z.string().min(1),
     amount: z.number().min(1),
