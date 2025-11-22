@@ -1,4 +1,14 @@
-import { pgTable, text, timestamp, boolean, uuid } from "drizzle-orm/pg-core";
+import {
+    pgTable,
+    text,
+    timestamp,
+    boolean,
+    uuid,
+    date,
+    varchar,
+    integer,
+    pgEnum,
+} from "drizzle-orm/pg-core";
 
 // Better auth
 export const users = pgTable("users", {
@@ -65,6 +75,28 @@ export const verifications = pgTable("verifications", {
 export const financialAccounts = pgTable("financial_accounts", {
     id: uuid().primaryKey().defaultRandom(),
     name: text().notNull(),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
+});
+
+export const transactionType = pgEnum("transaction_type", [
+    "income",
+    "expense",
+]);
+export const transactions = pgTable("transactions", {
+    id: uuid().primaryKey().defaultRandom(),
+    accountId: uuid().references(() => financialAccounts.id, {
+        onDelete: "cascade",
+    }),
+    date: date().notNull(),
+    description: varchar({
+        length: 1024,
+    }).notNull(),
+    amount: integer().notNull(), // in cents
+    type: transactionType().notNull(),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
         .notNull()

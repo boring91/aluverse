@@ -6,10 +6,15 @@ import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { notFound, useParams } from "next/navigation";
+import { useTitle } from "@/hooks/use-title";
+import { useTranslations } from "next-intl";
+import { TransactionsList } from "./_components/transactions-list";
 
 const Page = () => {
     const params = useParams();
     const accountId = params["accountId"] as string;
+
+    const tc = useTranslations("Common");
 
     const trpc = useTRPC();
     const { data, isLoading } = useQuery(
@@ -17,6 +22,8 @@ const Page = () => {
             id: accountId,
         })
     );
+
+    useTitle(data ? data.name : tc("loading"));
 
     if (isLoading) {
         return <Loader2 className="animate-spin" />;
@@ -37,6 +44,9 @@ const Page = () => {
                 </Button>
                 <h1 className="font-bold text-2xl">{data.name}</h1>
             </div>
+
+            {/* Transactions */}
+            <TransactionsList accountId={accountId} />
         </div>
     );
 };

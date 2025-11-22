@@ -18,7 +18,12 @@
         "name": "Name",
         "save": "Save",
         "deletedSuccessfully": "Deleted successfully",
-        "savedSuccessfully": "Saved successfully"
+        "savedSuccessfully": "Saved successfully",
+        "loading": "Loading",
+        "date": "Date",
+        "description": "Description",
+        "actions": "Actions",
+        "noResults": "No results"
     },
     "Login": {
         "pageTitle": "Login",
@@ -30,6 +35,7 @@
     },
     "FinancialAccounts": {
         "createNewFinancialAccount": "Create new financial account",
-        "updateExistingFinancialAccount": "Update existing financial account"
+        "updateExistingFinancialAccount": "Update existing financial account",
+        "amount": "Amount"
     }
 }
