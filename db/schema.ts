@@ -91,7 +91,7 @@ export const transactions = pgTable("transactions", {
             onDelete: "cascade",
         })
         .notNull(),
-    date: date().notNull(),
+    date: date({ mode: "date" }).notNull(),
     description: varchar({
         length: 1024,
     }).notNull(),

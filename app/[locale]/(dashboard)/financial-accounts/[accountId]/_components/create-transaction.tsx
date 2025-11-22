@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { transactionTypes } from "@/lib/constants";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
+import { fillForm } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -81,7 +82,7 @@ export const CreateTransaction = ({
         )
     );
 
-    const handleSuccess = () => {
+    const onSuccess = () => {
         queryClient.invalidateQueries(
             trpc.transactions.list.queryOptions({ accountId })
         );
@@ -94,24 +95,24 @@ export const CreateTransaction = ({
 
         form.reset();
         onOpenChange(false);
-        toast.success(isUpdate ? "Transaction updated" : "Transaction created");
+        toast.success(tc("savedSuccessfully"));
     };
 
-    const handleError = (error: { message: string }) => {
+    const onError = (error: { message: string }) => {
         toast.error(error.message);
     };
 
     const createMutation = useMutation(
         trpc.transactions.create.mutationOptions({
-            onSuccess: handleSuccess,
-            onError: handleError,
+            onSuccess,
+            onError,
         })
     );
 
     const updateMutation = useMutation(
         trpc.transactions.update.mutationOptions({
-            onSuccess: handleSuccess,
-            onError: handleError,
+            onSuccess,
+            onError,
         })
     );
 
@@ -136,14 +137,7 @@ export const CreateTransaction = ({
     useEffect(() => {
         if (!data || !isUpdate) return;
 
-        form.reset({
-            id: data.id,
-            accountId: data.accountId,
-            description: data.description,
-            date: new Date(data.date),
-            type: data.type,
-            amount: data.amount / 100,
-        });
+        fillForm(form, data);
     }, [data, form, isUpdate, open, accountId]);
 
     const isPending = createMutation.isPending || updateMutation.isPending;
@@ -153,6 +147,7 @@ export const CreateTransaction = ({
             open={open}
             onOpenChange={value => {
                 if (isPending) return;
+                if (!value) form.reset();
                 onOpenChange(value);
             }}
         >

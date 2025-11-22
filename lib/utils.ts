@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { Locale } from "next-intl";
+import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
 export const cn = (...inputs: ClassValue[]) => {
@@ -27,4 +28,15 @@ export const formatCurrency = (amountInCents: number): string => {
         return `$ (${parts})`;
     }
     return `$ ${parts}`;
+};
+
+export const fillForm = <T extends FieldValues>(
+    form: UseFormReturn<T>,
+    data: T
+) => {
+    const values = form.getValues();
+    Object.keys(values).forEach(tmp => {
+        const key = tmp as Path<T>;
+        form.setValue(key, data[key]);
+    });
 };

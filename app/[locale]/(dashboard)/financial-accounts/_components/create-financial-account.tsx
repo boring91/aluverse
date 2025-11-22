@@ -15,22 +15,19 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
+import { createFinancialAccountSchema } from "@/lib/trpc-schemas";
+import { fillForm } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const schema = z.object({
-    id: z.string(),
-    name: z.string().min(3),
-});
-
-type SchemaType = z.infer<typeof schema>;
+type SchemaType = z.infer<typeof createFinancialAccountSchema>;
 
 type Props = {
     open: boolean;
@@ -58,63 +55,58 @@ export const CreateFinancialAccount = ({
     );
 
     const form = useForm({
-        resolver: zodResolver(schema),
+        resolver: zodResolver(createFinancialAccountSchema),
         defaultValues: {
-            id: "",
             name: "",
         },
     });
 
-    type CreateMutationOptions = Parameters<
-        typeof trpc.financialAccounts.create.mutationOptions
-    >[number];
+    const onSuccess = () => {
+        queryClient.invalidateQueries(
+            trpc.financialAccounts.list.queryOptions()
+        );
+        if (isUpdate) {
+            queryClient.invalidateQueries(
+                trpc.financialAccounts.get.queryOptions({ id: itemId })
+            );
+        }
+        form.reset();
+        onOpenChange(false);
+        toast.success(tc("savedSuccessfully"));
+    };
 
-    const mutationOptions = useMemo<CreateMutationOptions>(() => {
-        return {
-            onSuccess: () => {
-                queryClient.invalidateQueries(
-                    trpc.financialAccounts.list.queryOptions()
-                );
-                if (isUpdate) {
-                    queryClient.invalidateQueries(
-                        trpc.financialAccounts.get.queryOptions({ id: itemId })
-                    );
-                }
-                form.reset();
-                onOpenChange(false);
-                toast.success(tc("savedSuccessfully"));
-            },
-            onError: e => {
-                toast.error(e.message);
-            },
-        } as const;
-    }, [queryClient, trpc, isUpdate, itemId, form, onOpenChange, tc]);
+    const onError = (error: { message: string }) => {
+        toast.error(error.message);
+    };
 
-    trpc.financialAccounts.update.mutationOptions(mutationOptions);
-
-    const mutation = useMutation(
-        isUpdate
-            ? trpc.financialAccounts.update.mutationOptions(mutationOptions)
-            : trpc.financialAccounts.create.mutationOptions(mutationOptions)
+    const createMutation = useMutation(
+        trpc.financialAccounts.create.mutationOptions({ onSuccess, onError })
     );
+    const updateMutation = useMutation(
+        trpc.financialAccounts.update.mutationOptions({ onSuccess, onError })
+    );
+    const isPending = createMutation.isPending || updateMutation.isPending;
 
     const handleSubmit = (data: SchemaType) => {
-        mutation.mutate(data);
+        if (isUpdate && itemId) {
+            updateMutation.mutate({ id: itemId, ...data });
+        } else {
+            createMutation.mutate(data);
+        }
     };
 
     useEffect(() => {
         if (!isUpdate || !data) return;
-        form.reset({
-            id: data.id,
-            name: data.name,
-        });
+
+        fillForm(form, data);
     }, [isUpdate, data, form]);
 
     return (
         <Sheet
             open={open}
             onOpenChange={value => {
-                if (mutation.isPending) return;
+                if (isPending) return;
+                if (!value) form.reset();
                 onOpenChange(value);
             }}
         >
@@ -153,12 +145,10 @@ export const CreateFinancialAccount = ({
                 <SheetFooter>
                     <Button
                         form="create-financial-account"
-                        disabled={mutation.isPending}
+                        disabled={isPending}
                         type="submit"
                     >
-                        {mutation.isPending && (
-                            <Loader2 className="animate-spin" />
-                        )}
+                        {isPending && <Loader2 className="animate-spin" />}
                         <span>{tc("save")}</span>
                     </Button>
                 </SheetFooter>

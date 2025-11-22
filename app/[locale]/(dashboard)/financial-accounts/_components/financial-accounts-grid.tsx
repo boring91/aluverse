@@ -34,9 +34,11 @@ export const FinancialAccountsGrid = ({
                                         variant="ghost"
                                         size="icon"
                                         className="text-muted-foreground"
-                                        onClick={() =>
-                                            onClickForUpdate(account.id)
-                                        }
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            event.preventDefault();
+                                            onClickForUpdate(account.id);
+                                        }}
                                         disabled={currentlyProcessing.has(
                                             account.id
                                         )}
@@ -46,9 +48,11 @@ export const FinancialAccountsGrid = ({
                                     <Button
                                         variant="ghostDestructive"
                                         size="icon-sm"
-                                        onClick={() =>
-                                            onClickForDelete(account.id)
-                                        }
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            event.preventDefault();
+                                            onClickForDelete(account.id);
+                                        }}
                                         disabled={currentlyProcessing.has(
                                             account.id
                                         )}

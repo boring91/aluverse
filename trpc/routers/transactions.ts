@@ -3,8 +3,6 @@ import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
 import { desc, eq } from "drizzle-orm";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
-import { getTranslations } from "next-intl/server";
-import { transactionTypes } from "@/lib/constants";
 
 export const transactionsRouter = createTRPCRouter({
     list: protectedProcedure
@@ -41,7 +39,6 @@ export const transactionsRouter = createTRPCRouter({
             createTransactionSchema.omit({ id: true }).transform(v => ({
                 ...v,
                 amount: v.amount * 100,
-                date: v.date.toISOString(),
             }))
         )
         .mutation(async ({ input }) => {
@@ -56,7 +53,6 @@ export const transactionsRouter = createTRPCRouter({
                 .transform(v => ({
                     ...v,
                     amount: v.amount * 100,
-                    date: v.date.toISOString(),
                 }))
         )
         .mutation(async ({ input }) => {

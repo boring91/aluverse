@@ -95,7 +95,7 @@ export const TransactionsList = ({
         return [
             {
                 header: tc("date"),
-                accessorKey: "date",
+                accessorFn: item => item.date.toDateString(),
             },
 
             {
