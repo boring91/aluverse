@@ -23,7 +23,9 @@
         "date": "Date",
         "description": "Description",
         "actions": "Actions",
-        "noResults": "No results"
+        "noResults": "No results",
+        "create": "Create",
+        "update": "Update"
     },
     "Login": {
         "pageTitle": "Login",
@@ -41,6 +43,7 @@
         "updateExistingTransaction": "Update existing transaction",
         "transactionType": "Transaction type",
         "income": "Income",
-        "expense": "Expense"
+        "expense": "Expense",
+        "transactions": "Transactions"
     }
 }

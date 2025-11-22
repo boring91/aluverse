@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import {
     Sheet,
     SheetContent,
+    SheetDescription,
     SheetFooter,
     SheetHeader,
     SheetTitle,
@@ -113,8 +114,13 @@ export const CreateFinancialAccount = ({
             <SheetContent>
                 <SheetHeader>
                     <SheetTitle className="font-bold text-xl">
-                        {t("createNewFinancialAccount")}
+                        {tc("financialAccounts")}
                     </SheetTitle>
+                    <SheetDescription>
+                        {isUpdate
+                            ? t("updateExistingFinancialAccount")
+                            : t("createNewFinancialAccount")}
+                    </SheetDescription>
                 </SheetHeader>
 
                 <form

@@ -23,6 +23,7 @@ import {
 import {
     Sheet,
     SheetContent,
+    SheetDescription,
     SheetFooter,
     SheetHeader,
     SheetTitle,
@@ -154,11 +155,12 @@ export const CreateTransaction = ({
         >
             <SheetContent>
                 <SheetHeader>
-                    <SheetTitle>
+                    <SheetTitle>{t("transactions")}</SheetTitle>
+                    <SheetDescription>
                         {isUpdate
                             ? t("updateExistingTransaction")
                             : t("createNewTransaction")}
-                    </SheetTitle>
+                    </SheetDescription>
                 </SheetHeader>
 
                 <form
