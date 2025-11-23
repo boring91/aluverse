@@ -1,0 +1,240 @@
+import { Button } from "@/components/ui/button";
+import {
+    FieldGroup,
+    Field,
+    FieldLabel,
+    FieldError,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+    SheetFooter,
+} from "@/components/ui/sheet";
+import { fillForm } from "@/lib/client-utils";
+import { createProjectLaborSchema } from "@/lib/trpc-schemas";
+import { useTRPC } from "@/trpc/client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+type SchemaType = z.infer<typeof createProjectLaborSchema>;
+
+type Props = {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    projectId: string;
+    itemId?: string;
+};
+
+export const CreateLabor = ({
+    open,
+    onOpenChange,
+    projectId,
+    itemId,
+}: Props) => {
+    const t = useTranslations("Projects");
+    const tc = useTranslations("Common");
+
+    const isUpdate = !!itemId;
+
+    const form = useForm({
+        resolver: zodResolver(createProjectLaborSchema),
+        defaultValues: {
+            name: "",
+            hours: 0,
+            rate: 0,
+        },
+    });
+
+    const queryClient = useQueryClient();
+    const trpc = useTRPC();
+
+    const { data } = useQuery(
+        trpc.projectLabors.get.queryOptions(
+            { id: itemId! },
+            {
+                enabled: isUpdate,
+            }
+        )
+    );
+
+    const onSuccess = () => {
+        queryClient.invalidateQueries(
+            trpc.projectLabors.list.queryOptions({ projectId })
+        );
+        queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
+        queryClient.invalidateQueries(
+            trpc.projects.get.queryOptions({ id: projectId })
+        );
+        if (isUpdate) {
+            queryClient.invalidateQueries(
+                trpc.projectLabors.get.queryOptions({ id: itemId })
+            );
+        }
+        form.reset();
+        onOpenChange(false);
+        toast.success(tc("savedSuccessfully"));
+    };
+
+    const onError = (error: { message: string }) => {
+        toast.error(error.message);
+    };
+
+    const createMutation = useMutation(
+        trpc.projectLabors.create.mutationOptions({ onSuccess, onError })
+    );
+
+    const updateMutation = useMutation(
+        trpc.projectLabors.update.mutationOptions({ onSuccess, onError })
+    );
+
+    const handleSubmit = (data: SchemaType) => {
+        if (isUpdate && itemId) {
+            updateMutation.mutate({ id: itemId, ...data });
+        } else {
+            createMutation.mutate({ projectId, ...data });
+        }
+    };
+
+    useEffect(() => {
+        if (!data || !isUpdate) return;
+
+        fillForm(form, { ...data, rate: data.rate / 100 });
+    }, [data, form, isUpdate]);
+
+    const isPending = createMutation.isPending || updateMutation.isPending;
+
+    return (
+        <Sheet
+            open={open}
+            onOpenChange={value => {
+                if (isPending) return;
+                if (!value) form.reset();
+                onOpenChange(value);
+            }}
+        >
+            <SheetContent>
+                <SheetHeader>
+                    <SheetTitle>{t("labors")}</SheetTitle>
+                    <SheetDescription>
+                        {isUpdate
+                            ? t("updateExistingLabor")
+                            : t("createNewLabor")}
+                    </SheetDescription>
+                </SheetHeader>
+
+                <form
+                    id="create-labor-form"
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="flex flex-col gap-8 px-4 overflow-y-auto"
+                >
+                    <FieldGroup>
+                        {/* Name */}
+                        <Controller
+                            control={form.control}
+                            name="name"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>{tc("name")}</FieldLabel>
+                                        <Input {...field} />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
+                        {/* Hours */}
+                        <Controller
+                            control={form.control}
+                            name="hours"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>{t("hours")}</FieldLabel>
+                                        <Input
+                                            type="number"
+                                            {...field}
+                                            onChange={v =>
+                                                field.onChange(
+                                                    v.target.value
+                                                        ? parseFloat(
+                                                              v.target.value
+                                                          )
+                                                        : ""
+                                                )
+                                            }
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
+                        {/* Rate */}
+                        <Controller
+                            control={form.control}
+                            name="rate"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>{t("rate")}</FieldLabel>
+                                        <Input
+                                            type="number"
+                                            {...field}
+                                            onChange={v =>
+                                                field.onChange(
+                                                    v.target.value
+                                                        ? parseFloat(
+                                                              v.target.value
+                                                          )
+                                                        : ""
+                                                )
+                                            }
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+                    </FieldGroup>
+                </form>
+
+                <SheetFooter>
+                    <Button
+                        disabled={isPending}
+                        type="submit"
+                        form="create-labor-form"
+                    >
+                        {(createMutation.isPending ||
+                            updateMutation.isPending) && (
+                            <Loader2 className="animate-spin" />
+                        )}
+                        {tc("save")}
+                    </Button>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
+    );
+};

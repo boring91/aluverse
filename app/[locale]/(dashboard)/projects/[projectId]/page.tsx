@@ -24,6 +24,8 @@ import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { formatCurrency } from "@/lib/utils";
 import { SuppliesList } from "./_components/supplies-list";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LaborsList } from "./_components/labors-list";
 
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 
@@ -164,6 +166,29 @@ const AccountingInfo = ({ project }: { project: Project }) => {
     );
 };
 
+const ProjectDetails = ({ projectId }: { projectId: string }) => {
+    const t = useTranslations("Projects");
+
+    return (
+        <Tabs defaultValue="supplies">
+            <TabsList>
+                <TabsTrigger value="supplies">{t("supplies")}</TabsTrigger>
+
+                <TabsTrigger value="labors">{t("labors")}</TabsTrigger>
+                <TabsTrigger value="misc">{t("misc")}</TabsTrigger>
+                <TabsTrigger value="payments">{t("payments")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="supplies">
+                <SuppliesList projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="labors">
+                <LaborsList projectId={projectId} />
+            </TabsContent>
+        </Tabs>
+    );
+};
+
 const Page = () => {
     const params = useParams();
     const projectId = params["projectId"] as string;
@@ -236,7 +261,7 @@ const Page = () => {
 
                 <AccountingInfo project={data} />
 
-                <SuppliesList projectId={data.id} />
+                <ProjectDetails projectId={projectId} />
             </PageContainer>
         </>
     );

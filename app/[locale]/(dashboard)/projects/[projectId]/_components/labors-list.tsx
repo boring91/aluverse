@@ -17,19 +17,19 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CreateSupply } from "./create-supply";
+import { CreateLabor } from "./create-labor";
 import { formatCurrency } from "@/lib/utils";
 
-type ProjectSupply =
-    inferRouterOutputs<AppRouter>["projectSupplies"]["list"]["items"][number];
+type ProjectLabor =
+    inferRouterOutputs<AppRouter>["projectLabors"]["list"]["items"][number];
 
 type Props = {
     projectId: string;
 };
 
-export const SuppliesList = ({ projectId }: Props) => {
+export const LaborsList = ({ projectId }: Props) => {
     const t = useTranslations("Projects");
     const tc = useTranslations("Common");
 
@@ -50,7 +50,7 @@ export const SuppliesList = ({ projectId }: Props) => {
     const trpc = useTRPC();
 
     const { data } = useQuery(
-        trpc.projectSupplies.list.queryOptions(
+        trpc.projectLabors.list.queryOptions(
             {
                 projectId,
                 pagination: dataTable.pagination,
@@ -64,11 +64,11 @@ export const SuppliesList = ({ projectId }: Props) => {
     );
 
     const deletionMutation = useMutation(
-        trpc.projectSupplies.delete.mutationOptions({
+        trpc.projectLabors.delete.mutationOptions({
             onSuccess: data => {
                 const id = data[0].id;
                 queryClient.invalidateQueries(
-                    trpc.projectSupplies.list.queryOptions({
+                    trpc.projectLabors.list.queryOptions({
                         projectId,
                         pagination: dataTable.pagination,
                         sorting: dataTable.sorting,
@@ -108,7 +108,7 @@ export const SuppliesList = ({ projectId }: Props) => {
         setCurrentlyDeletingItemId(undefined);
     };
 
-    const columns = useMemo<ColumnDef<ProjectSupply>[]>(() => {
+    const columns = useMemo<ColumnDef<ProjectLabor>[]>(() => {
         return [
             {
                 accessorKey: "name",
@@ -118,35 +118,25 @@ export const SuppliesList = ({ projectId }: Props) => {
             },
 
             {
-                id: "quantity",
+                id: "hours",
                 header: ({ column }) => (
-                    <DataTableColumnHeader
-                        column={column}
-                        title={t("quantity")}
-                    />
+                    <DataTableColumnHeader column={column} title={t("hours")} />
                 ),
                 cell: ({ row }) => {
                     const item = row.original;
-                    return (
-                        <p className="font-mono">{item.quantity.toFixed(2)}</p>
-                    );
+                    return <p className="font-mono">{item.hours.toFixed(2)}</p>;
                 },
             },
 
             {
-                id: "unitPrice",
+                id: "rate",
                 header: ({ column }) => (
-                    <DataTableColumnHeader
-                        column={column}
-                        title={t("unitPrice")}
-                    />
+                    <DataTableColumnHeader column={column} title={t("rate")} />
                 ),
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <p className="font-mono">
-                            {formatCurrency(item.unitPrice)}
-                        </p>
+                        <p className="font-mono">{formatCurrency(item.rate)}</p>
                     );
                 },
             },
@@ -179,7 +169,7 @@ export const SuppliesList = ({ projectId }: Props) => {
                 onOpenChange={() => setCurrentlyDeletingItemId(undefined)}
                 onConfirm={handleDelete}
             />
-            <CreateSupply
+            <CreateLabor
                 projectId={projectId}
                 open={dataTable.openCreateSheet}
                 onOpenChange={value => {

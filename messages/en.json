@@ -84,6 +84,17 @@
         "unitPrice": "Unit price",
         "createNewSupply": "Create new supply",
         "updateExistingSupply": "Update existing supply",
-        "supplies": "Supplies"
+        "supplies": "Supplies",
+        "labors": "Labors",
+        "misc": "Misc",
+        "payments": "Payments",
+        "createNewLabor": "Create new labor",
+        "updateExistingLabor": "Update existing labor",
+        "hours": "Hours",
+        "rate": "Rate",
+        "createNewMisc": "Create new misc",
+        "updateExistingMisc": "Update existing misc",
+        "createNewPayment": "Create new payment",
+        "updateExistingPayment": "Update existing payment"
     }
 }
