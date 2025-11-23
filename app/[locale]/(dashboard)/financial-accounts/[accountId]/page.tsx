@@ -10,7 +10,7 @@ import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
 import { TransactionsList } from "./_components/transactions-list";
 import { useState } from "react";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from "@/lib/utils";
 import { PageContainer } from "@/components/page-container";
 
 const Page = () => {
@@ -58,19 +58,10 @@ const Page = () => {
                         {formatCurrency(data.balance)}
                     </span>
                 </div>
-
-                <Button onClick={() => setIsCreateTransactionOpen(true)}>
-                    <PlusIcon />
-                    {t("createNewTransaction")}
-                </Button>
             </div>
 
             {/* Transactions */}
-            <TransactionsList
-                accountId={accountId}
-                openCreateSheet={isCreateTransactionOpen}
-                onOpenCreateSheetChange={setIsCreateTransactionOpen}
-            />
+            <TransactionsList accountId={accountId} />
         </PageContainer>
     );
 };

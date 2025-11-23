@@ -28,15 +28,9 @@ type Transaction =
 
 type Props = {
     accountId: string;
-    openCreateSheet: boolean;
-    onOpenCreateSheetChange: (open: boolean) => void;
 };
 
-export const TransactionsList = ({
-    accountId,
-    openCreateSheet,
-    onOpenCreateSheetChange,
-}: Props) => {
+export const TransactionsList = ({ accountId }: Props) => {
     const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
 
@@ -101,9 +95,9 @@ export const TransactionsList = ({
     const handleUpdate = useCallback(
         (itemId: string) => {
             setCurrentlyUpdatingItemId(itemId);
-            onOpenCreateSheetChange(true);
+            dataTable.setOpenCreateSheet(true);
         },
-        [onOpenCreateSheetChange, setCurrentlyUpdatingItemId]
+        [dataTable, setCurrentlyUpdatingItemId]
     );
 
     const handleDelete = useCallback(() => {
@@ -187,24 +181,19 @@ export const TransactionsList = ({
             />
             <CreateTransaction
                 accountId={accountId}
-                open={openCreateSheet}
+                open={dataTable.openCreateSheet}
                 onOpenChange={value => {
                     if (value) {
-                        onOpenCreateSheetChange(true);
+                        dataTable.setOpenCreateSheet(true);
                         return;
                     }
 
                     setCurrentlyUpdatingItemId(undefined);
-                    onOpenCreateSheetChange(false);
+                    dataTable.setOpenCreateSheet(false);
                 }}
                 itemId={currentlyUpdatingItemId}
             />
-            <DataTable
-                columns={columns}
-                data={data}
-                searchKey="description"
-                {...dataTable}
-            />
+            <DataTable columns={columns} data={data} {...dataTable} />
         </>
     );
 };

@@ -29,15 +29,7 @@ import { cn } from "@/lib/client-utils";
 type Project =
     inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
 
-type Props = {
-    openCreateSheet: boolean;
-    onOpenCreateSheetChange: (open: boolean) => void;
-};
-
-export const ProjectsList = ({
-    openCreateSheet,
-    onOpenCreateSheetChange,
-}: Props) => {
+export const ProjectsList = () => {
     const t = useTranslations("Projects");
     const tc = useTranslations("Common");
 
@@ -97,9 +89,9 @@ export const ProjectsList = ({
     const handleUpdate = useCallback(
         (itemId: string) => {
             setCurrentlyUpdatingItemId(itemId);
-            onOpenCreateSheetChange(true);
+            dataTable.setOpenCreateSheet(true);
         },
-        [onOpenCreateSheetChange, setCurrentlyUpdatingItemId]
+        [dataTable, setCurrentlyUpdatingItemId]
     );
 
     const handleDelete = () => {
@@ -286,15 +278,15 @@ export const ProjectsList = ({
                 onConfirm={handleDelete}
             />
             <CreateProject
-                open={openCreateSheet}
+                open={dataTable.openCreateSheet}
                 onOpenChange={value => {
                     if (value) {
-                        onOpenCreateSheetChange(true);
+                        dataTable.setOpenCreateSheet(true);
                         return;
                     }
 
                     setCurrentlyUpdatingItemId(undefined);
-                    onOpenCreateSheetChange(false);
+                    dataTable.setOpenCreateSheet(false);
                 }}
                 itemId={currentlyUpdatingItemId}
             />
