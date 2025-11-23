@@ -44,6 +44,13 @@ export const AppSidebar = () => {
     const t = useTranslations("Common");
     const pathname = usePathname();
 
+    const isActive = (link: string) => {
+        if (pathname === "/" && link === "/") {
+            return true;
+        }
+        return link !== "/" && pathname.startsWith(link);
+    };
+
     return (
         <Sidebar>
             <SidebarHeader>
@@ -60,7 +67,7 @@ export const AppSidebar = () => {
                                     <SidebarMenuItem key={item.id}>
                                         <SidebarMenuButton
                                             asChild
-                                            isActive={item.link === pathname}
+                                            isActive={isActive(item.link)}
                                         >
                                             <Link href={item.link}>
                                                 <item.icon />
