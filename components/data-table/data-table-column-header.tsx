@@ -17,17 +17,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
 
-interface DataTableColumnHeaderProps<TData, TValue>
-    extends React.HTMLAttributes<HTMLDivElement> {
-    column: Column<TData, TValue>;
-    title: string;
-}
+type Props<TData, TValue> =
+    React.HTMLAttributes<HTMLDivElement> & {
+        column: Column<TData, TValue>;
+        title: string;
+    };
 
 export function DataTableColumnHeader<TData, TValue>({
     column,
     title,
     className,
-}: DataTableColumnHeaderProps<TData, TValue>) {
+}: Props<TData, TValue>) {
     const tc = useTranslations("Common");
 
     if (!column.getCanSort()) {

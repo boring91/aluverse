@@ -16,13 +16,13 @@ import {
 } from "@/components/ui/select";
 import { useTranslations } from "next-intl";
 
-interface DataTablePaginationProps<TData> {
+type Props<TData> = {
     table: Table<TData>;
-}
+};
 
 export function DataTablePagination<TData>({
     table,
-}: DataTablePaginationProps<TData>) {
+}: Props<TData>) {
     const tc = useTranslations("Common");
 
     return (

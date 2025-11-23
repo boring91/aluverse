@@ -14,13 +14,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
 
-interface DataTableViewOptionsProps<TData> {
+type Props<TData> = {
     table: Table<TData>;
-}
+};
 
 export function DataTableViewOptions<TData>({
     table,
-}: DataTableViewOptionsProps<TData>) {
+}: Props<TData>) {
     const tc = useTranslations("Common");
 
     return (
@@ -40,10 +40,9 @@ export function DataTableViewOptions<TData>({
                 <DropdownMenuSeparator />
                 {table
                     .getAllColumns()
-                    .filter(
-                        column =>
-                            // typeof column.accessorFn !== "undefined" &&
-                            column.getCanHide()
+                    .filter(column =>
+                        // typeof column.accessorFn !== "undefined" &&
+                        column.getCanHide()
                     )
                     .map(column => {
                         return (
