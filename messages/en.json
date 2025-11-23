@@ -35,7 +35,8 @@
         "toggleColumns": "Toggle columns",
         "asc": "Asc",
         "desc": "Desc",
-        "hide": "Hide"
+        "hide": "Hide",
+        "dates": "Dates"
     },
     "Login": {
         "pageTitle": "Login",
@@ -55,5 +56,27 @@
         "income": "Income",
         "expense": "Expense",
         "transactions": "Transactions"
+    },
+    "Projects": {
+        "humanId": "Human ID",
+        "title": "Title",
+        "visitDate": "Visit date",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "address": "Address",
+        "meters": "Meters",
+        "price": "Price",
+        "createNewProject": "Create new project",
+        "updateExistingProject": "Update existing project",
+        "client": "Client",
+        "projects": "Projects",
+        "cost": "Cost",
+        "paid": "Paid",
+        "profitAndCost": "Profit & cost",
+        "status": "Status",
+        "planning": "Planning",
+        "inProgress": "In progress",
+        "awaitingPayment": "Awaiting payment",
+        "completed": "Completed"
     }
 }

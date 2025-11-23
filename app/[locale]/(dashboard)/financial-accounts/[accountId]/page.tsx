@@ -10,7 +10,7 @@ import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
 import { TransactionsList } from "./_components/transactions-list";
 import { useState } from "react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from '@/lib/utils';
 import { PageContainer } from "@/components/page-container";
 
 const Page = () => {

@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/client-utils";
+import { formatCurrency } from '@/lib/utils';
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { Edit3Icon, Trash2Icon } from "lucide-react";

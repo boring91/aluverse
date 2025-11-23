@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -30,7 +32,7 @@ import {
 } from "@/components/ui/sheet";
 import { transactionTypes } from "@/lib/constants";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
-import { fillForm } from "@/lib/utils";
+import { fillForm } from "@/lib/client-utils";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -140,7 +142,7 @@ export const CreateTransaction = ({
         if (!data || !isUpdate) return;
 
         fillForm(form, { ...data, amount: data.amount / 100 });
-    }, [data, form, isUpdate, open, accountId]);
+    }, [data, form, isUpdate, accountId]);
 
     const isPending = createMutation.isPending || updateMutation.isPending;
 
@@ -306,7 +308,11 @@ export const CreateTransaction = ({
                 </form>
 
                 <SheetFooter>
-                    <Button type="submit" form="create-transaction-form">
+                    <Button
+                        disabled={isPending}
+                        type="submit"
+                        form="create-transaction-form"
+                    >
                         {(createMutation.isPending ||
                             updateMutation.isPending) && (
                             <Loader2 className="animate-spin" />

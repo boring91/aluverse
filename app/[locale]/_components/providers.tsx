@@ -1,6 +1,6 @@
 "use client";
 
-import { getDir } from "@/lib/utils";
+import { getDir } from '@/lib/utils';
 import { DirectionProvider } from "@radix-ui/react-direction";
 import { useLocale } from "next-intl";
 

@@ -43,6 +43,13 @@
       "when": 1763774799803,
       "tag": "0005_lucky_master_chief",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763866522987,
+      "tag": "0006_early_the_hand",
+      "breakpoints": true
     }
   ]
 }

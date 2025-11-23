@@ -1,11 +1,6 @@
-import { clsx, type ClassValue } from "clsx";
+import { type AppRouter } from "@/trpc/routers/_app";
+import { inferRouterOutputs } from "@trpc/server";
 import { Locale } from "next-intl";
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
-import { twMerge } from "tailwind-merge";
-
-export const cn = (...inputs: ClassValue[]) => {
-    return twMerge(clsx(inputs));
-};
 
 export const getDir = (locale: Locale) => {
     return locale === "ar" ? "rtl" : "ltr";
@@ -30,13 +25,14 @@ export const formatCurrency = (amountInCents: number): string => {
     return `$ ${parts}`;
 };
 
-export const fillForm = <T extends FieldValues>(
-    form: UseFormReturn<T>,
-    data: T
+export const getProjectStatus = (
+    project: Pick<
+        inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number],
+        "startDate" | "endDate" | "price" | "paid"
+    >
 ) => {
-    const values = form.getValues();
-    Object.keys(values).forEach(tmp => {
-        const key = tmp as Path<T>;
-        form.setValue(key, data[key]);
-    });
+    if (!project.startDate) return "planning";
+    if (!project.endDate) return "inProgress";
+    if (project.paid < project.price) return "awaitingPayment";
+    return "completed";
 };

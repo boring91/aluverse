@@ -1,5 +1,6 @@
 import { useDataTable } from "@/hooks/use-data-table";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/client-utils";
+import { formatCurrency } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { AppRouter } from "@/trpc/routers/_app";
 import {
@@ -105,11 +106,11 @@ export const TransactionsList = ({
         [onOpenCreateSheetChange, setCurrentlyUpdatingItemId]
     );
 
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         if (!currentlyDeletingItemId) return;
         deleteMutation.mutate({ id: currentlyDeletingItemId });
         setCurrentlyDeletingItemId(undefined);
-    };
+    }, [currentlyDeletingItemId, deleteMutation, setCurrentlyDeletingItemId]);
 
     const columns = useMemo<ColumnDef<Transaction>[]>(() => {
         return [

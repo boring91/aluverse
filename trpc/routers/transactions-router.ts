@@ -3,34 +3,13 @@ import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
 import { count, desc, asc, eq, sql, ilike, and } from "drizzle-orm";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
+import { listSchema } from "@/lib/util-schemas";
 
 export const transactionsRouter = createTRPCRouter({
     list: protectedProcedure
         .input(
-            z.object({
-                accountId: z.uuid(),
-                pagination: z
-                    .object({
-                        pageIndex: z.number(),
-                        pageSize: z.number(),
-                    })
-                    .default({ pageIndex: 0, pageSize: 20 }),
-                sorting: z
-                    .array(
-                        z.object({
-                            id: z.string(),
-                            desc: z.boolean(),
-                        })
-                    )
-                    .optional(),
-                columnFilters: z
-                    .array(
-                        z.object({
-                            id: z.string(),
-                            value: z.unknown(),
-                        })
-                    )
-                    .optional(),
+            listSchema.extend({
+                accountId: z.string(),
             })
         )
         .query(async ({ input }) => {
@@ -88,16 +67,21 @@ export const transactionsRouter = createTRPCRouter({
                 .offset(pageIndex * pageSize)
                 .limit(pageSize);
 
-            const { c } = (
+            const { filteredCount } = (
+                await db.select({ filteredCount: count() }).from(transactions)
+            )[0];
+
+            const { _count } = (
                 await db
-                    .select({ c: count() })
+                    .select({ _count: count() })
                     .from(transactions)
                     .where(and(...filters))
             )[0];
 
             return {
                 items,
-                count: c,
+                count: _count,
+                filteredCount,
             };
         }),
 

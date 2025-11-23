@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { isPromise } from "@/lib/utils";
+import { isPromise } from '@/lib/utils';
 import { useTranslations } from "next-intl";
 
 import {
