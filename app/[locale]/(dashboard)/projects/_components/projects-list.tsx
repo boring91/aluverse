@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { CreateProject } from "./create-project";
 import { formatCurrency, getProjectStatus } from "@/lib/utils";
 import { cn } from "@/lib/client-utils";
+import { ProjectStatusBadge } from "./project-status-badge";
 
 type Project =
     inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
@@ -234,29 +235,7 @@ export const ProjectsList = ({
                 ),
                 cell: ({ row }) => {
                     const project = row.original;
-                    return (
-                        <div
-                            className={cn(
-                                "rounded-xl inline-flex px-4 py-1 items-center justify-center text-white text-xs font-bold",
-                                {
-                                    "bg-sky-400":
-                                        getProjectStatus(project) ===
-                                        "planning",
-                                    "bg-amber-400":
-                                        getProjectStatus(project) ===
-                                        "inProgress",
-                                    "bg-rose-400":
-                                        getProjectStatus(project) ===
-                                        "awaitingPayment",
-                                    "bg-emerald-400":
-                                        getProjectStatus(project) ===
-                                        "completed",
-                                }
-                            )}
-                        >
-                            {t(getProjectStatus(project))}
-                        </div>
-                    );
+                    return <ProjectStatusBadge project={project} />;
                 },
             },
 
@@ -272,6 +251,7 @@ export const ProjectsList = ({
                                 setCurrentlyDeletingItemId
                             }
                             currentlyProcessing={currentlyProcessing}
+                            detailsLink={`/projects/${item.id}`}
                         />
                     );
                 },

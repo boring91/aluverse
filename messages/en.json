@@ -77,6 +77,8 @@
         "planning": "Planning",
         "inProgress": "In progress",
         "awaitingPayment": "Awaiting payment",
-        "completed": "Completed"
+        "completed": "Completed",
+        "remaining": "Remaining",
+        "profitMargin": "Profit margin"
     }
 }

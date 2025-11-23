@@ -130,7 +130,7 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                 <form
                     id="create-project-form"
                     onSubmit={form.handleSubmit(handleSubmit)}
-                    className="flex flex-col gap-8 px-4"
+                    className="flex flex-col gap-8 px-4 overflow-y-auto"
                 >
                     <FieldGroup>
                         {/* Client */}

@@ -20,6 +20,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
     email: z.email(),
@@ -32,6 +33,8 @@ const Login = () => {
     const tc = useTranslations("Common");
     const t = useTranslations("Login");
     useTitle(t("pageTitle"));
+    const searchParams = useSearchParams();
+    const returnUrl = searchParams.get("returnUrl");
 
     const { data, isPending } = useSession();
     const router = useRouter();
@@ -61,7 +64,8 @@ const Login = () => {
             } else if (data.error) {
                 toast.error(tc("unknownErrorHasOccurred"));
             }
-            router.push("/");
+            console.log(returnUrl)
+            router.push(returnUrl ?? "/");
             toast.success(t("loggedInSuccessfully"));
         },
         onError: error => {
