@@ -1,7 +1,7 @@
 "use client";
 
+import { DatePickerInput } from "@/components/date-picker-input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
     FieldGroup,
     Field,
@@ -9,11 +9,6 @@ import {
     FieldError,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import {
     Sheet,
     SheetContent,
@@ -186,26 +181,10 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                                         <FieldLabel>
                                             {t("visitDate")}
                                         </FieldLabel>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="justify-start"
-                                                >
-                                                    {field.value?.toDateString() ??
-                                                        "-"}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent>
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={
-                                                        field.value ?? undefined
-                                                    }
-                                                    onSelect={field.onChange}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
+                                        <DatePickerInput
+                                            value={field.value ?? undefined}
+                                            onChange={field.onChange}
+                                        />
                                         {fieldState.invalid && (
                                             <FieldError
                                                 errors={[fieldState.error]}
@@ -226,26 +205,10 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                                         <FieldLabel>
                                             {t("startDate")}
                                         </FieldLabel>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="justify-start"
-                                                >
-                                                    {field.value?.toDateString() ??
-                                                        "-"}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent>
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={
-                                                        field.value ?? undefined
-                                                    }
-                                                    onSelect={field.onChange}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
+                                        <DatePickerInput
+                                            value={field.value ?? undefined}
+                                            onChange={field.onChange}
+                                        />
                                         {fieldState.invalid && (
                                             <FieldError
                                                 errors={[fieldState.error]}
@@ -264,26 +227,10 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                                 return (
                                     <Field>
                                         <FieldLabel>{t("endDate")}</FieldLabel>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="justify-start"
-                                                >
-                                                    {field.value?.toDateString() ??
-                                                        "-"}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent>
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={
-                                                        field.value ?? undefined
-                                                    }
-                                                    onSelect={field.onChange}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
+                                        <DatePickerInput
+                                            value={field.value ?? undefined}
+                                            onChange={field.onChange}
+                                        />
                                         {fieldState.invalid && (
                                             <FieldError
                                                 errors={[fieldState.error]}

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
     Field,
     FieldError,
@@ -9,11 +8,6 @@ import {
     FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -42,6 +36,7 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { DatePickerInput } from "@/components/date-picker-input";
 
 type SchemaType = z.input<typeof createTransactionSchema>;
 
@@ -180,24 +175,7 @@ export const CreateTransaction = ({
                                     <Field>
                                         <FieldLabel>{tc("date")}</FieldLabel>
 
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="justify-start"
-                                                >
-                                                    {field.value?.toDateString() ??
-                                                        "-"}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent>
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={field.value}
-                                                    onSelect={field.onChange}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
+                                        <DatePickerInput {...field} />
 
                                         {fieldState.invalid && (
                                             <FieldError
