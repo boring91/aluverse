@@ -26,6 +26,9 @@ import { formatCurrency } from "@/lib/utils";
 import { SuppliesList } from "./_components/supplies-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LaborsList } from "./_components/labors-list";
+import { MiscList } from "./_components/misc-list";
+import { PaymentsList } from "./_components/payments-list";
+import { cn } from "@/lib/client-utils";
 
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 
@@ -99,7 +102,6 @@ const BasicInfo = ({ project }: { project: Project }) => {
 
 const AccountingInfo = ({ project }: { project: Project }) => {
     const t = useTranslations("Projects");
-    const tc = useTranslations("Common");
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -146,7 +148,11 @@ const AccountingInfo = ({ project }: { project: Project }) => {
                         {t("profitMargin")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xl text-emerald-500 font-bold">
+                <CardContent
+                    className={cn("text-xl text-emerald-500 font-bold", {
+                        "text-rose-500": project.price - project.cost < 0,
+                    })}
+                >
                     <div className="flex flex-col gap-2">
                         <p>
                             {Math.round(
@@ -156,7 +162,15 @@ const AccountingInfo = ({ project }: { project: Project }) => {
                             ).toFixed(2)}
                             %
                         </p>
-                        <p className="text-xs text-emerald-500 font-mono">
+                        <p
+                            className={cn(
+                                "text-xs text-emerald-500 font-mono",
+                                {
+                                    "text-rose-500":
+                                        project.price - project.cost < 0,
+                                }
+                            )}
+                        >
                             {formatCurrency(project.price - project.cost)}
                         </p>
                     </div>
@@ -178,12 +192,21 @@ const ProjectDetails = ({ projectId }: { projectId: string }) => {
                 <TabsTrigger value="misc">{t("misc")}</TabsTrigger>
                 <TabsTrigger value="payments">{t("payments")}</TabsTrigger>
             </TabsList>
+
             <TabsContent value="supplies">
                 <SuppliesList projectId={projectId} />
             </TabsContent>
 
             <TabsContent value="labors">
                 <LaborsList projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="misc">
+                <MiscList projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="payments">
+                <PaymentsList projectId={projectId} />
             </TabsContent>
         </Tabs>
     );
@@ -193,7 +216,6 @@ const Page = () => {
     const params = useParams();
     const projectId = params["projectId"] as string;
 
-    const t = useTranslations("Projects");
     const tc = useTranslations("Common");
 
     const trpc = useTRPC();

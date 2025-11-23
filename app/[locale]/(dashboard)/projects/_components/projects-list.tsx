@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { CreateProject } from "./create-project";
 import { formatCurrency } from "@/lib/utils";
 import { ProjectStatusBadge } from "./project-status-badge";
+import { cn } from "@/lib/client-utils";
 
 type Project =
     inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
@@ -196,7 +197,15 @@ export const ProjectsList = ({
                     return (
                         <div className="flex flex-col gap-1">
                             {/* Profit */}
-                            <p className="items-center flex gap-1 text-emerald-500">
+                            <p
+                                className={cn(
+                                    "items-center flex gap-1 text-emerald-500",
+                                    {
+                                        "text-rose-500":
+                                            project.price - project.cost < 0,
+                                    }
+                                )}
+                            >
                                 {/* Cash */}
                                 <span className="font-mono">
                                     {formatCurrency(
@@ -204,7 +213,16 @@ export const ProjectsList = ({
                                     )}
                                 </span>
                                 {/* Percentage */}
-                                <span className="text-xs text-emerald-500/70">
+                                <span
+                                    className={cn(
+                                        "text-xs text-emerald-500/70",
+                                        {
+                                            "text-rose-500/70":
+                                                project.price - project.cost <
+                                                0,
+                                        }
+                                    )}
+                                >
                                     (
                                     {Math.round(
                                         ((project.price - project.cost) /
@@ -280,12 +298,7 @@ export const ProjectsList = ({
                 }}
                 itemId={currentlyUpdatingItemId}
             />
-            <DataTable
-                columns={columns}
-                data={data}
-                searchKey="title"
-                {...dataTable}
-            />
+            <DataTable columns={columns} data={data} {...dataTable} />
         </>
     );
 };

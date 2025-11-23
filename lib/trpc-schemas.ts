@@ -38,6 +38,11 @@ export const createProjectLaborSchema = z.object({
 });
 
 export const createProjectMiscSchema = z.object({
-    description: z.string().min(1),
+    name: z.string().min(1),
+    amount: z.number().min(1),
+});
+
+export const createProjectPaymentSchema = z.object({
+    date: z.date(),
     amount: z.number().min(1),
 });

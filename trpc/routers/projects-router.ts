@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, SQL, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, SQL, sql, sum } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { listSchema } from "@/lib/util-schemas";
 import {
@@ -12,6 +12,46 @@ import {
 import { z } from "zod";
 import { createProjectSchema } from "@/lib/trpc-schemas";
 
+const paymentsSq = db
+    .select({
+        projectId: projectPayments.projectId,
+        total: sum(projectPayments.amount).as("paymentTotal"),
+    })
+    .from(projectPayments)
+    .groupBy(projectPayments.projectId)
+    .as("paymentsSq");
+
+const suppliesSq = db
+    .select({
+        projectId: projectSupplies.projectId,
+        total: sql<number>`SUM(${projectSupplies.unitPrice} * ${projectSupplies.quantity})`.as(
+            "supplyTotal"
+        ),
+    })
+    .from(projectSupplies)
+    .groupBy(projectSupplies.projectId)
+    .as("suppliesSq");
+
+const laborsSq = db
+    .select({
+        projectId: projectLabors.projectId,
+        total: sql<number>`SUM(${projectLabors.rate} * ${projectLabors.hours})`.as(
+            "laborTotal"
+        ),
+    })
+    .from(projectLabors)
+    .groupBy(projectLabors.projectId)
+    .as("laborsSq");
+
+const miscSq = db
+    .select({
+        projectId: projectMisc.projectId,
+        total: sum(projectMisc.amount).as("miscTotal"),
+    })
+    .from(projectMisc)
+    .groupBy(projectMisc.projectId)
+    .as("miscSq");
+
 const projection = {
     id: projects.id,
     humanId: projects.humanId,
@@ -23,8 +63,8 @@ const projection = {
     address: projects.address,
     meters: projects.meters,
     price: projects.price,
-    paid: sql<number>`SUM(COALESCE(${projectPayments.amount}, 0))`,
-    cost: sql<number>`SUM(COALESCE(${projectSupplies.unitPrice} * ${projectSupplies.quantity}, 0)) + SUM(COALESCE(${projectLabors.rate} * ${projectLabors.hours}, 0)) + SUM(COALESCE(${projectMisc.amount}, 0))`,
+    paid: sql<number>`SUM(COALESCE(${paymentsSq.total}, 0))`,
+    cost: sql<number>`SUM(COALESCE(${suppliesSq.total}, 0)) + SUM(COALESCE(${laborsSq.total}, 0)) + SUM(COALESCE(${miscSq.total}, 0))`,
 } as const;
 
 export const projectsRouter = createTRPCRouter({
@@ -70,16 +110,10 @@ export const projectsRouter = createTRPCRouter({
         const items = await db
             .select(projection)
             .from(projects)
-            .leftJoin(
-                projectPayments,
-                eq(projectPayments.projectId, projects.id)
-            )
-            .leftJoin(
-                projectSupplies,
-                eq(projectSupplies.projectId, projects.id)
-            )
-            .leftJoin(projectLabors, eq(projectLabors.projectId, projects.id))
-            .leftJoin(projectMisc, eq(projectMisc.projectId, projects.id))
+            .leftJoin(paymentsSq, eq(paymentsSq.projectId, projects.id))
+            .leftJoin(suppliesSq, eq(suppliesSq.projectId, projects.id))
+            .leftJoin(laborsSq, eq(laborsSq.projectId, projects.id))
+            .leftJoin(miscSq, eq(miscSq.projectId, projects.id))
             .groupBy(projects.id)
             .orderBy(...orderBy)
             .offset(pageIndex * pageSize)
@@ -109,19 +143,10 @@ export const projectsRouter = createTRPCRouter({
             const items = await db
                 .select(projection)
                 .from(projects)
-                .leftJoin(
-                    projectPayments,
-                    eq(projectPayments.projectId, projects.id)
-                )
-                .leftJoin(
-                    projectSupplies,
-                    eq(projectSupplies.projectId, projects.id)
-                )
-                .leftJoin(
-                    projectLabors,
-                    eq(projectLabors.projectId, projects.id)
-                )
-                .leftJoin(projectMisc, eq(projectMisc.projectId, projects.id))
+                .leftJoin(paymentsSq, eq(paymentsSq.projectId, projects.id))
+                .leftJoin(suppliesSq, eq(suppliesSq.projectId, projects.id))
+                .leftJoin(laborsSq, eq(laborsSq.projectId, projects.id))
+                .leftJoin(miscSq, eq(miscSq.projectId, projects.id))
                 .groupBy(projects.id)
                 .where(eq(projects.id, input.id))
                 .limit(1);

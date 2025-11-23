@@ -87,6 +87,7 @@
         "supplies": "Supplies",
         "labors": "Labors",
         "misc": "Misc",
+        "amount": "Amount",
         "payments": "Payments",
         "createNewLabor": "Create new labor",
         "updateExistingLabor": "Update existing labor",
