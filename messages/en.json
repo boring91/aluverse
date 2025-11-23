@@ -25,7 +25,17 @@
         "actions": "Actions",
         "noResults": "No results",
         "create": "Create",
-        "update": "Update"
+        "update": "Update",
+        "rowsPerPage": "Rows per page",
+        "goToFirstPage": "Go to first page",
+        "goToPreviousPage": "Go to previous page",
+        "goToNextPage": "Go to next page",
+        "goToLastPage": "Go to last page",
+        "view": "View",
+        "toggleColumns": "Toggle columns",
+        "asc": "Asc",
+        "desc": "Desc",
+        "hide": "Hide"
     },
     "Login": {
         "pageTitle": "Login",

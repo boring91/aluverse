@@ -1,7 +1,7 @@
 import { db, transactions } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
-import { count, desc, eq, sql } from "drizzle-orm";
+import { count, desc, asc, eq, sql, ilike, and } from "drizzle-orm";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
 
 export const transactionsRouter = createTRPCRouter({
@@ -9,13 +9,71 @@ export const transactionsRouter = createTRPCRouter({
         .input(
             z.object({
                 accountId: z.uuid(),
-                pageIndex: z.number().default(0),
-                pageSize: z.number().default(20),
+                pagination: z
+                    .object({
+                        pageIndex: z.number(),
+                        pageSize: z.number(),
+                    })
+                    .default({ pageIndex: 0, pageSize: 20 }),
+                sorting: z
+                    .array(
+                        z.object({
+                            id: z.string(),
+                            desc: z.boolean(),
+                        })
+                    )
+                    .optional(),
+                columnFilters: z
+                    .array(
+                        z.object({
+                            id: z.string(),
+                            value: z.unknown(),
+                        })
+                    )
+                    .optional(),
             })
         )
         .query(async ({ input }) => {
-            const { accountId, pageIndex, pageSize } = input;
+            const { accountId, pagination, sorting, columnFilters } = input;
 
+            const filters = [eq(transactions.accountId, accountId)];
+
+            if (columnFilters) {
+                for (const filter of columnFilters) {
+                    if (
+                        filter.id === "description" &&
+                        typeof filter.value === "string"
+                    ) {
+                        filters.push(
+                            ilike(transactions.description, `%${filter.value}%`)
+                        );
+                    }
+                }
+            }
+
+            const orderBy = [];
+            if (sorting && sorting.length > 0) {
+                sorting.forEach(sort => {
+                    const direction = sort.desc ? desc : asc;
+                    switch (sort.id) {
+                        case "date":
+                            orderBy.push(direction(transactions.date));
+                            break;
+                        case "description":
+                            orderBy.push(direction(transactions.description));
+                            break;
+                        case "amount":
+                            orderBy.push(direction(transactions.amount));
+                            break;
+                        default:
+                            orderBy.push(desc(transactions.createdAt));
+                    }
+                });
+            } else {
+                orderBy.push(desc(transactions.createdAt));
+            }
+
+            const { pageIndex, pageSize } = pagination;
             const items = await db
                 .select({
                     id: transactions.id,
@@ -25,8 +83,8 @@ export const transactionsRouter = createTRPCRouter({
                     description: transactions.description,
                 })
                 .from(transactions)
-                .where(eq(transactions.accountId, accountId))
-                .orderBy(desc(transactions.createdAt))
+                .where(and(...filters))
+                .orderBy(...orderBy)
                 .offset(pageIndex * pageSize)
                 .limit(pageSize);
 
@@ -34,8 +92,7 @@ export const transactionsRouter = createTRPCRouter({
                 await db
                     .select({ c: count() })
                     .from(transactions)
-                    .where(eq(transactions.accountId, accountId))
-                    .limit(1)
+                    .where(and(...filters))
             )[0];
 
             return {

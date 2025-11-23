@@ -1,11 +1,4 @@
-import { DataTable } from "@/components/data-table";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useDataTable } from "@/hooks/use-data-table";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { AppRouter } from "@/trpc/routers/_app";
@@ -15,14 +8,19 @@ import {
     useQuery,
     useQueryClient,
 } from "@tanstack/react-query";
-import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import { MoreVerticalIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { CreateTransaction } from "./create-transaction";
+import { useCallback, useMemo } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
+import { CreateTransaction } from "./create-transaction";
+import { useRowActionState } from "@/hooks/use-row-action-state";
+import {
+    DataTable,
+    DataTableActions,
+    DataTableColumnHeader,
+} from "@/components/data-table";
 
 type Transaction =
     inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
@@ -41,17 +39,16 @@ export const TransactionsList = ({
     const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
 
-    const [currentlyUpdatingItemId, setCurrentlyUpdatingItemId] = useState<
-        string | undefined
-    >(undefined);
-    const [currentlyDeletingItemId, setCurrentlyDeletingItemId] = useState<
-        string | undefined
-    >(undefined);
-    const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
-        new Set()
-    );
-    const [pagination, setPagination] = useState<PaginationState>({
-        pageIndex: 0,
+    const {
+        currentlyUpdatingItemId,
+        setCurrentlyUpdatingItemId,
+        currentlyDeletingItemId,
+        setCurrentlyDeletingItemId,
+        currentlyProcessing,
+        setCurrentlyProcessing,
+    } = useRowActionState();
+
+    const dataTable = useDataTable({
         pageSize: 100,
     });
 
@@ -61,7 +58,9 @@ export const TransactionsList = ({
         trpc.transactions.list.queryOptions(
             {
                 accountId,
-                ...pagination,
+                pagination: dataTable.pagination,
+                sorting: dataTable.sorting,
+                columnFilters: dataTable.columnFilters,
             },
             {
                 placeholderData: keepPreviousData,
@@ -103,7 +102,7 @@ export const TransactionsList = ({
             setCurrentlyUpdatingItemId(itemId);
             onOpenCreateSheetChange(true);
         },
-        [onOpenCreateSheetChange]
+        [onOpenCreateSheetChange, setCurrentlyUpdatingItemId]
     );
 
     const handleDelete = () => {
@@ -115,17 +114,31 @@ export const TransactionsList = ({
     const columns = useMemo<ColumnDef<Transaction>[]>(() => {
         return [
             {
-                header: tc("date"),
-                accessorFn: item => item.date.toDateString(),
+                accessorKey: "date",
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title={tc("date")} />
+                ),
+                cell: ({ row }) => row.original.date.toDateString(),
             },
 
             {
-                header: tc("description"),
                 accessorKey: "description",
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={tc("description")}
+                    />
+                ),
             },
 
             {
-                header: t("amount"),
+                accessorKey: "amount",
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t("amount")}
+                    />
+                ),
                 cell: ({ row }) => {
                     const isExpense = row.original.type === "expense";
                     return (
@@ -144,35 +157,18 @@ export const TransactionsList = ({
             },
 
             {
-                header: tc("actions"),
+                id: "actions",
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <MoreVerticalIcon />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem
-                                    disabled={currentlyProcessing.has(item.id)}
-                                    onClick={() => handleUpdate(item.id)}
-                                >
-                                    {tc("edit")}
-                                </DropdownMenuItem>
-
-                                <DropdownMenuItem
-                                    variant="destructive"
-                                    disabled={currentlyProcessing.has(item.id)}
-                                    onClick={() =>
-                                        setCurrentlyDeletingItemId(item.id)
-                                    }
-                                >
-                                    {tc("delete")}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <DataTableActions
+                            itemId={item.id}
+                            handleUpdate={handleUpdate}
+                            setCurrentlyDeletingItemId={
+                                setCurrentlyDeletingItemId
+                            }
+                            currentlyProcessing={currentlyProcessing}
+                        />
                     );
                 },
             },
@@ -205,8 +201,8 @@ export const TransactionsList = ({
             <DataTable
                 columns={columns}
                 data={data}
-                pagination={pagination}
-                setPagination={setPagination}
+                searchKey="description"
+                {...dataTable}
             />
         </>
     );
