@@ -39,7 +39,7 @@ type Props<TData, TValue> = {
     setSorting?: OnChangeFn<SortingState>;
     columnFilters?: ColumnFiltersState;
     setColumnFilters?: OnChangeFn<ColumnFiltersState>;
-    searchKey?: string;
+    setOpenCreateSheet?: (open: boolean) => void;
 };
 
 export const DataTable = <TData, TValue>({
@@ -51,7 +51,7 @@ export const DataTable = <TData, TValue>({
     setSorting: setControlledSorting,
     columnFilters: controlledColumnFilters,
     setColumnFilters: setControlledColumnFilters,
-    searchKey,
+    setOpenCreateSheet,
 }: Props<TData, TValue>) => {
     const tc = useTranslations("Common");
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -102,7 +102,10 @@ export const DataTable = <TData, TValue>({
 
     return (
         <div className="flex flex-col gap-4">
-            <DataTableToolbar table={table} searchKey={searchKey} />
+            <DataTableToolbar
+                table={table}
+                setOpenCreateSheet={setOpenCreateSheet}
+            />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

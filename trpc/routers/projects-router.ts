@@ -23,8 +23,8 @@ const projection = {
     address: projects.address,
     meters: projects.meters,
     price: projects.price,
-    paid: sql<number>`COALESCE(SUM(${projectPayments.amount}), 0)`,
-    cost: sql<number>`COALESCE(SUM(${projectSupplies.unitPrice} * ${projectSupplies.quantity}) + SUM(${projectLabors.rate} * ${projectLabors.hours}) + SUM(${projectMisc.amount}), 0)`,
+    paid: sql<number>`SUM(COALESCE(${projectPayments.amount}, 0))`,
+    cost: sql<number>`SUM(COALESCE(${projectSupplies.unitPrice} * ${projectSupplies.quantity}, 0)) + SUM(COALESCE(${projectLabors.rate} * ${projectLabors.hours}, 0)) + SUM(COALESCE(${projectMisc.amount}, 0))`,
 } as const;
 
 export const projectsRouter = createTRPCRouter({

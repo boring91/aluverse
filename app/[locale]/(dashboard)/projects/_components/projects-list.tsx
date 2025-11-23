@@ -22,8 +22,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { CreateProject } from "./create-project";
-import { formatCurrency, getProjectStatus } from "@/lib/utils";
-import { cn } from "@/lib/client-utils";
+import { formatCurrency } from "@/lib/utils";
 import { ProjectStatusBadge } from "./project-status-badge";
 
 type Project =

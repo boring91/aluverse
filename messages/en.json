@@ -79,6 +79,11 @@
         "awaitingPayment": "Awaiting payment",
         "completed": "Completed",
         "remaining": "Remaining",
-        "profitMargin": "Profit margin"
+        "profitMargin": "Profit margin",
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "createNewSupply": "Create new supply",
+        "updateExistingSupply": "Update existing supply",
+        "supplies": "Supplies"
     }
 }

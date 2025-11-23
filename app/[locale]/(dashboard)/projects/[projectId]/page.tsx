@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { formatCurrency } from "@/lib/utils";
+import { SuppliesList } from "./_components/supplies-list";
 
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 
@@ -234,6 +235,8 @@ const Page = () => {
                 <BasicInfo project={data} />
 
                 <AccountingInfo project={data} />
+
+                <SuppliesList projectId={data.id} />
             </PageContainer>
         </>
     );

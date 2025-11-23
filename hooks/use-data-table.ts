@@ -11,6 +11,7 @@ type Props = {
 };
 
 export const useDataTable = ({ pageIndex = 0, pageSize = 20 }: Props = {}) => {
+    const [openCreateSheet, setOpenCreateSheet] = useState(false);
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex,
         pageSize,
@@ -19,6 +20,8 @@ export const useDataTable = ({ pageIndex = 0, pageSize = 20 }: Props = {}) => {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
     return {
+        openCreateSheet,
+        setOpenCreateSheet,
         pagination,
         setPagination,
         sorting,
