@@ -1,21 +1,42 @@
-import { db, transactions } from "@/db";
+import { db, projects, transactions } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
-import { count, desc, asc, eq, sql, ilike, and } from "drizzle-orm";
-import { createTransactionSchema } from "@/lib/trpc-schemas";
+import { count, desc, asc, eq, ilike, and, isNull } from "drizzle-orm";
+import {
+    consolidationSchema,
+    createTransactionSchema,
+} from "@/lib/trpc-schemas";
 import { listSchema } from "@/lib/util-schemas";
+
+const projection = {
+    id: transactions.id,
+    date: transactions.date,
+    amount: transactions.amount,
+    type: transactions.type,
+    description: transactions.description,
+    consolidationGroup: transactions.consolidationGroup,
+    budgetCategory: transactions.budgetCategory,
+    isGst: transactions.isGst,
+    project: {
+        id: projects.id,
+        title: projects.title,
+        humanId: projects.humanId,
+    },
+} as const;
 
 export const transactionsRouter = createTRPCRouter({
     list: protectedProcedure
         .input(
             listSchema.extend({
-                accountId: z.string(),
+                accountId: z.string().optional(),
             })
         )
         .query(async ({ input }) => {
             const { accountId, pagination, sorting, columnFilters } = input;
 
-            const filters = [eq(transactions.accountId, accountId)];
+            const filters = accountId
+                ? [eq(transactions.accountId, accountId)]
+                : [];
 
             if (columnFilters) {
                 for (const filter of columnFilters) {
@@ -54,14 +75,9 @@ export const transactionsRouter = createTRPCRouter({
 
             const { pageIndex, pageSize } = pagination;
             const items = await db
-                .select({
-                    id: transactions.id,
-                    date: transactions.date,
-                    amount: sql<number>`${transactions.amount}`,
-                    type: transactions.type,
-                    description: transactions.description,
-                })
+                .select(projection)
                 .from(transactions)
+                .leftJoin(projects, eq(projects.id, transactions.projectId))
                 .where(and(...filters))
                 .orderBy(...orderBy)
                 .offset(pageIndex * pageSize)
@@ -89,14 +105,9 @@ export const transactionsRouter = createTRPCRouter({
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
             const items = await db
-                .select({
-                    id: transactions.id,
-                    date: transactions.date,
-                    amount: sql<number>`${transactions.amount}`,
-                    type: transactions.type,
-                    description: transactions.description,
-                })
+                .select(projection)
                 .from(transactions)
+                .leftJoin(projects, eq(projects.id, transactions.projectId))
                 .where(eq(transactions.id, input.id))
                 .limit(1);
 
@@ -145,4 +156,30 @@ export const transactionsRouter = createTRPCRouter({
                 .where(eq(transactions.id, input.id))
                 .returning();
         }),
+
+    consolidate: protectedProcedure
+        .input(
+            consolidationSchema.safeExtend({
+                id: z.uuid(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { id, ...values } = input;
+            return await db
+                .update(transactions)
+                .set(values)
+                .where(eq(transactions.id, id))
+                .returning();
+        }),
+
+    statistics: protectedProcedure.query(async () => {
+        const statistics = await db
+            .select({
+                pendingConsolidationCount: count(),
+            })
+            .from(transactions)
+            .where(isNull(transactions.consolidationGroup));
+
+        return statistics[0];
+    }),
 });

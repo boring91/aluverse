@@ -1,4 +1,9 @@
-import { transactionTypes } from "@/lib/constants";
+import {
+    transactionBudgetCategories,
+    transactionConsolidationGroups,
+    transactionTypes,
+} from "@/lib/constants";
+import { sql } from "drizzle-orm";
 import {
     pgTable,
     text,
@@ -10,6 +15,7 @@ import {
     integer,
     pgEnum,
     doublePrecision,
+    check,
 } from "drizzle-orm/pg-core";
 
 // Better auth
@@ -85,25 +91,58 @@ export const financialAccounts = pgTable("financial_accounts", {
 });
 
 export const transactionType = pgEnum("transaction_type", transactionTypes);
-export const transactions = pgTable("transactions", {
-    id: uuid().primaryKey().defaultRandom(),
-    accountId: uuid()
-        .references(() => financialAccounts.id, {
-            onDelete: "cascade",
-        })
-        .notNull(),
-    date: date({ mode: "date" }).notNull(),
-    description: varchar({
-        length: 1024,
-    }).notNull(),
-    amount: integer().notNull(), // in cents
-    type: transactionType().notNull(),
-    createdAt: timestamp().notNull().defaultNow(),
-    updatedAt: timestamp()
-        .notNull()
-        .defaultNow()
-        .$onUpdate(() => new Date()),
-});
+
+export const transactionConsolidatedGroup = pgEnum(
+    "transaction_consolidation_group",
+    transactionConsolidationGroups
+);
+export const transactionBudgetCategory = pgEnum(
+    "transaction_budget_category",
+    transactionBudgetCategories
+);
+export const transactions = pgTable(
+    "transactions",
+    {
+        id: uuid().primaryKey().defaultRandom(),
+        accountId: uuid()
+            .references(() => financialAccounts.id, {
+                onDelete: "cascade",
+            })
+            .notNull(),
+        date: date({ mode: "date" }).notNull(),
+        description: varchar({
+            length: 1024,
+        }).notNull(),
+        amount: integer().notNull(), // in cents
+        type: transactionType().notNull(),
+        createdAt: timestamp().notNull().defaultNow(),
+        isGst: boolean(),
+        consolidationGroup: transactionConsolidatedGroup(),
+        budgetCategory: transactionBudgetCategory(),
+        projectId: uuid().references(() => projects.id, {
+            onDelete: "set null",
+        }),
+        updatedAt: timestamp()
+            .notNull()
+            .defaultNow()
+            .$onUpdate(() => new Date()),
+    },
+    table => {
+        return [
+            // ensure budget category is only set if consolidation group is budget
+            check(
+                "budget_category_check_constraint",
+                sql`${table.consolidationGroup} <> 'budget' OR ${table.budgetCategory} IS NOT NULL`
+            ),
+
+            // ensure project id is only set if consolidation group is project
+            check(
+                "project_id_check_constraint",
+                sql`${table.consolidationGroup} <> 'project' OR ${table.projectId} IS NOT NULL`
+            ),
+        ];
+    }
+);
 
 // Projects
 export const projects = pgTable("projects", {

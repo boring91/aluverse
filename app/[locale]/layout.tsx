@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { TRPCReactProvider } from "@/trpc/client";
-import { NextIntlClientProvider, useLocale } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
-import { DirectionProvider } from "@radix-ui/react-direction";
 import { getLocale } from "next-intl/server";
 import { Providers } from "./_components/providers";
-import { getDir } from '@/lib/utils';
+import { getDir } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 
 export const dynamic = "force-dynamic"; // no full-route cache

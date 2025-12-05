@@ -2,7 +2,6 @@
 
 import { Table } from "@tanstack/react-table";
 
-import { DataTableViewOptions } from "./data-table-view-options";
 import { Button } from "../ui/button";
 import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -13,7 +12,6 @@ type DataTableToolbarProps<TData> = {
 };
 
 export function DataTableToolbar<TData>({
-    table,
     setOpenCreateSheet,
 }: DataTableToolbarProps<TData>) {
     const tc = useTranslations("Common");
@@ -28,7 +26,6 @@ export function DataTableToolbar<TData>({
                         {tc("createNew")}
                     </Button>
                 )}
-                <DataTableViewOptions table={table} />
             </div>
         </div>
     );

@@ -107,7 +107,7 @@ export const projectsRouter = createTRPCRouter({
 
         const { pageIndex, pageSize } = pagination;
 
-        const items = await db
+        const query = db
             .select(projection)
             .from(projects)
             .leftJoin(paymentsSq, eq(paymentsSq.projectId, projects.id))
@@ -115,9 +115,11 @@ export const projectsRouter = createTRPCRouter({
             .leftJoin(laborsSq, eq(laborsSq.projectId, projects.id))
             .leftJoin(miscSq, eq(miscSq.projectId, projects.id))
             .groupBy(projects.id)
-            .orderBy(...orderBy)
-            .offset(pageIndex * pageSize)
-            .limit(pageSize);
+            .orderBy(...orderBy);
+
+        const items = await (pageSize === -1
+            ? query
+            : query.offset(pageIndex * pageSize).limit(pageSize));
 
         const { filteredCount } = (
             await db.select({ filteredCount: count() }).from(projects)

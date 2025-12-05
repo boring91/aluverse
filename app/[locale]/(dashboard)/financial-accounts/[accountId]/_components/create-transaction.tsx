@@ -80,8 +80,9 @@ export const CreateTransaction = ({
     );
 
     const onSuccess = () => {
+        queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
         queryClient.invalidateQueries(
-            trpc.transactions.list.queryOptions({ accountId })
+            trpc.transactions.statistics.queryOptions()
         );
         queryClient.invalidateQueries(
             trpc.financialAccounts.list.queryOptions()

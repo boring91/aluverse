@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { transactionTypes } from "./constants";
+import {
+    transactionBudgetCategories,
+    transactionConsolidationGroups,
+    transactionTypes,
+} from "./constants";
 
 // Financial
 export const createFinancialAccountSchema = z.object({
@@ -12,6 +16,63 @@ export const createTransactionSchema = z.object({
     amount: z.number().min(1),
     type: z.enum(transactionTypes),
 });
+
+export const consolidationSchema = z
+    .object({
+        consolidationGroup: z.enum(transactionConsolidationGroups),
+        budgetCategory: z.enum(transactionBudgetCategories).optional(),
+        projectId: z.uuid().optional(),
+        isGst: z.boolean(),
+    })
+    .superRefine(async (data, ctx) => {
+        if (data.consolidationGroup === "budget") {
+            if (!data.budgetCategory) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "CATEGORY_REQUIRED",
+                    },
+                    message: "CATEGORY_REQUIRED",
+                    path: ["budgetCategory"],
+                });
+            }
+
+            if (data.projectId) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "CANNOT_ASSOCIATE_PROJECT",
+                    },
+                    message: "CANNOT_ASSOCIATE_PROJECT",
+                    path: ["projectId"],
+                });
+            }
+        }
+
+        if (data.consolidationGroup === "project") {
+            if (!data.projectId) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "PROJECT_REQUIRED",
+                    },
+                    message: "PROJECT_REQUIRED",
+                    path: ["projectId"],
+                });
+            }
+
+            if (data.budgetCategory) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "CANNOT_ASSOCIATE_CATEGORY",
+                    },
+                    message: "CANNOT_ASSOCIATE_CATEGORY",
+                    path: ["budgetCategory"],
+                });
+            }
+        }
+    });
 
 // Projects
 export const createProjectSchema = z.object({
