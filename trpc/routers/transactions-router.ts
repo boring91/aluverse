@@ -66,11 +66,11 @@ export const transactionsRouter = createTRPCRouter({
                             orderBy.push(direction(transactions.amount));
                             break;
                         default:
-                            orderBy.push(desc(transactions.createdAt));
+                            orderBy.push(desc(transactions.date));
                     }
                 });
             } else {
-                orderBy.push(desc(transactions.createdAt));
+                orderBy.push(desc(transactions.date));
             }
 
             const { pageIndex, pageSize } = pagination;
