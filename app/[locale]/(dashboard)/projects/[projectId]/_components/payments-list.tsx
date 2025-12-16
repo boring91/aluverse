@@ -1,11 +1,9 @@
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import {
     DataTableColumnHeader,
     DataTableActions,
     DataTable,
 } from "@/components/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
-import { useRowActionState } from "@/hooks/use-row-action-state";
 import { useTRPC } from "@/trpc/client";
 import { AppRouter } from "@/trpc/routers/_app";
 import {
@@ -17,30 +15,95 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreatePayment } from "./create-payment";
 import { formatCurrency } from "@/lib/utils";
+import { useConfirm } from "@/lib/confirm-context";
 
 type ProjectPayment =
     inferRouterOutputs<AppRouter>["projectPayments"]["list"]["items"][number];
+
+const useColumns = (
+    handleUpdate: (itemId: string) => void,
+    handleDelete: (itemId: string) => void,
+    currentlyProcessing: Set<string>
+) => {
+    const t = useTranslations("Projects");
+    const tc = useTranslations("Common");
+
+    return useMemo<ColumnDef<ProjectPayment>[]>(() => {
+        return [
+            {
+                id: "date",
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title={tc("name")} />
+                ),
+                cell: ({ row }) => {
+                    const item = row.original;
+                    return <p>{item.date.toDateString()}</p>;
+                },
+            },
+
+            {
+                id: "amount",
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t("amount")}
+                    />
+                ),
+                cell: ({ row }) => {
+                    const item = row.original;
+                    return (
+                        <p className="font-mono">
+                            {formatCurrency(item.amount)}
+                        </p>
+                    );
+                },
+            },
+
+            {
+                id: "actions",
+                cell: ({ row }) => {
+                    const item = row.original;
+                    return (
+                        <DataTableActions
+                            itemId={item.id}
+                            handleUpdate={handleUpdate}
+                            handleDelete={handleDelete}
+                            currentlyProcessing={currentlyProcessing}
+                        />
+                    );
+                },
+            },
+        ];
+    }, [t, tc, currentlyProcessing, handleDelete, handleUpdate]);
+};
 
 type Props = {
     projectId: string;
 };
 
 export const PaymentsList = ({ projectId }: Props) => {
-    const t = useTranslations("Projects");
     const tc = useTranslations("Common");
+    const { confirm } = useConfirm();
 
-    const {
-        currentlyUpdatingItemId,
-        setCurrentlyUpdatingItemId,
-        currentlyDeletingItemId,
-        setCurrentlyDeletingItemId,
-        currentlyProcessing,
-        setCurrentlyProcessing,
-    } = useRowActionState();
+    const [itemId, setItemId] = useState<string | null>(null);
+    const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
+        new Set()
+    );
+
+    const handleDelete = (itemId: string) => {
+        confirm({
+            title: tc("delete"),
+            description: tc("areYouSureYouWantToDeleteThisItem"),
+            onConfirm: () => {
+                setCurrentlyProcessing(set => new Set(set.add(itemId)));
+                deleteMutation.mutate({ id: itemId });
+            },
+        });
+    };
 
     const dataTable = useDataTable({
         pageSize: 100,
@@ -63,7 +126,7 @@ export const PaymentsList = ({ projectId }: Props) => {
         )
     );
 
-    const deletionMutation = useMutation(
+    const deleteMutation = useMutation(
         trpc.projectPayments.delete.mutationOptions({
             onSuccess: data => {
                 const id = data[0].id;
@@ -94,89 +157,23 @@ export const PaymentsList = ({ projectId }: Props) => {
         })
     );
 
-    const handleUpdate = useCallback(
-        (itemId: string) => {
-            setCurrentlyUpdatingItemId(itemId);
-            dataTable.setOpenCreateSheet(true);
-        },
-        [dataTable, setCurrentlyUpdatingItemId]
-    );
-
-    const handleDelete = () => {
-        if (!currentlyDeletingItemId) return;
-        deletionMutation.mutate({ id: currentlyDeletingItemId });
-        setCurrentlyDeletingItemId(undefined);
-    };
-
-    const columns = useMemo<ColumnDef<ProjectPayment>[]>(() => {
-        return [
-            {
-                id: "date",
-                header: ({ column }) => (
-                    <DataTableColumnHeader column={column} title={tc("name")} />
-                ),
-                cell: ({ row }) => {
-                    const item = row.original;
-                    return <p>{item.date.toDateString()}</p>;
-                },
-            },
-
-            {
-                id: "amount",
-                header: ({ column }) => (
-                    <DataTableColumnHeader column={column} title={t("amount")} />
-                ),
-                cell: ({ row }) => {
-                    const item = row.original;
-                    return (
-                        <p className="font-mono">
-                            {formatCurrency(item.amount)}
-                        </p>
-                    );
-                },
-            },
-
-            {
-                id: "actions",
-                cell: ({ row }) => {
-                    const item = row.original;
-                    return (
-                        <DataTableActions
-                            itemId={item.id}
-                            handleUpdate={handleUpdate}
-                            setCurrentlyDeletingItemId={
-                                setCurrentlyDeletingItemId
-                            }
-                            currentlyProcessing={currentlyProcessing}
-                        />
-                    );
-                },
-            },
-        ];
-    }, [t, tc, currentlyProcessing, setCurrentlyDeletingItemId, handleUpdate]);
+    const columns = useColumns(setItemId, handleDelete, currentlyProcessing);
 
     return (
         <>
-            <ConfirmDialog
-                title={tc("delete")}
-                description={tc("areYouSureYouWantToDeleteThisItem")}
-                open={!!currentlyDeletingItemId}
-                onOpenChange={() => setCurrentlyDeletingItemId(undefined)}
-                onConfirm={handleDelete}
-            />
             <CreatePayment
                 projectId={projectId}
-                open={dataTable.openCreateSheet}
+                open={dataTable.openCreateSheet || !!itemId}
                 onOpenChange={value => {
                     if (value) {
                         dataTable.setOpenCreateSheet(true);
                         return;
                     }
 
-                    setCurrentlyUpdatingItemId(undefined);
+                    setItemId(null);
                     dataTable.setOpenCreateSheet(false);
                 }}
-                itemId={currentlyUpdatingItemId}
+                itemId={itemId}
             />
             <DataTable columns={columns} data={data} {...dataTable} />
         </>

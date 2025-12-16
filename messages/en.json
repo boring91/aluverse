@@ -36,7 +36,8 @@
         "asc": "Asc",
         "desc": "Desc",
         "hide": "Hide",
-        "dates": "Dates"
+        "dates": "Dates",
+        "itemNotFound": "Item not found"
     },
     "Login": {
         "pageTitle": "Login",

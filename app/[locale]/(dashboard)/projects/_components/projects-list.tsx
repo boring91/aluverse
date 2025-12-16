@@ -1,46 +1,43 @@
 "use client";
 
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import {
-    DataTable,
-    DataTableActions,
-    DataTableColumnHeader,
-} from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
-import { useRowActionState } from "@/hooks/use-row-action-state";
 import { useTRPC } from "@/trpc/client";
-import { AppRouter } from "@/trpc/routers/_app";
 import {
     useQueryClient,
     useQuery,
     keepPreviousData,
     useMutation,
 } from "@tanstack/react-query";
-import { ColumnDef } from "@tanstack/react-table";
-import { inferRouterOutputs } from "@trpc/server";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CreateProject } from "./create-project";
-import { formatCurrency } from "@/lib/utils";
-import { ProjectStatusBadge } from "./project-status-badge";
-import { cn } from "@/lib/client-utils";
-
-type Project =
-    inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
+import { useConfirm } from "@/lib/confirm-context";
+import { useQueryState, parseAsString } from "nuqs";
+import { useProjectsColumns } from "../_hooks/use-projects-columns";
 
 export const ProjectsList = () => {
-    const t = useTranslations("Projects");
     const tc = useTranslations("Common");
 
-    const {
-        currentlyUpdatingItemId,
-        setCurrentlyUpdatingItemId,
-        currentlyDeletingItemId,
-        setCurrentlyDeletingItemId,
-        currentlyProcessing,
-        setCurrentlyProcessing,
-    } = useRowActionState();
+    const { confirm } = useConfirm();
+
+    const [itemId, setItemId] = useQueryState("itemId", parseAsString);
+
+    const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
+        new Set()
+    );
+
+    const handleDelete = (itemId: string) => {
+        confirm({
+            title: tc("delete"),
+            description: tc("areYouSureYouWantToDeleteThisItem"),
+            onConfirm: () => {
+                setCurrentlyProcessing(set => new Set(set.add(itemId)));
+                deleteMutation.mutate({ id: itemId });
+            },
+        });
+    };
 
     const dataTable = useDataTable({
         pageSize: 100,
@@ -86,209 +83,26 @@ export const ProjectsList = () => {
         })
     );
 
-    const handleUpdate = useCallback(
-        (itemId: string) => {
-            setCurrentlyUpdatingItemId(itemId);
-            dataTable.setOpenCreateSheet(true);
-        },
-        [dataTable, setCurrentlyUpdatingItemId]
+    const columns = useProjectsColumns(
+        setItemId,
+        handleDelete,
+        currentlyProcessing
     );
-
-    const handleDelete = () => {
-        if (!currentlyDeletingItemId) return;
-        deleteMutation.mutate({ id: currentlyDeletingItemId });
-        setCurrentlyDeletingItemId(undefined);
-    };
-
-    const columns = useMemo<ColumnDef<Project>[]>(() => {
-        return [
-            {
-                id: "details",
-                header: ({ column }) => (
-                    <DataTableColumnHeader
-                        column={column}
-                        title={tc("details")}
-                    />
-                ),
-                cell: ({ row }) => {
-                    const project = row.original;
-                    return (
-                        <div className="flex flex-col gap-1">
-                            <p>
-                                <span className="font-mono">
-                                    {project.humanId}
-                                </span>
-                                <span> - {project.title}</span>
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                                {project.client}
-                            </p>
-                        </div>
-                    );
-                },
-            },
-
-            {
-                id: "dates",
-                header: ({ column }) => (
-                    <DataTableColumnHeader
-                        column={column}
-                        title={tc("dates")}
-                    />
-                ),
-                cell: ({ row }) => {
-                    const project = row.original;
-                    return (
-                        <div className="flex flex-col gap-1">
-                            <p>{project.visitDate?.toDateString()}</p>
-                            <p className="text-muted-foreground text-xs">
-                                {project.startDate?.toDateString()} -{" "}
-                                {project.endDate?.toDateString()}
-                            </p>
-                        </div>
-                    );
-                },
-            },
-
-            {
-                id: "price",
-                header: ({ column }) => (
-                    <DataTableColumnHeader column={column} title={t("price")} />
-                ),
-                cell: ({ row }) => {
-                    const project = row.original;
-                    return (
-                        <div className="flex flex-col gap-1">
-                            {/* Total price */}
-                            <p className="font-mono">
-                                {formatCurrency(project.price)}
-                            </p>
-
-                            {/* Paid */}
-                            <p className="text-muted-foreground text-xs">
-                                <span>{t("paid")}: </span>
-                                <span className="font-mono">
-                                    {formatCurrency(project.paid)}
-                                </span>
-                            </p>
-                        </div>
-                    );
-                },
-            },
-
-            {
-                id: "cost",
-                header: ({ column }) => (
-                    <DataTableColumnHeader
-                        column={column}
-                        title={t("profitAndCost")}
-                    />
-                ),
-                cell: ({ row }) => {
-                    const project = row.original;
-                    return (
-                        <div className="flex flex-col gap-1">
-                            {/* Profit */}
-                            <p
-                                className={cn(
-                                    "items-center flex gap-1 text-emerald-500",
-                                    {
-                                        "text-rose-500":
-                                            project.price - project.cost < 0,
-                                    }
-                                )}
-                            >
-                                {/* Cash */}
-                                <span className="font-mono">
-                                    {formatCurrency(
-                                        project.price - project.cost
-                                    )}
-                                </span>
-                                {/* Percentage */}
-                                <span
-                                    className={cn(
-                                        "text-xs text-emerald-500/70",
-                                        {
-                                            "text-rose-500/70":
-                                                project.price - project.cost <
-                                                0,
-                                        }
-                                    )}
-                                >
-                                    (
-                                    {Math.round(
-                                        ((project.price - project.cost) /
-                                            project.price) *
-                                            100
-                                    )}
-                                    %)
-                                </span>
-                            </p>
-
-                            {/* Cost */}
-                            <p className="font-mono text-rose-500">
-                                <span>{formatCurrency(project.cost)}</span>
-                            </p>
-                        </div>
-                    );
-                },
-            },
-
-            {
-                id: "status",
-                header: ({ column }) => (
-                    <DataTableColumnHeader
-                        column={column}
-                        title={t("status")}
-                    />
-                ),
-                cell: ({ row }) => {
-                    const project = row.original;
-                    return <ProjectStatusBadge project={project} />;
-                },
-            },
-
-            {
-                id: "actions",
-                cell: ({ row }) => {
-                    const item = row.original;
-                    return (
-                        <DataTableActions
-                            itemId={item.id}
-                            handleUpdate={handleUpdate}
-                            setCurrentlyDeletingItemId={
-                                setCurrentlyDeletingItemId
-                            }
-                            currentlyProcessing={currentlyProcessing}
-                            detailsLink={`/projects/${item.id}`}
-                        />
-                    );
-                },
-            },
-        ];
-    }, [t, tc, currentlyProcessing, setCurrentlyDeletingItemId, handleUpdate]);
 
     return (
         <>
-            <ConfirmDialog
-                title={tc("delete")}
-                description={tc("areYouSureYouWantToDeleteThisItem")}
-                open={!!currentlyDeletingItemId}
-                onOpenChange={() => setCurrentlyDeletingItemId(undefined)}
-                onConfirm={handleDelete}
-            />
             <CreateProject
-                open={dataTable.openCreateSheet}
+                open={dataTable.openCreateSheet || !!itemId}
                 onOpenChange={value => {
                     if (value) {
                         dataTable.setOpenCreateSheet(true);
                         return;
                     }
 
-                    setCurrentlyUpdatingItemId(undefined);
+                    setItemId(null);
                     dataTable.setOpenCreateSheet(false);
                 }}
-                itemId={currentlyUpdatingItemId}
+                itemId={itemId}
             />
             <DataTable columns={columns} data={data} {...dataTable} />
         </>

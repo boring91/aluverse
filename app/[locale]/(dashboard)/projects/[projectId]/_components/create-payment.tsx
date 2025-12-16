@@ -33,7 +33,7 @@ type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     projectId: string;
-    itemId?: string;
+    itemId: string | null;
 };
 
 export const CreatePayment = ({

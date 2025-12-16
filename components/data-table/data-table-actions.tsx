@@ -14,7 +14,7 @@ import { Link } from "@/i18n/navigation";
 type Props = {
     itemId: string;
     handleUpdate: (itemId: string) => void;
-    setCurrentlyDeletingItemId: (itemId: string) => void;
+    handleDelete: (itemId: string) => void;
     currentlyProcessing: Set<string>;
     detailsLink?: string;
 };
@@ -22,7 +22,7 @@ type Props = {
 export const DataTableActions = ({
     itemId,
     handleUpdate,
-    setCurrentlyDeletingItemId,
+    handleDelete,
     currentlyProcessing,
     detailsLink,
 }: Props) => {
@@ -57,7 +57,7 @@ export const DataTableActions = ({
                     <DropdownMenuItem
                         variant="destructive"
                         disabled={currentlyProcessing.has(itemId)}
-                        onClick={() => setCurrentlyDeletingItemId(itemId)}
+                        onClick={() => handleDelete(itemId)}
                     >
                         {tc("delete")}
                     </DropdownMenuItem>

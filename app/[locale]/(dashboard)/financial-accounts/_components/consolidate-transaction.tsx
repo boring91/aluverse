@@ -22,27 +22,24 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { fillForm } from "@/lib/client-utils";
 import {
     transactionBudgetCategories,
     transactionConsolidationGroups,
 } from "@/lib/constants";
 import { consolidationSchema } from "@/lib/trpc-schemas";
 import { useTRPC } from "@/trpc/client";
-import { AppRouter } from "@/trpc/routers/_app";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { inferRouterOutputs } from "@trpc/server";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-type Transaction =
-    inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
-
 type Props = {
-    transaction: Transaction;
+    transactionId: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
@@ -50,7 +47,7 @@ type Props = {
 type SchemaType = z.infer<typeof consolidationSchema>;
 
 export const ConsolidateTransaction = ({
-    transaction,
+    transactionId,
     open,
     onOpenChange,
 }: Props) => {
@@ -60,11 +57,20 @@ export const ConsolidateTransaction = ({
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
+    const { data: transaction } = useQuery(
+        trpc.transactions.get.queryOptions({
+            id: transactionId,
+        })
+    );
+
     const consolidateMutation = useMutation(
         trpc.transactions.consolidate.mutationOptions({
             onSuccess: () => {
                 queryClient.invalidateQueries(
                     trpc.transactions.list.queryOptions({})
+                );
+                queryClient.invalidateQueries(
+                    trpc.transactions.get.queryOptions({ id: transactionId })
                 );
                 queryClient.invalidateQueries(
                     trpc.transactions.statistics.queryOptions()
@@ -81,10 +87,10 @@ export const ConsolidateTransaction = ({
     const form = useForm<SchemaType>({
         resolver: zodResolver(consolidationSchema),
         defaultValues: {
-            budgetCategory: transaction.budgetCategory ?? undefined,
-            consolidationGroup: transaction.consolidationGroup ?? undefined,
-            projectId: transaction.project?.id ?? undefined,
-            isGst: transaction.isGst ?? true,
+            budgetCategory: undefined,
+            consolidationGroup: undefined,
+            projectId: undefined,
+            isGst: true,
         },
     });
 
@@ -92,6 +98,7 @@ export const ConsolidateTransaction = ({
     const selectedGroup = form.watch("consolidationGroup");
 
     const handleSubmit = (values: SchemaType) => {
+        if (!transaction) return;
         consolidateMutation.mutate({ id: transaction.id, ...values });
     };
 
@@ -100,6 +107,16 @@ export const ConsolidateTransaction = ({
             pagination: { pageSize: -1, pageIndex: 0 },
         })
     );
+
+    useEffect(() => {
+        if (!transaction) return;
+
+        fillForm(form, {
+            ...transaction,
+            isGst: transaction.isGst ?? true,
+            projectId: transaction.project?.id,
+        });
+    }, [transaction, form]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -294,7 +311,7 @@ export const ConsolidateTransaction = ({
                                     <Field orientation="horizontal">
                                         <Checkbox
                                             id="gst-checkbox"
-                                            checked={field.value}
+                                            checked={field.value ?? false}
                                             onCheckedChange={field.onChange}
                                         />
 

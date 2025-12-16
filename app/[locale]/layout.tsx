@@ -8,6 +8,7 @@ import { getLocale } from "next-intl/server";
 import { Providers } from "./_components/providers";
 import { getDir } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 export const dynamic = "force-dynamic"; // no full-route cache
 export const revalidate = 0; // no ISR
@@ -42,21 +43,23 @@ const RootLayout = async ({
                 dir={dir}
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-                <TRPCReactProvider>
-                    <NextIntlClientProvider>
-                        <ThemeProvider
-                            attribute="class"
-                            enableSystem
-                            defaultTheme="system"
-                            disableTransitionOnChange
-                        >
-                            <Providers>
-                                <Toaster />
-                                {children}
-                            </Providers>
-                        </ThemeProvider>
-                    </NextIntlClientProvider>
-                </TRPCReactProvider>
+                <NuqsAdapter>
+                    <TRPCReactProvider>
+                        <NextIntlClientProvider>
+                            <ThemeProvider
+                                attribute="class"
+                                enableSystem
+                                defaultTheme="system"
+                                disableTransitionOnChange
+                            >
+                                <Providers>
+                                    <Toaster />
+                                    {children}
+                                </Providers>
+                            </ThemeProvider>
+                        </NextIntlClientProvider>
+                    </TRPCReactProvider>
+                </NuqsAdapter>
             </body>
         </html>
     );

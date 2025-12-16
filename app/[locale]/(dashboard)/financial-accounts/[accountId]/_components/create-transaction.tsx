@@ -44,7 +44,7 @@ type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     accountId: string;
-    itemId?: string;
+    itemId?: string | null;
 };
 
 export const CreateTransaction = ({

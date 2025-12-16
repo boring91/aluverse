@@ -7,6 +7,8 @@ import {
     createTransactionSchema,
 } from "@/lib/trpc-schemas";
 import { listSchema } from "@/lib/util-schemas";
+import { TRPCError } from "@trpc/server";
+import { getTranslations } from "next-intl/server";
 
 const projection = {
     id: transactions.id,
@@ -182,4 +184,74 @@ export const transactionsRouter = createTRPCRouter({
 
         return statistics[0];
     }),
+
+    split: protectedProcedure
+        .input(
+            z
+                .object({
+                    id: z.uuid(),
+                    amounts: z.array(z.number()),
+                })
+                .transform(v => ({
+                    ...v,
+                    amounts: v.amounts.map(a => a * 100),
+                }))
+                .superRefine(async (data, ctx) => {
+                    const transaction = (
+                        await db
+                            .select({ amount: transactions.amount })
+                            .from(transactions)
+                            .where(eq(transactions.id, data.id))
+                            .limit(1)
+                    )[0];
+
+                    if (!transaction) return;
+
+                    const total = data.amounts.reduce((a, b) => a + b, 0);
+
+                    if (total !== transaction.amount) {
+                        ctx.addIssue({
+                            code: "custom",
+                            params: {
+                                code: "AMOUNTS_DO_NOT_ADD_UP",
+                            },
+                            message: "AMOUNTS_DO_NOT_ADD_UP",
+                            path: ["amounts"],
+                        });
+                    }
+                })
+        )
+        .mutation(async ({ input }) => {
+            const { id, amounts } = input;
+
+            const transaction = (
+                await db
+                    .select()
+                    .from(transactions)
+                    .where(eq(transactions.id, id))
+                    .limit(1)
+            )[0];
+
+            const tc = await getTranslations("Common");
+
+            if (!transaction) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: tc("itemNotFound"),
+                });
+            }
+
+            const newTransactions = amounts.map(amount => ({
+                accountId: transaction.accountId,
+                date: transaction.date,
+                description: transaction.description,
+                amount,
+                type: transaction.type,
+            }));
+
+            await db.transaction(async tx => {
+                await tx.delete(transactions).where(eq(transactions.id, id));
+                await tx.insert(transactions).values(newTransactions);
+            });
+        }),
 });

@@ -24,7 +24,7 @@ export const consolidationSchema = z
         projectId: z.uuid().optional(),
         isGst: z.boolean(),
     })
-    .superRefine(async (data, ctx) => {
+    .superRefine((data, ctx) => {
         if (data.consolidationGroup === "budget") {
             if (!data.budgetCategory) {
                 ctx.addIssue({

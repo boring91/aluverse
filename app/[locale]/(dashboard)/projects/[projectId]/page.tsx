@@ -247,7 +247,7 @@ const Page = () => {
             <CreateProject
                 open={openCreateSheet}
                 onOpenChange={setOpenCreateSheet}
-                itemId={openCreateSheet ? data.id : undefined}
+                itemId={data.id}
             />
             <PageContainer>
                 <div className="flex items-center gap-4">

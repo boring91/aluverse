@@ -34,7 +34,7 @@ type SchemaType = z.infer<typeof createProjectSchema>;
 type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    itemId?: string;
+    itemId: string | null;
 };
 
 export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
