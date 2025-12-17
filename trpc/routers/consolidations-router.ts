@@ -139,4 +139,75 @@ export const consolidationsRouter = createTRPCRouter({
 
         return statistics[0];
     }),
+
+    resplit: protectedProcedure
+        .input(
+            z
+                .object({
+                    transactionId: z.uuid(),
+                    splits: z.array(
+                        z.object({
+                            description: z.string().min(1),
+                            amount: z.number().min(0.01),
+                        })
+                    ),
+                })
+                .transform(v => ({
+                    ...v,
+                    splits: v.splits.map(split => ({
+                        ...split,
+                        amount: split.amount * 100,
+                    })),
+                }))
+                .superRefine(async (data, ctx) => {
+                    if (data.splits.some(x => x.amount <= 0)) {
+                        ctx.addIssue({
+                            code: "custom",
+                            params: {
+                                code: "AMOUNTS_MUST_BE_GREATER_THAN_ZERO",
+                            },
+                            message: "AMOUNTS_MUST_BE_GREATER_THAN_ZERO",
+                            path: ["splits"],
+                        });
+                    }
+
+                    const { amount } = (
+                        await db
+                            .select({ amount: transactions.amount })
+                            .from(transactions)
+                            .where(eq(transactions.id, data.transactionId))
+                            .limit(1)
+                    )[0];
+
+                    if (
+                        data.splits.reduce((a, b) => a + b.amount, 0) !== amount
+                    ) {
+                        ctx.addIssue({
+                            code: "custom",
+                            params: {
+                                code: "AMOUNTS_MUST_ADD_UP_TO_TRANSACTION_AMOUNT",
+                            },
+                            message:
+                                "AMOUNTS_MUST_ADD_UP_TO_TRANSACTION_AMOUNT",
+                            path: ["splits"],
+                        });
+                    }
+                })
+        )
+        .mutation(async ({ input }) => {
+            const { transactionId, splits } = input;
+
+            await db
+                .delete(consolidations)
+                .where(eq(consolidations.transactionId, transactionId));
+
+            await db.insert(consolidations).values(
+                splits.map(split => ({
+                    transactionId,
+                    description: split.description,
+                    amount: split.amount,
+                    isGst: true,
+                }))
+            );
+        }),
 });

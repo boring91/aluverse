@@ -5,7 +5,7 @@ import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import { CheckIcon, XIcon, ChartPie } from "lucide-react";
+import { CheckIcon, XIcon, ChartPie, SplitIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
@@ -135,13 +135,19 @@ export const useConsolidationsColumns = (
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleConsolidate(item.id)}
-                        >
-                            <ChartPie />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleConsolidate(item.id)}
+                            >
+                                <ChartPie />
+                            </Button>
+
+                            <Button size="icon" variant="ghost">
+                                <SplitIcon />
+                            </Button>
+                        </div>
                     );
                 },
             },

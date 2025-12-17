@@ -120,6 +120,7 @@ export const transactionsRouter = createTRPCRouter({
             // Create a consolidation for it
             await db.insert(consolidations).values({
                 transactionId: transaction.id,
+                description: transaction.description,
                 amount: transaction.amount,
                 isGst: true,
             });
@@ -153,6 +154,7 @@ export const transactionsRouter = createTRPCRouter({
                 .where(eq(consolidations.transactionId, transaction.id));
             await db.insert(consolidations).values({
                 transactionId: transaction.id,
+                description: transaction.description,
                 amount: transaction.amount,
                 isGst: true,
             });

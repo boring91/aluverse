@@ -45,7 +45,12 @@ export const ConsolidationsList = () => {
                     }}
                 />
             )}
-            <DataTable columns={columns} data={data} {...dataTable} />
+            <DataTable
+                columns={columns}
+                data={data}
+                {...dataTable}
+                setOpenCreateSheet={undefined}
+            />
         </>
     );
 };

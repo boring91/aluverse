@@ -128,6 +128,7 @@ export const consolidations = pgTable(
         transactionId: uuid()
             .references(() => transactions.id, { onDelete: "cascade" })
             .notNull(),
+        description: varchar({ length: 1024 }),
         amount: integer().notNull(),
         isGst: boolean().notNull(),
         consolidationGroup: transactionConsolidatedGroup(),
