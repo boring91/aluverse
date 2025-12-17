@@ -11,25 +11,19 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { CreateTransaction } from "../[accountId]/_components/create-transaction";
 import { DataTable } from "@/components/data-table";
-import { ConsolidateTransaction } from "./consolidate-transaction";
 import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
 import { useTransactionsColumns } from "../_hooks/use-transactions-columns";
 
 type Props = {
-    accountId?: string;
-    mode: "account" | "consolidation";
+    accountId: string;
 };
 
-export const TransactionsList = ({ accountId, mode = "account" }: Props) => {
+export const TransactionsList = ({ accountId }: Props) => {
     const tc = useTranslations("Common");
     const { confirm } = useConfirm();
 
     const [itemId, setItemId] = useQueryState("itemId", parseAsString);
-    const [consolidateId, setConsolidateId] = useQueryState(
-        "consolidateId",
-        parseAsString
-    );
     const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
         new Set()
     );
@@ -97,10 +91,8 @@ export const TransactionsList = ({ accountId, mode = "account" }: Props) => {
     );
 
     const columns = useTransactionsColumns(
-        mode,
         setItemId,
         handleDelete,
-        setConsolidateId,
         currentlyProcessing
     );
 
@@ -123,24 +115,11 @@ export const TransactionsList = ({ accountId, mode = "account" }: Props) => {
                 />
             )}
 
-            {mode === "consolidation" && consolidateId && (
-                <ConsolidateTransaction
-                    transactionId={consolidateId}
-                    open={!!consolidateId}
-                    onOpenChange={open => {
-                        if (!open) {
-                            setConsolidateId(null);
-                        }
-                    }}
-                />
-            )}
             <DataTable
                 columns={columns}
                 data={data}
                 {...dataTable}
-                setOpenCreateSheet={
-                    mode === "account" ? setOpenCreateSheet : undefined
-                }
+                setOpenCreateSheet={setOpenCreateSheet}
             />
         </>
     );

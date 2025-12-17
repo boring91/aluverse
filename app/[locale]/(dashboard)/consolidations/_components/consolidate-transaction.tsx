@@ -39,7 +39,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 type Props = {
-    transactionId: string;
+    consolidationId: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
@@ -47,7 +47,7 @@ type Props = {
 type SchemaType = z.infer<typeof consolidationSchema>;
 
 export const ConsolidateTransaction = ({
-    transactionId,
+    consolidationId,
     open,
     onOpenChange,
 }: Props) => {
@@ -57,23 +57,25 @@ export const ConsolidateTransaction = ({
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
-    const { data: transaction } = useQuery(
-        trpc.transactions.get.queryOptions({
-            id: transactionId,
+    const { data: consolidation } = useQuery(
+        trpc.consolidations.get.queryOptions({
+            id: consolidationId,
         })
     );
 
     const consolidateMutation = useMutation(
-        trpc.transactions.consolidate.mutationOptions({
+        trpc.consolidations.update.mutationOptions({
             onSuccess: () => {
                 queryClient.invalidateQueries(
-                    trpc.transactions.list.queryOptions({})
+                    trpc.consolidations.list.queryOptions({})
                 );
                 queryClient.invalidateQueries(
-                    trpc.transactions.get.queryOptions({ id: transactionId })
+                    trpc.consolidations.get.queryOptions({
+                        id: consolidationId,
+                    })
                 );
                 queryClient.invalidateQueries(
-                    trpc.transactions.statistics.queryOptions()
+                    trpc.consolidations.statistics.queryOptions()
                 );
                 onOpenChange(false);
                 toast.success(tc("savedSuccessfully"));
@@ -98,8 +100,8 @@ export const ConsolidateTransaction = ({
     const selectedGroup = form.watch("consolidationGroup");
 
     const handleSubmit = (values: SchemaType) => {
-        if (!transaction) return;
-        consolidateMutation.mutate({ id: transaction.id, ...values });
+        if (!consolidation) return;
+        consolidateMutation.mutate({ id: consolidation.id, ...values });
     };
 
     const { data: projects } = useQuery(
@@ -109,14 +111,14 @@ export const ConsolidateTransaction = ({
     );
 
     useEffect(() => {
-        if (!transaction) return;
+        if (!consolidation) return;
 
         fillForm(form, {
-            ...transaction,
-            isGst: transaction.isGst ?? true,
-            projectId: transaction.project?.id,
+            ...consolidation,
+            isGst: consolidation.isGst ?? true,
+            projectId: consolidation.project?.id,
         });
-    }, [transaction, form]);
+    }, [consolidation, form]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

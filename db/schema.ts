@@ -92,36 +92,50 @@ export const financialAccounts = pgTable("financial_accounts", {
 
 export const transactionType = pgEnum("transaction_type", transactionTypes);
 
+export const transactions = pgTable("transactions", {
+    id: uuid().primaryKey().defaultRandom(),
+    accountId: uuid()
+        .references(() => financialAccounts.id, {
+            onDelete: "cascade",
+        })
+        .notNull(),
+    date: date({ mode: "date" }).notNull(),
+    description: varchar({
+        length: 1024,
+    }).notNull(),
+    amount: integer().notNull(), // in cents
+    type: transactionType().notNull(),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
+});
+
 export const transactionConsolidatedGroup = pgEnum(
-    "transaction_consolidation_group",
+    "consolidation_group",
     transactionConsolidationGroups
 );
 export const transactionBudgetCategory = pgEnum(
-    "transaction_budget_category",
+    "consolidation_budget_category",
     transactionBudgetCategories
 );
-export const transactions = pgTable(
-    "transactions",
+
+export const consolidations = pgTable(
+    "consolidations",
     {
         id: uuid().primaryKey().defaultRandom(),
-        accountId: uuid()
-            .references(() => financialAccounts.id, {
-                onDelete: "cascade",
-            })
+        transactionId: uuid()
+            .references(() => transactions.id, { onDelete: "cascade" })
             .notNull(),
-        date: date({ mode: "date" }).notNull(),
-        description: varchar({
-            length: 1024,
-        }).notNull(),
-        amount: integer().notNull(), // in cents
-        type: transactionType().notNull(),
-        createdAt: timestamp().notNull().defaultNow(),
-        isGst: boolean(),
+        amount: integer().notNull(),
+        isGst: boolean().notNull(),
         consolidationGroup: transactionConsolidatedGroup(),
         budgetCategory: transactionBudgetCategory(),
         projectId: uuid().references(() => projects.id, {
             onDelete: "set null",
         }),
+        createdAt: timestamp().notNull().defaultNow(),
         updatedAt: timestamp()
             .notNull()
             .defaultNow()

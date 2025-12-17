@@ -1,14 +1,9 @@
-import { db, projects, transactions } from "@/db";
+import { consolidations, db, transactions } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
-import { count, desc, asc, eq, ilike, and, isNull } from "drizzle-orm";
-import {
-    consolidationSchema,
-    createTransactionSchema,
-} from "@/lib/trpc-schemas";
+import { count, desc, asc, eq, ilike, and } from "drizzle-orm";
+import { createTransactionSchema } from "@/lib/trpc-schemas";
 import { listSchema } from "@/lib/util-schemas";
-import { TRPCError } from "@trpc/server";
-import { getTranslations } from "next-intl/server";
 
 const projection = {
     id: transactions.id,
@@ -16,14 +11,6 @@ const projection = {
     amount: transactions.amount,
     type: transactions.type,
     description: transactions.description,
-    consolidationGroup: transactions.consolidationGroup,
-    budgetCategory: transactions.budgetCategory,
-    isGst: transactions.isGst,
-    project: {
-        id: projects.id,
-        title: projects.title,
-        humanId: projects.humanId,
-    },
 } as const;
 
 export const transactionsRouter = createTRPCRouter({
@@ -79,19 +66,18 @@ export const transactionsRouter = createTRPCRouter({
             const items = await db
                 .select(projection)
                 .from(transactions)
-                .leftJoin(projects, eq(projects.id, transactions.projectId))
                 .where(and(...filters))
                 .orderBy(...orderBy)
                 .offset(pageIndex * pageSize)
                 .limit(pageSize);
 
-            const { filteredCount } = (
-                await db.select({ filteredCount: count() }).from(transactions)
+            const { _count } = (
+                await db.select({ _count: count() }).from(transactions)
             )[0];
 
-            const { _count } = (
+            const { filteredCount } = (
                 await db
-                    .select({ _count: count() })
+                    .select({ filteredCount: count() })
                     .from(transactions)
                     .where(and(...filters))
             )[0];
@@ -109,7 +95,6 @@ export const transactionsRouter = createTRPCRouter({
             const items = await db
                 .select(projection)
                 .from(transactions)
-                .leftJoin(projects, eq(projects.id, transactions.projectId))
                 .where(eq(transactions.id, input.id))
                 .limit(1);
 
@@ -128,7 +113,18 @@ export const transactionsRouter = createTRPCRouter({
                 }))
         )
         .mutation(async ({ input }) => {
-            return await db.insert(transactions).values(input).returning();
+            const transaction = (
+                await db.insert(transactions).values(input).returning()
+            )[0];
+
+            // Create a consolidation for it
+            await db.insert(consolidations).values({
+                transactionId: transaction.id,
+                amount: transaction.amount,
+                isGst: true,
+            });
+
+            return transaction;
         }),
 
     update: protectedProcedure
@@ -143,11 +139,25 @@ export const transactionsRouter = createTRPCRouter({
                 }))
         )
         .mutation(async ({ input }) => {
-            return await db
-                .update(transactions)
-                .set(input)
-                .where(eq(transactions.id, input.id))
-                .returning();
+            const transaction = (
+                await db
+                    .update(transactions)
+                    .set(input)
+                    .where(eq(transactions.id, input.id))
+                    .returning()
+            )[0];
+
+            // recreate consolidation
+            await db
+                .delete(consolidations)
+                .where(eq(consolidations.transactionId, transaction.id));
+            await db.insert(consolidations).values({
+                transactionId: transaction.id,
+                amount: transaction.amount,
+                isGst: true,
+            });
+
+            return transaction;
         }),
 
     delete: protectedProcedure
@@ -157,101 +167,5 @@ export const transactionsRouter = createTRPCRouter({
                 .delete(transactions)
                 .where(eq(transactions.id, input.id))
                 .returning();
-        }),
-
-    consolidate: protectedProcedure
-        .input(
-            consolidationSchema.safeExtend({
-                id: z.uuid(),
-            })
-        )
-        .mutation(async ({ input }) => {
-            const { id, ...values } = input;
-            return await db
-                .update(transactions)
-                .set(values)
-                .where(eq(transactions.id, id))
-                .returning();
-        }),
-
-    statistics: protectedProcedure.query(async () => {
-        const statistics = await db
-            .select({
-                pendingConsolidationCount: count(),
-            })
-            .from(transactions)
-            .where(isNull(transactions.consolidationGroup));
-
-        return statistics[0];
-    }),
-
-    split: protectedProcedure
-        .input(
-            z
-                .object({
-                    id: z.uuid(),
-                    amounts: z.array(z.number()),
-                })
-                .transform(v => ({
-                    ...v,
-                    amounts: v.amounts.map(a => a * 100),
-                }))
-                .superRefine(async (data, ctx) => {
-                    const transaction = (
-                        await db
-                            .select({ amount: transactions.amount })
-                            .from(transactions)
-                            .where(eq(transactions.id, data.id))
-                            .limit(1)
-                    )[0];
-
-                    if (!transaction) return;
-
-                    const total = data.amounts.reduce((a, b) => a + b, 0);
-
-                    if (total !== transaction.amount) {
-                        ctx.addIssue({
-                            code: "custom",
-                            params: {
-                                code: "AMOUNTS_DO_NOT_ADD_UP",
-                            },
-                            message: "AMOUNTS_DO_NOT_ADD_UP",
-                            path: ["amounts"],
-                        });
-                    }
-                })
-        )
-        .mutation(async ({ input }) => {
-            const { id, amounts } = input;
-
-            const transaction = (
-                await db
-                    .select()
-                    .from(transactions)
-                    .where(eq(transactions.id, id))
-                    .limit(1)
-            )[0];
-
-            const tc = await getTranslations("Common");
-
-            if (!transaction) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: tc("itemNotFound"),
-                });
-            }
-
-            const newTransactions = amounts.map(amount => ({
-                accountId: transaction.accountId,
-                date: transaction.date,
-                description: transaction.description,
-                amount,
-                type: transaction.type,
-            }));
-
-            await db.transaction(async tx => {
-                await tx.delete(transactions).where(eq(transactions.id, id));
-                await tx.insert(transactions).values(newTransactions);
-            });
         }),
 });

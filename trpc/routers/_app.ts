@@ -1,4 +1,5 @@
 import { createTRPCRouter } from "../init";
+import { consolidationsRouter } from "./consolidations-router";
 import { financialAccountsRouter } from "./financial-accounts-router";
 import { projectLaborsRouter } from "./project-labors-router";
 import { projectMiscRouter } from "./project-misc-router";
@@ -9,6 +10,7 @@ import { transactionsRouter } from "./transactions-router";
 export const appRouter = createTRPCRouter({
     financialAccounts: financialAccountsRouter,
     transactions: transactionsRouter,
+    consolidations: consolidationsRouter,
     projects: projectsRouter,
     projectSupplies: projectSuppliesRouter,
     projectLabors: projectLaborsRouter,
