@@ -14,16 +14,22 @@ import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
 import { useTransactionsColumns } from "../_hooks/use-transactions-columns";
+import { ConsolidationsList } from "../../consolidations/_components/conolidations-list";
 
 type Props = {
-    accountId: string;
+    mode: "account" | "consolidation";
+    accountId?: string;
 };
 
-export const TransactionsList = ({ accountId }: Props) => {
+export const TransactionsList = ({ mode = "account", accountId }: Props) => {
     const tc = useTranslations("Common");
     const { confirm } = useConfirm();
 
     const [itemId, setItemId] = useQueryState("itemId", parseAsString);
+    const [consolidateId, setConsolidateId] = useQueryState(
+        "consolidateId",
+        parseAsString
+    );
     const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
         new Set()
     );
@@ -93,12 +99,13 @@ export const TransactionsList = ({ accountId }: Props) => {
     const columns = useTransactionsColumns(
         setItemId,
         handleDelete,
+        setConsolidateId,
         currentlyProcessing
     );
 
     return (
         <>
-            {accountId && (
+            {accountId && mode === "account" && (
                 <CreateTransaction
                     accountId={accountId}
                     open={dataTable.openCreateSheet || !!itemId}
@@ -115,11 +122,31 @@ export const TransactionsList = ({ accountId }: Props) => {
                 />
             )}
 
+            {consolidateId && mode === "consolidation" && (
+                <ConsolidationsList
+                    transactionId={consolidateId}
+                    open={!!consolidateId}
+                    onOpenChange={open => {
+                        if (!open) {
+                            setConsolidateId(null);
+                        }
+                    }}
+                />
+            )}
+
             <DataTable
                 columns={columns}
                 data={data}
                 {...dataTable}
-                setOpenCreateSheet={setOpenCreateSheet}
+                setOpenCreateSheet={
+                    mode === "account" ? setOpenCreateSheet : undefined
+                }
+                columnVisibility={{
+                    actions: mode === "account",
+                    consolidationActions: mode === "consolidation",
+                    isConsolidated: mode === "consolidation",
+                    consolidationGroup: mode === "consolidation",
+                }}
             />
         </>
     );

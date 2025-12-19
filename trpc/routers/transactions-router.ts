@@ -1,16 +1,50 @@
-import { consolidations, db, transactions } from "@/db";
+import { consolidations, db, projects, transactions } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { z } from "zod";
-import { count, desc, asc, eq, ilike, and } from "drizzle-orm";
+import { count, desc, asc, eq, ilike, and, sum } from "drizzle-orm";
 import { createTransactionSchema } from "@/lib/trpc-schemas";
 import { listSchema } from "@/lib/util-schemas";
+import { createProjectedQuery, many, one } from "@/lib/server-utils";
 
-const projection = {
-    id: transactions.id,
-    date: transactions.date,
-    amount: transactions.amount,
-    type: transactions.type,
-    description: transactions.description,
+const consolidationsSq = db
+    .select({
+        transactionId: consolidations.transactionId,
+        total: sum(consolidations.amount)
+            .mapWith(Number)
+            .as("consolidatedTotal"),
+    })
+    .from(consolidations)
+    .groupBy(consolidations.transactionId)
+    .as("consolidationsSq");
+
+const transactionProjection = {
+    key: "id",
+    fields: {
+        id: transactions.id,
+        date: transactions.date,
+        amount: transactions.amount,
+        type: transactions.type,
+        description: transactions.description,
+        consolidatedAmount: consolidationsSq.total,
+        consolidations: many({
+            key: "id",
+            fields: {
+                id: consolidations.id,
+                consolidationGroup: consolidations.consolidationGroup,
+                description: consolidations.description,
+                isGst: consolidations.isGst,
+                budgetCategory: consolidations.budgetCategory,
+                project: one({
+                    key: "id",
+                    fields: {
+                        id: projects.id,
+                        humanId: projects.humanId,
+                        title: projects.title,
+                    },
+                }),
+            },
+        }),
+    },
 } as const;
 
 export const transactionsRouter = createTRPCRouter({
@@ -63,9 +97,23 @@ export const transactionsRouter = createTRPCRouter({
             }
 
             const { pageIndex, pageSize } = pagination;
+
+            const { selection, transform } = createProjectedQuery(
+                transactionProjection
+            );
+
             const items = await db
-                .select(projection)
+                .select(selection)
                 .from(transactions)
+                .leftJoin(
+                    consolidationsSq,
+                    eq(transactions.id, consolidationsSq.transactionId)
+                )
+                .leftJoin(
+                    consolidations,
+                    eq(transactions.id, consolidations.transactionId)
+                )
+                .leftJoin(projects, eq(consolidations.projectId, projects.id))
                 .where(and(...filters))
                 .orderBy(...orderBy)
                 .offset(pageIndex * pageSize)
@@ -83,7 +131,7 @@ export const transactionsRouter = createTRPCRouter({
             )[0];
 
             return {
-                items,
+                items: transform(items),
                 count: _count,
                 filteredCount,
             };
@@ -92,13 +140,27 @@ export const transactionsRouter = createTRPCRouter({
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
+            const { selection, transform } = createProjectedQuery(
+                transactionProjection
+            );
             const items = await db
-                .select(projection)
+                .select(selection)
                 .from(transactions)
+                .leftJoin(
+                    consolidationsSq,
+                    eq(transactions.id, consolidationsSq.transactionId)
+                )
+                .leftJoin(
+                    consolidations,
+                    eq(transactions.id, consolidations.transactionId)
+                )
+                .leftJoin(projects, eq(consolidations.projectId, projects.id))
                 .where(eq(transactions.id, input.id))
                 .limit(1);
 
-            return items[0] ?? null;
+            const result = transform(items);
+
+            return result[0] ?? null;
         }),
 
     create: protectedProcedure
@@ -116,14 +178,6 @@ export const transactionsRouter = createTRPCRouter({
             const transaction = (
                 await db.insert(transactions).values(input).returning()
             )[0];
-
-            // Create a consolidation for it
-            await db.insert(consolidations).values({
-                transactionId: transaction.id,
-                description: transaction.description,
-                amount: transaction.amount,
-                isGst: true,
-            });
 
             return transaction;
         }),
@@ -147,17 +201,6 @@ export const transactionsRouter = createTRPCRouter({
                     .where(eq(transactions.id, input.id))
                     .returning()
             )[0];
-
-            // recreate consolidation
-            await db
-                .delete(consolidations)
-                .where(eq(consolidations.transactionId, transaction.id));
-            await db.insert(consolidations).values({
-                transactionId: transaction.id,
-                description: transaction.description,
-                amount: transaction.amount,
-                isGst: true,
-            });
 
             return transaction;
         }),

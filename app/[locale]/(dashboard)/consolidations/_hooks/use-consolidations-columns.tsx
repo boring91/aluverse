@@ -1,11 +1,12 @@
-import { DataTableColumnHeader } from "@/components/data-table";
-import { Button } from "@/components/ui/button";
+import {
+    DataTableActions,
+    DataTableColumnHeader,
+} from "@/components/data-table";
 import { cn } from "@/lib/client-utils";
 import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import { CheckIcon, XIcon, ChartPie, SplitIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
@@ -13,7 +14,9 @@ type Consolidation =
     inferRouterOutputs<AppRouter>["consolidations"]["list"]["items"][number];
 
 export const useConsolidationsColumns = (
-    handleConsolidate: (itemId: string) => void
+    handleUpdate: (itemId: string) => void,
+    handleDelete: (itemId: string) => void,
+    currentlyProcessing: Set<string>
 ) => {
     const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
@@ -64,24 +67,6 @@ export const useConsolidationsColumns = (
                 },
             },
 
-            // Consolidation-specific columns:
-            {
-                id: "isConsolidated",
-                header: ({ column }) => (
-                    <DataTableColumnHeader
-                        column={column}
-                        title={t("isConsolidated")}
-                    />
-                ),
-                cell: ({ row }) => {
-                    const item = row.original;
-                    return item.consolidationGroup ? (
-                        <CheckIcon className="text-emerald-500" size={16} />
-                    ) : (
-                        <XIcon className="text-rose-500" size={16} />
-                    );
-                },
-            },
             {
                 id: "consolidationGroup",
                 header: ({ column }) => (
@@ -131,26 +116,19 @@ export const useConsolidationsColumns = (
                 },
             },
             {
-                id: "consolidation",
+                id: "actions",
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <div className="flex items-center gap-2">
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => handleConsolidate(item.id)}
-                            >
-                                <ChartPie />
-                            </Button>
-
-                            <Button size="icon" variant="ghost">
-                                <SplitIcon />
-                            </Button>
-                        </div>
+                        <DataTableActions
+                            itemId={item.id}
+                            handleUpdate={handleUpdate}
+                            handleDelete={handleDelete}
+                            currentlyProcessing={currentlyProcessing}
+                        />
                     );
                 },
             },
         ];
-    }, [t, tc, handleConsolidate]);
+    }, [t, tc, currentlyProcessing, handleDelete, handleUpdate]);
 };

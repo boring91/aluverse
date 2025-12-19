@@ -3,19 +3,21 @@ import { createTRPCRouter, protectedProcedure } from "../init";
 import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
+const projection = {
+    id: financialAccounts.id,
+    name: financialAccounts.name,
+    balance: sql<number>`COALESCE(SUM(
+        CASE
+            WHEN ${transactions.type} = 'income' THEN ${transactions.amount}
+            ELSE -${transactions.amount}
+        END
+    ), 0)`,
+} as const;
+
 export const financialAccountsRouter = createTRPCRouter({
     list: protectedProcedure.query(async () => {
         return await db
-            .select({
-                id: financialAccounts.id,
-                name: financialAccounts.name,
-                balance: sql<number>`COALESCE(SUM(
-                    CASE
-                        WHEN ${transactions.type} = 'income' THEN ${transactions.amount}
-                        ELSE -${transactions.amount}
-                    END
-                ), 0)`,
-            })
+            .select(projection)
             .from(financialAccounts)
             .leftJoin(
                 transactions,
@@ -33,16 +35,7 @@ export const financialAccountsRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const items = await db
-                .select({
-                    id: financialAccounts.id,
-                    name: financialAccounts.name,
-                    balance: sql<number>`COALESCE(SUM(
-                        CASE
-                            WHEN ${transactions.type} = 'income' THEN ${transactions.amount}
-                            ELSE -${transactions.amount}
-                        END
-                    ), 0)`,
-                })
+                .select(projection)
                 .from(financialAccounts)
                 .where(eq(financialAccounts.id, input.id))
                 .leftJoin(

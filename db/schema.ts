@@ -131,7 +131,7 @@ export const consolidations = pgTable(
         description: varchar({ length: 1024 }),
         amount: integer().notNull(),
         isGst: boolean().notNull(),
-        consolidationGroup: transactionConsolidatedGroup(),
+        consolidationGroup: transactionConsolidatedGroup().notNull(),
         budgetCategory: transactionBudgetCategory(),
         projectId: uuid().references(() => projects.id, {
             onDelete: "set null",

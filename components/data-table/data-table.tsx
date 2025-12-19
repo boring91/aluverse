@@ -39,6 +39,8 @@ type Props<TData, TValue> = {
     setSorting?: OnChangeFn<SortingState>;
     columnFilters?: ColumnFiltersState;
     setColumnFilters?: OnChangeFn<ColumnFiltersState>;
+    columnVisibility?: VisibilityState;
+    setColumnVisibility?: OnChangeFn<VisibilityState>;
     setOpenCreateSheet?: (open: boolean) => void;
 };
 
@@ -51,23 +53,28 @@ export const DataTable = <TData, TValue>({
     setSorting: setControlledSorting,
     columnFilters: controlledColumnFilters,
     setColumnFilters: setControlledColumnFilters,
+    columnVisibility: controlledColumnVisibility,
+    setColumnVisibility: setControlledColumnVisibility,
     setOpenCreateSheet,
 }: Props<TData, TValue>) => {
     const tc = useTranslations("Common");
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-        {}
-    );
 
     // Internal state fallback
     const [internalSorting, setInternalSorting] = useState<SortingState>([]);
     const [internalColumnFilters, setInternalColumnFilters] =
         useState<ColumnFiltersState>([]);
+    const [internalColumnVisibility, setInternalColumnVisibility] =
+        useState<VisibilityState>({});
 
     const sorting = controlledSorting ?? internalSorting;
     const setSorting = setControlledSorting ?? setInternalSorting;
     const columnFilters = controlledColumnFilters ?? internalColumnFilters;
     const setColumnFilters =
         setControlledColumnFilters ?? setInternalColumnFilters;
+    const columnVisibility =
+        controlledColumnVisibility ?? internalColumnVisibility;
+    const setColumnVisibility =
+        setControlledColumnVisibility ?? setInternalColumnVisibility;
 
     const isServerSide =
         !!controlledSorting ||

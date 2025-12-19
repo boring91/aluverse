@@ -43,7 +43,7 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
 
     const isUpdate = !!itemId;
 
-    const form = useForm({
+    const form = useForm<SchemaType>({
         resolver: zodResolver(createProjectSchema),
         defaultValues: {
             client: "",

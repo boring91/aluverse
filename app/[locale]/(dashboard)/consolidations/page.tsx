@@ -37,7 +37,7 @@ const Page = () => {
                 </Alert>
             )}
 
-            <ConsolidationsList />
+            <TransactionsList mode="consolidation" />
         </PageContainer>
     );
 };

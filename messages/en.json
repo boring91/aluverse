@@ -80,7 +80,10 @@
         "isGst": "Is GST",
         "withGst": "with GST",
         "pendingConsolidations": "Pending consolidations",
-        "youHaveCountPendingConsolidations": "You have {count} pending consolidations"
+        "youHaveCountPendingConsolidations": "You have {count} pending consolidations",
+        "consolidations": "Consolidations",
+        "consolidationsListDetails": "Assign this transaction to a consolidation group and categorize it accordingly.",
+        "countConsolidations": "{count} consolidations"
     },
     "Projects": {
         "humanId": "Human ID",

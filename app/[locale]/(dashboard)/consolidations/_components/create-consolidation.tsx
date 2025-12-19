@@ -14,6 +14,7 @@ import {
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -27,7 +28,7 @@ import {
     transactionBudgetCategories,
     transactionConsolidationGroups,
 } from "@/lib/constants";
-import { consolidationSchema } from "@/lib/trpc-schemas";
+import { createConsolidationSchema } from "@/lib/trpc-schemas";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,56 +40,29 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 type Props = {
-    consolidationId: string;
+    transactionId: string;
+    itemId: string | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
 
-type SchemaType = z.infer<typeof consolidationSchema>;
+type SchemaType = z.infer<typeof createConsolidationSchema>;
 
-export const ConsolidateTransaction = ({
-    consolidationId,
+export const CreateConsolidation = ({
+    transactionId,
+    itemId,
     open,
     onOpenChange,
 }: Props) => {
     const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
 
-    const trpc = useTRPC();
-    const queryClient = useQueryClient();
-
-    const { data: consolidation } = useQuery(
-        trpc.consolidations.get.queryOptions({
-            id: consolidationId,
-        })
-    );
-
-    const consolidateMutation = useMutation(
-        trpc.consolidations.update.mutationOptions({
-            onSuccess: () => {
-                queryClient.invalidateQueries(
-                    trpc.consolidations.list.queryOptions({})
-                );
-                queryClient.invalidateQueries(
-                    trpc.consolidations.get.queryOptions({
-                        id: consolidationId,
-                    })
-                );
-                queryClient.invalidateQueries(
-                    trpc.consolidations.statistics.queryOptions()
-                );
-                onOpenChange(false);
-                toast.success(tc("savedSuccessfully"));
-            },
-            onError: error => {
-                toast.error(error.message);
-            },
-        })
-    );
+    const isUpdate = !!itemId;
 
     const form = useForm<SchemaType>({
-        resolver: zodResolver(consolidationSchema),
+        resolver: zodResolver(createConsolidationSchema),
         defaultValues: {
+            amount: 0.0,
             budgetCategory: undefined,
             consolidationGroup: undefined,
             projectId: undefined,
@@ -96,13 +70,71 @@ export const ConsolidateTransaction = ({
         },
     });
 
-    // eslint-disable-next-line react-hooks/incompatible-library
-    const selectedGroup = form.watch("consolidationGroup");
+    const queryClient = useQueryClient();
+    const trpc = useTRPC();
 
-    const handleSubmit = (values: SchemaType) => {
-        if (!consolidation) return;
-        consolidateMutation.mutate({ id: consolidation.id, ...values });
+    const { data } = useQuery(
+        trpc.consolidations.get.queryOptions(
+            {
+                id: itemId!,
+            },
+            {
+                enabled: isUpdate,
+            }
+        )
+    );
+
+    const onSuccess = () => {
+        queryClient.invalidateQueries(
+            trpc.consolidations.list.queryOptions({ transactionId })
+        );
+        queryClient.invalidateQueries(
+            trpc.consolidations.statistics.queryOptions()
+        );
+        queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
+        if (isUpdate) {
+            queryClient.invalidateQueries(
+                trpc.consolidations.get.queryOptions({
+                    id: itemId,
+                })
+            );
+        }
+
+        form.reset();
+        onOpenChange(false);
+        toast.success(tc("savedSuccessfully"));
     };
+
+    const onError = (error: { message: string }) => {
+        toast.error(error.message);
+    };
+
+    const createMutation = useMutation(
+        trpc.consolidations.create.mutationOptions({ onSuccess, onError })
+    );
+    const updateMutation = useMutation(
+        trpc.consolidations.update.mutationOptions({ onSuccess, onError })
+    );
+
+    const handleSubmit = (data: SchemaType) => {
+        console.log({ data });
+        if (isUpdate && itemId) {
+            updateMutation.mutate({ id: itemId, ...data });
+        } else {
+            createMutation.mutate({ transactionId, ...data });
+        }
+    };
+
+    useEffect(() => {
+        if (!data || !isUpdate) return;
+
+        fillForm(form, {
+            ...data,
+            amount: data.amount / 100,
+            isGst: data.isGst ?? true,
+            projectId: data.project?.id,
+        });
+    }, [data, form, isUpdate]);
 
     const { data: projects } = useQuery(
         trpc.projects.list.queryOptions({
@@ -110,15 +142,8 @@ export const ConsolidateTransaction = ({
         })
     );
 
-    useEffect(() => {
-        if (!consolidation) return;
-
-        fillForm(form, {
-            ...consolidation,
-            isGst: consolidation.isGst ?? true,
-            projectId: consolidation.project?.id,
-        });
-    }, [consolidation, form]);
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const selectedGroup = form.watch("consolidationGroup");
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -136,6 +161,58 @@ export const ConsolidateTransaction = ({
                     className="flex flex-col gap-8 px-4"
                 >
                     <FieldGroup>
+                        {/* Description */}
+                        <Controller
+                            control={form.control}
+                            name="description"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>
+                                            {tc("description")}
+                                        </FieldLabel>
+                                        <Input {...field} />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
+                        {/* Amount */}
+                        <Controller
+                            control={form.control}
+                            name="amount"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>{t("amount")}</FieldLabel>
+                                        <Input
+                                            type="number"
+                                            {...field}
+                                            onChange={v =>
+                                                field.onChange(
+                                                    v.target.value
+                                                        ? parseFloat(
+                                                              v.target.value
+                                                          )
+                                                        : ""
+                                                )
+                                            }
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
                         {/* Consolidation group */}
                         <Controller
                             control={form.control}
@@ -335,11 +412,11 @@ export const ConsolidateTransaction = ({
 
                 <DialogFooter>
                     <Button
-                        disabled={consolidateMutation.isPending}
+                        disabled={createMutation.isPending}
                         type="submit"
                         form="consolidate-transaction-form"
                     >
-                        {consolidateMutation.isPending && (
+                        {createMutation.isPending && (
                             <Loader2 className="animate-spin" />
                         )}
                         <span>{tc("save")}</span>

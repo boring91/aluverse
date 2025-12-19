@@ -17,8 +17,10 @@ export const createTransactionSchema = z.object({
     type: z.enum(transactionTypes),
 });
 
-export const consolidationSchema = z
+export const createConsolidationSchema = z
     .object({
+        amount: z.number().min(1),
+        description: z.string().min(1).optional(),
         consolidationGroup: z.enum(transactionConsolidationGroups),
         budgetCategory: z.enum(transactionBudgetCategories).optional(),
         projectId: z.uuid().optional(),
