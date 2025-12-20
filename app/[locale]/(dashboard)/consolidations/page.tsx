@@ -8,7 +8,6 @@ import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircleIcon } from "lucide-react";
-import { ConsolidationsList } from "./_components/conolidations-list";
 
 const Page = () => {
     const tc = useTranslations("Common");
