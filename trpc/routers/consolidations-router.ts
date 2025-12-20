@@ -8,7 +8,9 @@ import {
     eq,
     ilike,
     isNull,
+    ne,
     sql,
+    sum,
 } from "drizzle-orm";
 import { consolidations, db, projects, transactions } from "@/db";
 import { z } from "zod";
@@ -215,13 +217,22 @@ export const consolidationsRouter = createTRPCRouter({
         }),
 
     statistics: protectedProcedure.query(async () => {
-        const statistics = await db
+        const pendingTransactions = await db
             .select({
-                pendingConsolidationCount: count(),
+                id: transactions.id,
+                amount: transactions.amount,
+                consolidationAmount: sql<number>`COALESCE(SUM(${consolidations.amount}), 0)`,
             })
-            .from(consolidations)
-            .where(isNull(consolidations.consolidationGroup));
+            .from(transactions)
+            .leftJoin(
+                consolidations,
+                eq(transactions.id, consolidations.transactionId)
+            )
+            .groupBy(transactions.id)
+            .having(x => ne(x.amount, x.consolidationAmount));
 
-        return statistics[0];
+        return {
+            pendingConsolidationCount: pendingTransactions.length,
+        };
     }),
 });
