@@ -1,6 +1,15 @@
 import { listSchema } from "@/lib/util-schemas";
 import { createTRPCRouter, protectedProcedure } from "../init";
-import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
+import {
+    and,
+    asc,
+    count,
+    desc,
+    eq,
+    ilike,
+    isNull,
+    sql,
+} from "drizzle-orm";
 import { consolidations, db, projects, transactions } from "@/db";
 import { z } from "zod";
 import { createConsolidationSchema } from "@/lib/trpc-schemas";
@@ -182,6 +191,27 @@ export const consolidationsRouter = createTRPCRouter({
                 .delete(consolidations)
                 .where(eq(consolidations.id, input.id))
                 .returning();
+        }),
+
+    getDefault: protectedProcedure
+        .input(z.object({ transactionId: z.uuid() }))
+        .query(async ({ input }) => {
+            const { transactionId } = input;
+
+            return (
+                await db
+                    .select({
+                        description: transactions.description,
+                        remainingAmount: sql<number>`${transactions.amount} - COALESCE(SUM(${consolidations.amount}), 0)`,
+                    })
+                    .from(transactions)
+                    .leftJoin(
+                        consolidations,
+                        eq(transactions.id, consolidations.transactionId)
+                    )
+                    .where(eq(transactions.id, transactionId))
+                    .groupBy(transactions.id)
+            )[0];
         }),
 
     statistics: protectedProcedure.query(async () => {

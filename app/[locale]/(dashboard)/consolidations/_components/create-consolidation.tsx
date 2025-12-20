@@ -62,6 +62,7 @@ export const CreateConsolidation = ({
     const form = useForm<SchemaType>({
         resolver: zodResolver(createConsolidationSchema),
         defaultValues: {
+            description: "",
             amount: 0.0,
             budgetCategory: undefined,
             consolidationGroup: undefined,
@@ -84,6 +85,17 @@ export const CreateConsolidation = ({
         )
     );
 
+    const { data: defaults } = useQuery(
+        trpc.consolidations.getDefault.queryOptions(
+            {
+                transactionId,
+            },
+            {
+                enabled: !isUpdate,
+            }
+        )
+    );
+
     const onSuccess = () => {
         queryClient.invalidateQueries(
             trpc.consolidations.list.queryOptions({ transactionId })
@@ -92,6 +104,9 @@ export const CreateConsolidation = ({
             trpc.consolidations.statistics.queryOptions()
         );
         queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
+        queryClient.invalidateQueries(
+            trpc.consolidations.getDefault.queryOptions({ transactionId })
+        );
         if (isUpdate) {
             queryClient.invalidateQueries(
                 trpc.consolidations.get.queryOptions({
@@ -117,7 +132,6 @@ export const CreateConsolidation = ({
     );
 
     const handleSubmit = (data: SchemaType) => {
-        console.log({ data });
         if (isUpdate && itemId) {
             updateMutation.mutate({ id: itemId, ...data });
         } else {
@@ -126,15 +140,26 @@ export const CreateConsolidation = ({
     };
 
     useEffect(() => {
-        if (!data || !isUpdate) return;
+        if (!open) return;
 
-        fillForm(form, {
-            ...data,
-            amount: data.amount / 100,
-            isGst: data.isGst ?? true,
-            projectId: data.project?.id,
-        });
-    }, [data, form, isUpdate]);
+        if (defaults && !isUpdate) {
+            console.log({ defaults });
+            fillForm(form, {
+                ...defaults,
+                amount: defaults.remainingAmount / 100,
+            });
+            form.setFocus("consolidationGroup");
+        } else if (data && isUpdate) {
+            fillForm(form, {
+                ...data,
+                amount: data.amount / 100,
+                isGst: data.isGst ?? true,
+                projectId: data.project?.id,
+            });
+        }
+    }, [open, data, defaults, form, isUpdate]);
+
+    const isPending = createMutation.isPending || updateMutation.isPending;
 
     const { data: projects } = useQuery(
         trpc.projects.list.queryOptions({
@@ -146,7 +171,14 @@ export const CreateConsolidation = ({
     const selectedGroup = form.watch("consolidationGroup");
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog
+            open={open}
+            onOpenChange={value => {
+                if (isPending) return;
+                if (!value) form.reset();
+                onOpenChange(value);
+            }}
+        >
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{t("consolidateTransaction")}</DialogTitle>
@@ -242,7 +274,7 @@ export const CreateConsolidation = ({
                                                     );
                                             }}
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger ref={field.ref}>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>

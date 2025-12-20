@@ -8,11 +8,12 @@ export const cn = (...inputs: ClassValue[]) => {
 
 export const fillForm = <T extends FieldValues>(
     form: UseFormReturn<T>,
-    data: { [K in keyof T]: T[K] | undefined | null }
+    data: Partial<{ [K in keyof T]: T[K] | undefined | null }>
 ) => {
     const values = form.getValues();
     Object.keys(values).forEach(tmp => {
         const key = tmp as Path<T>;
-        form.setValue(key, (data[key] ?? undefined)!);
+        if (data[key] === null || data[key] === undefined) return;
+        form.setValue(key, data[key]);
     });
 };

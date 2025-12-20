@@ -63,8 +63,8 @@ const Login = () => {
                 return;
             } else if (data.error) {
                 toast.error(tc("unknownErrorHasOccurred"));
+                return;
             }
-            console.log(returnUrl)
             router.push(returnUrl ?? "/");
             toast.success(t("loggedInSuccessfully"));
         },

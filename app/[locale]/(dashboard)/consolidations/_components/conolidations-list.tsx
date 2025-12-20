@@ -85,6 +85,11 @@ export const ConsolidationsList = ({
                 queryClient.invalidateQueries(
                     trpc.transactions.list.queryOptions({})
                 );
+                queryClient.invalidateQueries(
+                    trpc.consolidations.getDefault.queryOptions({
+                        transactionId,
+                    })
+                );
 
                 setCurrentlyProcessing(set => {
                     set.delete(id);
@@ -106,20 +111,22 @@ export const ConsolidationsList = ({
 
     return (
         <>
-            <CreateConsolidation
-                transactionId={transactionId}
-                itemId={itemId}
-                open={dataTable.openCreateSheet || !!itemId}
-                onOpenChange={value => {
-                    if (value) {
-                        dataTable.setOpenCreateSheet(true);
-                        return;
-                    }
+            {(dataTable.openCreateSheet || itemId) && (
+                <CreateConsolidation
+                    transactionId={transactionId}
+                    itemId={itemId}
+                    open={dataTable.openCreateSheet || !!itemId}
+                    onOpenChange={value => {
+                        if (value) {
+                            dataTable.setOpenCreateSheet(true);
+                            return;
+                        }
 
-                    setItemId(null);
-                    dataTable.setOpenCreateSheet(false);
-                }}
-            />
+                        setItemId(null);
+                        dataTable.setOpenCreateSheet(false);
+                    }}
+                />
+            )}
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-[800px]">
                     <DialogHeader>
