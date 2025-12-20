@@ -1,12 +1,13 @@
 // projection-utils.ts
-import type { SQL } from "drizzle-orm";
+import type { ColumnBaseConfig, ColumnDataType, SQL } from "drizzle-orm";
 import type { PgColumn, SelectedFields } from "drizzle-orm/pg-core";
 
 // ============================================
 // Types
 // ============================================
 
-type ColumnLike = PgColumn<any, any, any> | SQL.Aliased<unknown>;
+// PgColumn has default type parameters, so we can use it without generics
+type ColumnLike = PgColumn | SQL.Aliased<unknown>;
 
 interface ManyRelation<T extends ProjectionDef> {
     __type: "many";
@@ -42,6 +43,7 @@ interface ProjectionDef {
     [key: string]: ColumnLike | Relation;
 }
 
+// Use constrained inference for PgColumn's config type parameter
 type InferFieldType<T> = T extends ManyRelation<infer F>
     ? InferProjectionResult<F>[]
     : T extends ManyThroughRelation<infer F>
@@ -50,7 +52,11 @@ type InferFieldType<T> = T extends ManyRelation<infer F>
     ? InferProjectionResult<F>
     : T extends OneRelation<infer F>
     ? InferProjectionResult<F> | null
-    : T extends PgColumn<infer C, any, any>
+    : T extends PgColumn<
+          infer C extends ColumnBaseConfig<ColumnDataType, string>,
+          object,
+          object
+      >
     ? C["data"] | (C["notNull"] extends true ? never : null)
     : T extends SQL.Aliased<infer D>
     ? D | null
