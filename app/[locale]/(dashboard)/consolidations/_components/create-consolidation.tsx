@@ -20,6 +20,7 @@ import {
     SelectContent,
     SelectGroup,
     SelectItem,
+    SelectSeparator,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
@@ -35,10 +36,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+    CreateProjectItem,
+    CreateProjectItemHandle,
+} from "./create-project-item";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;
 
@@ -218,6 +223,15 @@ export const CreateConsolidation = ({
     );
 
     const projectItems = useProjectItems(form);
+
+    const projectId = form.watch("projectId");
+    const projectStream = form.watch("projectStream");
+
+    const createProjectItemRef = useRef<CreateProjectItemHandle>(null);
+
+    const handleItemCreated = (itemId: string) => {
+        form.setValue("projectItemId", itemId);
+    };
 
     return (
         <Dialog
@@ -541,6 +555,18 @@ export const CreateConsolidation = ({
                                     control={form.control}
                                     name="projectItemId"
                                     render={({ field, fieldState }) => {
+                                        const handleValueChange = (
+                                            value: string
+                                        ) => {
+                                            if (value === "__create_new__") {
+                                                createProjectItemRef.current?.open();
+                                                // Reset the select value
+                                                field.onChange("");
+                                            } else {
+                                                field.onChange(value);
+                                            }
+                                        };
+
                                         return (
                                             <Field>
                                                 <FieldLabel>
@@ -550,7 +576,7 @@ export const CreateConsolidation = ({
                                                 <Select
                                                     value={field.value ?? ""}
                                                     onValueChange={
-                                                        field.onChange
+                                                        handleValueChange
                                                     }
                                                 >
                                                     <SelectTrigger>
@@ -576,6 +602,18 @@ export const CreateConsolidation = ({
                                                                         </SelectItem>
                                                                     );
                                                                 }
+                                                            )}
+                                                            {projectItems &&
+                                                                projectItems.length >
+                                                                    0 && (
+                                                                    <SelectSeparator />
+                                                                )}
+                                                            {projectStream && (
+                                                                <SelectItem value="__create_new__">
+                                                                    {tc(
+                                                                        "createNew"
+                                                                    )}
+                                                                </SelectItem>
                                                             )}
                                                         </SelectGroup>
                                                     </SelectContent>
@@ -635,6 +673,16 @@ export const CreateConsolidation = ({
                     </Button>
                 </DialogFooter>
             </DialogContent>
+
+            {/* Nested create modal handler */}
+            {projectId && (
+                <CreateProjectItem
+                    ref={createProjectItemRef}
+                    projectId={projectId}
+                    stream={projectStream}
+                    onItemCreated={handleItemCreated}
+                />
+            )}
         </Dialog>
     );
 };

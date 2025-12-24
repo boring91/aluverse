@@ -33,6 +33,7 @@ type Props = {
     onOpenChange: (open: boolean) => void;
     projectId: string;
     itemId: string | null;
+    onItemCreated?: (itemId: string) => void;
 };
 
 export const CreateLabor = ({
@@ -40,6 +41,7 @@ export const CreateLabor = ({
     onOpenChange,
     projectId,
     itemId,
+    onItemCreated,
 }: Props) => {
     const t = useTranslations("Projects");
     const tc = useTranslations("Common");
@@ -67,7 +69,7 @@ export const CreateLabor = ({
         )
     );
 
-    const onSuccess = () => {
+    const onSuccess = (data: { id: string }[]) => {
         queryClient.invalidateQueries(
             trpc.projectLabors.list.queryOptions({ projectId })
         );
@@ -79,6 +81,12 @@ export const CreateLabor = ({
             queryClient.invalidateQueries(
                 trpc.projectLabors.get.queryOptions({ id: itemId })
             );
+        } else {
+            // Call onItemCreated callback with the newly created item ID
+            const createdItem = data[0];
+            if (createdItem && onItemCreated) {
+                onItemCreated(createdItem.id);
+            }
         }
         form.reset();
         onOpenChange(false);

@@ -33,6 +33,7 @@ type Props = {
     onOpenChange: (open: boolean) => void;
     projectId: string;
     itemId: string | null;
+    onItemCreated?: (itemId: string) => void;
 };
 
 export const CreateMisc = ({
@@ -40,6 +41,7 @@ export const CreateMisc = ({
     onOpenChange,
     projectId,
     itemId,
+    onItemCreated,
 }: Props) => {
     const t = useTranslations("Projects");
     const tc = useTranslations("Common");
@@ -66,7 +68,7 @@ export const CreateMisc = ({
         )
     );
 
-    const onSuccess = () => {
+    const onSuccess = (data: { id: string }[]) => {
         queryClient.invalidateQueries(
             trpc.projectMisc.list.queryOptions({ projectId })
         );
@@ -78,6 +80,12 @@ export const CreateMisc = ({
             queryClient.invalidateQueries(
                 trpc.projectMisc.get.queryOptions({ id: itemId })
             );
+        } else {
+            // Call onItemCreated callback with the newly created item ID
+            const createdItem = data[0];
+            if (createdItem && onItemCreated) {
+                onItemCreated(createdItem.id);
+            }
         }
         form.reset();
         onOpenChange(false);
