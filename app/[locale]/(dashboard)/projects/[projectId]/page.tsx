@@ -169,9 +169,13 @@ const AccountingInfo = ({ project }: { project: Project }) => {
                             %
                         </p>
                         <p
-                            className={cn("text-xs font-mono text-emerald-500", {
-                                "text-rose-500": project.price - project.cost < 0,
-                            })}
+                            className={cn(
+                                "text-xs font-mono text-emerald-500",
+                                {
+                                    "text-rose-500":
+                                        project.price - project.cost < 0,
+                                }
+                            )}
                         >
                             {formatCurrency(project.price - project.cost)}
                         </p>
@@ -286,11 +290,13 @@ const Page = () => {
 
     return (
         <>
-            <CreateProject
-                open={openCreateSheet}
-                onOpenChange={setOpenCreateSheet}
-                itemId={data.id}
-            />
+            {openCreateSheet && (
+                <CreateProject
+                    open={openCreateSheet}
+                    onOpenChange={setOpenCreateSheet}
+                    itemId={data.id}
+                />
+            )}
             <PageContainer>
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-4 border-b pb-4 md:flex-row md:items-center md:justify-between">
