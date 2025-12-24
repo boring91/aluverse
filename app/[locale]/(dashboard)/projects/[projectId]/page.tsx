@@ -19,7 +19,13 @@ import { notFound, useParams } from "next/navigation";
 import { ProjectStatusBadge } from "../_components/project-status-badge";
 import { CreateProject } from "../_components/create-project";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { formatCurrency } from "@/lib/utils";
@@ -37,43 +43,43 @@ const BasicInfo = ({ project }: { project: Project }) => {
     const tc = useTranslations("Common");
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
             {/* Visit date */}
-            <Card className="bg-background gap-1">
+            <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CalendarIcon size={16} />
                         {t("visitDate")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="font-bold">
+                <CardContent className="font-mono text-lg font-semibold">
                     {project.visitDate?.toDateString() ?? "-"}
                 </CardContent>
             </Card>
 
             {/* Start - End dates */}
-            <Card className="bg-background gap-1">
+            <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CalendarIcon size={16} />
                         {tc("dates")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="font-bold">
+                <CardContent className="font-mono text-lg font-semibold">
                     {project.startDate?.toDateString()} &mdash;{" "}
                     {project.endDate?.toDateString()}
                 </CardContent>
             </Card>
 
             {/* Meters */}
-            <Card className="bg-background gap-1">
+            <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         <RulerIcon size={16} />
                         {t("meters")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="text-lg font-bold">
+                <CardContent className="text-lg font-semibold">
                     {project.meters ? (
                         <span>
                             {project.meters.toFixed(2)}m<sup>2</sup>
@@ -85,14 +91,14 @@ const BasicInfo = ({ project }: { project: Project }) => {
             </Card>
 
             {/* Price */}
-            <Card className="bg-background gap-1">
+            <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         <DollarSignIcon size={16} />
                         {t("price")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="text-lg font-bold font-mono">
+                <CardContent className="font-mono text-lg font-semibold">
                     {formatCurrency(project.price)}
                 </CardContent>
             </Card>
@@ -104,15 +110,15 @@ const AccountingInfo = ({ project }: { project: Project }) => {
     const t = useTranslations("Projects");
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
             {/* Amount paid */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         {t("paid")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xl text-sky-500 font-bold font-mono">
+                <CardContent className="font-mono text-xl font-semibold text-sky-500">
                     {formatCurrency(project.paid)}
                 </CardContent>
             </Card>
@@ -120,11 +126,11 @@ const AccountingInfo = ({ project }: { project: Project }) => {
             {/* Cost so far */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         {t("cost")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xl text-rose-500 font-bold font-mono">
+                <CardContent className="font-mono text-xl font-semibold text-rose-500">
                     {formatCurrency(project.cost)}
                 </CardContent>
             </Card>
@@ -132,11 +138,11 @@ const AccountingInfo = ({ project }: { project: Project }) => {
             {/* Remaining */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         {t("remaining")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xl text-amber-500 font-bold font-mono">
+                <CardContent className="font-mono text-xl font-semibold text-amber-500">
                     {formatCurrency(project.price - project.paid)}
                 </CardContent>
             </Card>
@@ -144,32 +150,28 @@ const AccountingInfo = ({ project }: { project: Project }) => {
             {/* Profit margin */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
                         {t("profitMargin")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent
-                    className={cn("text-xl text-emerald-500 font-bold", {
+                    className={cn("text-xl font-semibold text-emerald-500", {
                         "text-rose-500": project.price - project.cost < 0,
                     })}
                 >
                     <div className="flex flex-col gap-2">
                         <p>
-                            {Math.round(
+                            {(
                                 ((project.price - project.cost) /
                                     project.price) *
-                                    100
+                                100
                             ).toFixed(2)}
                             %
                         </p>
                         <p
-                            className={cn(
-                                "text-xs text-emerald-500 font-mono",
-                                {
-                                    "text-rose-500":
-                                        project.price - project.cost < 0,
-                                }
-                            )}
+                            className={cn("text-xs font-mono text-emerald-500", {
+                                "text-rose-500": project.price - project.cost < 0,
+                            })}
                         >
                             {formatCurrency(project.price - project.cost)}
                         </p>
@@ -184,29 +186,68 @@ const ProjectDetails = ({ projectId }: { projectId: string }) => {
     const t = useTranslations("Projects");
 
     return (
-        <Tabs defaultValue="supplies">
+        <Tabs defaultValue="supplies" className="mt-2 space-y-4">
             <TabsList>
                 <TabsTrigger value="supplies">{t("supplies")}</TabsTrigger>
-
                 <TabsTrigger value="labors">{t("labors")}</TabsTrigger>
                 <TabsTrigger value="misc">{t("misc")}</TabsTrigger>
                 <TabsTrigger value="payments">{t("payments")}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="supplies">
-                <SuppliesList projectId={projectId} />
+            <TabsContent value="supplies" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t("supplies")}</CardTitle>
+                        <CardDescription>
+                            {t("suppliesDescription")}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <SuppliesList projectId={projectId} />
+                    </CardContent>
+                </Card>
             </TabsContent>
 
-            <TabsContent value="labors">
-                <LaborsList projectId={projectId} />
+            <TabsContent value="labors" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t("labors")}</CardTitle>
+                        <CardDescription>
+                            {t("laborsDescription")}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <LaborsList projectId={projectId} />
+                    </CardContent>
+                </Card>
             </TabsContent>
 
-            <TabsContent value="misc">
-                <MiscList projectId={projectId} />
+            <TabsContent value="misc" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t("misc")}</CardTitle>
+                        <CardDescription>
+                            {t("miscDescription")}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <MiscList projectId={projectId} />
+                    </CardContent>
+                </Card>
             </TabsContent>
 
-            <TabsContent value="payments">
-                <PaymentsList projectId={projectId} />
+            <TabsContent value="payments" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t("payments")}</CardTitle>
+                        <CardDescription>
+                            {t("paymentsDescription")}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <PaymentsList projectId={projectId} />
+                    </CardContent>
+                </Card>
             </TabsContent>
         </Tabs>
     );
@@ -217,6 +258,7 @@ const Page = () => {
     const projectId = params["projectId"] as string;
 
     const tc = useTranslations("Common");
+    const t = useTranslations("Projects");
 
     const trpc = useTRPC();
     const { data, isLoading } = useQuery(
@@ -232,7 +274,12 @@ const Page = () => {
     if (isLoading) {
         return (
             <PageContainer>
-                <Loader2Icon className="animate-spin" />
+                <div className="flex items-center justify-center py-16">
+                    <div className="flex items-center gap-3 text-muted-foreground">
+                        <Loader2Icon className="size-5 animate-spin" />
+                        <span className="text-sm">{tc("loading")}</span>
+                    </div>
+                </div>
             </PageContainer>
         );
     }
@@ -250,40 +297,64 @@ const Page = () => {
                 itemId={data.id}
             />
             <PageContainer>
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" asChild>
-                        <Link href="/projects">
-                            <ArrowLeft className="rtl:-scale-x-100" />
-                        </Link>
-                    </Button>
-                    <div className="grow flex flex-col gap-2">
-                        <div className="flex items-center gap-4 font-bold ">
-                            <h1 className="text-2xl">{data.title}</h1>
-                            <span className="font-mono align-middle bg-foreground text-background rounded-xl px-4 text-sm">
-                                {data.humanId}
-                            </span>
+                <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4 border-b pb-4 md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-start gap-4">
+                            <Button variant="outline" size="icon" asChild>
+                                <Link href="/projects">
+                                    <ArrowLeft className="rtl:-scale-x-100" />
+                                </Link>
+                            </Button>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <h1 className="text-2xl font-semibold leading-tight">
+                                        {data.title}
+                                    </h1>
+                                    <span className="rounded-full bg-foreground px-3 py-1 text-xs font-mono font-medium text-background">
+                                        {data.humanId}
+                                    </span>
+                                    <ProjectStatusBadge project={data} />
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    {data.client} &mdash; {data.address}
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-muted-foreground">
-                                {data.client} &mdash; {data.address}
-                            </span>
-
-                            <ProjectStatusBadge project={data} />
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => setOpenCreateSheet(true)}
+                            >
+                                <Edit3Icon className="mr-2 size-4" />
+                                {tc("edit")}
+                            </Button>
                         </div>
                     </div>
 
-                    <Button onClick={() => setOpenCreateSheet(true)}>
-                        <Edit3Icon />
-                        {tc("edit")}
-                    </Button>
+                    <div className="space-y-6">
+                        <section className="space-y-3">
+                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                                {t("basicInformation")}
+                            </h2>
+                            <BasicInfo project={data} />
+                        </section>
+
+                        <section className="space-y-3">
+                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                                {t("financialSummary")}
+                            </h2>
+                            <AccountingInfo project={data} />
+                        </section>
+
+                        <section className="space-y-3">
+                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                                {tc("details")}
+                            </h2>
+                            <ProjectDetails projectId={projectId} />
+                        </section>
+                    </div>
                 </div>
-
-                <BasicInfo project={data} />
-
-                <AccountingInfo project={data} />
-
-                <ProjectDetails projectId={projectId} />
             </PageContainer>
         </>
     );
