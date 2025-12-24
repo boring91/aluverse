@@ -117,7 +117,7 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                 onOpenChange(value);
             }}
         >
-            <DialogContent>
+            <DialogContent className="sm:max-w-[640px] md:max-w-3xl lg:max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>{t("projects")}</DialogTitle>
                     <DialogDescription>
@@ -130,9 +130,9 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                 <form
                     id="create-project-form"
                     onSubmit={form.handleSubmit(handleSubmit)}
-                    className="flex flex-col gap-8 px-4 overflow-y-auto"
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 overflow-y-auto max-h-[calc(100vh-12rem)]"
                 >
-                    <FieldGroup>
+                    <FieldGroup className="contents">
                         {/* Client */}
                         <Controller
                             control={form.control}
@@ -161,76 +161,6 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                                     <Field>
                                         <FieldLabel>{t("title")}</FieldLabel>
                                         <Input {...field} />
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-
-                        {/* Visit Date */}
-                        <Controller
-                            control={form.control}
-                            name="visitDate"
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field>
-                                        <FieldLabel>
-                                            {t("visitDate")}
-                                        </FieldLabel>
-                                        <DatePickerInput
-                                            value={field.value ?? undefined}
-                                            onChange={field.onChange}
-                                        />
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-
-                        {/* Start Date */}
-                        <Controller
-                            control={form.control}
-                            name="startDate"
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field>
-                                        <FieldLabel>
-                                            {t("startDate")}
-                                        </FieldLabel>
-                                        <DatePickerInput
-                                            value={field.value ?? undefined}
-                                            onChange={field.onChange}
-                                        />
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-
-                        {/* End Date */}
-                        <Controller
-                            control={form.control}
-                            name="endDate"
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field>
-                                        <FieldLabel>{t("endDate")}</FieldLabel>
-                                        <DatePickerInput
-                                            value={field.value ?? undefined}
-                                            onChange={field.onChange}
-                                        />
                                         {fieldState.invalid && (
                                             <FieldError
                                                 errors={[fieldState.error]}
@@ -315,6 +245,76 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                                                         : ""
                                                 )
                                             }
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
+                        {/* Visit Date */}
+                        <Controller
+                            control={form.control}
+                            name="visitDate"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>
+                                            {t("visitDate")}
+                                        </FieldLabel>
+                                        <DatePickerInput
+                                            value={field.value ?? undefined}
+                                            onChange={field.onChange}
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
+                        {/* Start Date */}
+                        <Controller
+                            control={form.control}
+                            name="startDate"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>
+                                            {t("startDate")}
+                                        </FieldLabel>
+                                        <DatePickerInput
+                                            value={field.value ?? undefined}
+                                            onChange={field.onChange}
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
+                        {/* End Date */}
+                        <Controller
+                            control={form.control}
+                            name="endDate"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>{t("endDate")}</FieldLabel>
+                                        <DatePickerInput
+                                            value={field.value ?? undefined}
+                                            onChange={field.onChange}
                                         />
                                         {fieldState.invalid && (
                                             <FieldError
