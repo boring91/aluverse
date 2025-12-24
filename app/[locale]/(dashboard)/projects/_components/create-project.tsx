@@ -10,13 +10,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
 import { createProjectSchema } from "@/lib/trpc-schemas";
 import { useTRPC } from "@/trpc/client";
@@ -107,7 +107,7 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
     const isPending = createMutation.isPending || updateMutation.isPending;
 
     return (
-        <Sheet
+        <Dialog
             open={open}
             onOpenChange={value => {
                 if (isPending) return;
@@ -117,15 +117,15 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                 onOpenChange(value);
             }}
         >
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>{t("projects")}</SheetTitle>
-                    <SheetDescription>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{t("projects")}</DialogTitle>
+                    <DialogDescription>
                         {isUpdate
                             ? t("updateExistingProject")
                             : t("createNewProject")}
-                    </SheetDescription>
-                </SheetHeader>
+                    </DialogDescription>
+                </DialogHeader>
 
                 <form
                     id="create-project-form"
@@ -328,7 +328,7 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                     </FieldGroup>
                 </form>
 
-                <SheetFooter>
+                <DialogFooter>
                     <Button
                         disabled={isPending}
                         type="submit"
@@ -340,8 +340,8 @@ export const CreateProject = ({ open, onOpenChange, itemId }: Props) => {
                         )}
                         {tc("save")}
                     </Button>
-                </SheetFooter>
-            </SheetContent>
-        </Sheet>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };

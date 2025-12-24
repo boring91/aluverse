@@ -9,13 +9,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { createFinancialAccountSchema } from "@/lib/trpc-schemas";
 import { fillForm } from '@/lib/client-utils';
 import { useTRPC } from "@/trpc/client";
@@ -103,7 +103,7 @@ export const CreateFinancialAccount = ({
     }, [isUpdate, data, form]);
 
     return (
-        <Sheet
+        <Dialog
             open={open}
             onOpenChange={value => {
                 if (isPending) return;
@@ -111,17 +111,17 @@ export const CreateFinancialAccount = ({
                 onOpenChange(value);
             }}
         >
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle className="font-bold text-xl">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle className="font-bold text-xl">
                         {tc("financialAccounts")}
-                    </SheetTitle>
-                    <SheetDescription>
+                    </DialogTitle>
+                    <DialogDescription>
                         {isUpdate
                             ? t("updateExistingFinancialAccount")
                             : t("createNewFinancialAccount")}
-                    </SheetDescription>
-                </SheetHeader>
+                    </DialogDescription>
+                </DialogHeader>
 
                 <form
                     id="create-financial-account"
@@ -148,7 +148,7 @@ export const CreateFinancialAccount = ({
                         />
                     </FieldGroup>
                 </form>
-                <SheetFooter>
+                <DialogFooter>
                     <Button
                         form="create-financial-account"
                         disabled={isPending}
@@ -157,8 +157,8 @@ export const CreateFinancialAccount = ({
                         {isPending && <Loader2 className="animate-spin" />}
                         <span>{tc("save")}</span>
                     </Button>
-                </SheetFooter>
-            </SheetContent>
-        </Sheet>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
