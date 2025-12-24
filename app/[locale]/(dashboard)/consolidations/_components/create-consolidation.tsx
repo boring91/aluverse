@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { fillForm } from "@/lib/client-utils";
 import {
+    projectStreams,
     transactionBudgetCategories,
     transactionConsolidationGroups,
 } from "@/lib/constants";
@@ -35,9 +36,55 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+
+type SchemaType = z.infer<typeof createConsolidationSchema>;
+
+const useProjectItems = (form: UseFormReturn<SchemaType>) => {
+    const trpc = useTRPC();
+
+    const projectId = form.watch("projectId");
+    const stream = form.watch("projectStream");
+
+    const queryInput = {
+        projectId: projectId!,
+        pagination: { pageSize: -1, pageIndex: 0 },
+    };
+
+    const makeOptions = (enabled: boolean) => ({
+        enabled: !!projectId && enabled,
+    });
+
+    const { data: supplies } = useQuery(
+        trpc.projectSupplies.list.queryOptions(
+            queryInput,
+            makeOptions(stream === "supplies")
+        )
+    );
+    const { data: labors } = useQuery(
+        trpc.projectLabors.list.queryOptions(
+            queryInput,
+            makeOptions(stream === "labors")
+        )
+    );
+    const { data: misc } = useQuery(
+        trpc.projectMisc.list.queryOptions(
+            queryInput,
+            makeOptions(stream === "misc")
+        )
+    );
+    const { data: payments } = useQuery(
+        trpc.projectPayments.list.queryOptions(
+            queryInput,
+            makeOptions(stream === "payments")
+        )
+    );
+
+    const dataMap = { supplies, labors, misc, payments };
+    return stream ? dataMap[stream]?.items : undefined;
+};
 
 type Props = {
     transactionId: string;
@@ -45,8 +92,6 @@ type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
-
-type SchemaType = z.infer<typeof createConsolidationSchema>;
 
 export const CreateConsolidation = ({
     transactionId,
@@ -67,6 +112,8 @@ export const CreateConsolidation = ({
             budgetCategory: undefined,
             consolidationGroup: undefined,
             projectId: undefined,
+            projectStream: undefined,
+            projectItemId: undefined,
             isGst: true,
         },
     });
@@ -161,14 +208,16 @@ export const CreateConsolidation = ({
 
     const isPending = createMutation.isPending || updateMutation.isPending;
 
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const selectedGroup = form.watch("consolidationGroup");
+
     const { data: projects } = useQuery(
         trpc.projects.list.queryOptions({
             pagination: { pageSize: -1, pageIndex: 0 },
         })
     );
 
-    // eslint-disable-next-line react-hooks/incompatible-library
-    const selectedGroup = form.watch("consolidationGroup");
+    const projectItems = useProjectItems(form);
 
     return (
         <Dialog
@@ -192,155 +241,109 @@ export const CreateConsolidation = ({
                     onSubmit={form.handleSubmit(handleSubmit)}
                     className="flex flex-col gap-8 px-4"
                 >
-                    <FieldGroup>
-                        {/* Description */}
-                        <Controller
-                            control={form.control}
-                            name="description"
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field>
-                                        <FieldLabel>
-                                            {tc("description")}
-                                        </FieldLabel>
-                                        <Input {...field} />
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-
-                        {/* Amount */}
-                        <Controller
-                            control={form.control}
-                            name="amount"
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field>
-                                        <FieldLabel>{t("amount")}</FieldLabel>
-                                        <Input
-                                            type="number"
-                                            {...field}
-                                            onChange={v =>
-                                                field.onChange(
-                                                    v.target.value
-                                                        ? parseFloat(
-                                                              v.target.value
-                                                          )
-                                                        : ""
-                                                )
-                                            }
-                                        />
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-
-                        {/* Consolidation group */}
-                        <Controller
-                            control={form.control}
-                            name="consolidationGroup"
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field>
-                                        <FieldLabel>
-                                            {t("consolidationGroup")}
-                                        </FieldLabel>
-
-                                        <Select
-                                            value={field.value ?? ""}
-                                            onValueChange={value => {
-                                                field.onChange(value);
-
-                                                if (value !== "budget")
-                                                    form.setValue(
-                                                        "budgetCategory",
-                                                        undefined
-                                                    );
-
-                                                if (value !== "project")
-                                                    form.setValue(
-                                                        "projectId",
-                                                        undefined
-                                                    );
-                                            }}
-                                        >
-                                            <SelectTrigger ref={field.ref}>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {transactionConsolidationGroups.map(
-                                                        group => {
-                                                            return (
-                                                                <SelectItem
-                                                                    key={group}
-                                                                    value={
-                                                                        group
-                                                                    }
-                                                                >
-                                                                    {t(group)}
-                                                                </SelectItem>
-                                                            );
-                                                        }
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-
-                        {/* Budget category */}
-                        {selectedGroup === "budget" && (
+                    <fieldset disabled={!data && !defaults}>
+                        <FieldGroup>
+                            {/* Description */}
                             <Controller
                                 control={form.control}
-                                name="budgetCategory"
+                                name="description"
                                 render={({ field, fieldState }) => {
                                     return (
                                         <Field>
                                             <FieldLabel>
-                                                {t("budgetCategory")}
+                                                {tc("description")}
+                                            </FieldLabel>
+                                            <Input {...field} />
+                                            {fieldState.invalid && (
+                                                <FieldError
+                                                    errors={[fieldState.error]}
+                                                />
+                                            )}
+                                        </Field>
+                                    );
+                                }}
+                            />
+
+                            {/* Amount */}
+                            <Controller
+                                control={form.control}
+                                name="amount"
+                                render={({ field, fieldState }) => {
+                                    return (
+                                        <Field>
+                                            <FieldLabel>
+                                                {t("amount")}
+                                            </FieldLabel>
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={v =>
+                                                    field.onChange(
+                                                        v.target.value
+                                                            ? parseFloat(
+                                                                  v.target.value
+                                                              )
+                                                            : ""
+                                                    )
+                                                }
+                                            />
+                                            {fieldState.invalid && (
+                                                <FieldError
+                                                    errors={[fieldState.error]}
+                                                />
+                                            )}
+                                        </Field>
+                                    );
+                                }}
+                            />
+
+                            {/* Consolidation group */}
+                            <Controller
+                                control={form.control}
+                                name="consolidationGroup"
+                                render={({ field, fieldState }) => {
+                                    return (
+                                        <Field>
+                                            <FieldLabel>
+                                                {t("consolidationGroup")}
                                             </FieldLabel>
 
                                             <Select
                                                 value={field.value ?? ""}
-                                                onValueChange={field.onChange}
+                                                onValueChange={value => {
+                                                    field.onChange(value);
+
+                                                    if (value !== "budget")
+                                                        form.setValue(
+                                                            "budgetCategory",
+                                                            undefined
+                                                        );
+
+                                                    if (value !== "project")
+                                                        form.setValue(
+                                                            "projectId",
+                                                            undefined
+                                                        );
+                                                }}
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger ref={field.ref}>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {transactionBudgetCategories.map(
-                                                            category => {
+                                                        {transactionConsolidationGroups.map(
+                                                            group => {
                                                                 return (
                                                                     <SelectItem
                                                                         key={
-                                                                            category
+                                                                            group
                                                                         }
                                                                         value={
-                                                                            category
+                                                                            group
                                                                         }
                                                                     >
                                                                         {t(
-                                                                            category
+                                                                            group
                                                                         )}
                                                                     </SelectItem>
                                                                 );
@@ -359,48 +362,254 @@ export const CreateConsolidation = ({
                                     );
                                 }}
                             />
-                        )}
 
-                        {/* Project */}
-                        {selectedGroup === "project" && (
+                            {/* Budget category */}
+                            {selectedGroup === "budget" && (
+                                <Controller
+                                    control={form.control}
+                                    name="budgetCategory"
+                                    render={({ field, fieldState }) => {
+                                        return (
+                                            <Field>
+                                                <FieldLabel>
+                                                    {t("budgetCategory")}
+                                                </FieldLabel>
+
+                                                <Select
+                                                    value={field.value ?? ""}
+                                                    onValueChange={
+                                                        field.onChange
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            {transactionBudgetCategories.map(
+                                                                category => {
+                                                                    return (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                category
+                                                                            }
+                                                                            value={
+                                                                                category
+                                                                            }
+                                                                        >
+                                                                            {t(
+                                                                                category
+                                                                            )}
+                                                                        </SelectItem>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                {fieldState.invalid && (
+                                                    <FieldError
+                                                        errors={[
+                                                            fieldState.error,
+                                                        ]}
+                                                    />
+                                                )}
+                                            </Field>
+                                        );
+                                    }}
+                                />
+                            )}
+
+                            {/* Project */}
+                            {selectedGroup === "project" && (
+                                <Controller
+                                    control={form.control}
+                                    name="projectId"
+                                    render={({ field, fieldState }) => {
+                                        return (
+                                            <Field>
+                                                <FieldLabel>
+                                                    {t("project")}
+                                                </FieldLabel>
+
+                                                <Select
+                                                    value={field.value ?? ""}
+                                                    onValueChange={
+                                                        field.onChange
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            {projects?.items.map(
+                                                                project => {
+                                                                    return (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                project.id
+                                                                            }
+                                                                            value={
+                                                                                project.id
+                                                                            }
+                                                                        >
+                                                                            {`${project.humanId} - ${project.title}`}
+                                                                        </SelectItem>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                {fieldState.invalid && (
+                                                    <FieldError
+                                                        errors={[
+                                                            fieldState.error,
+                                                        ]}
+                                                    />
+                                                )}
+                                            </Field>
+                                        );
+                                    }}
+                                />
+                            )}
+
+                            {/* Project stream */}
+                            {selectedGroup === "project" && (
+                                <Controller
+                                    control={form.control}
+                                    name="projectStream"
+                                    render={({ field, fieldState }) => {
+                                        return (
+                                            <Field>
+                                                <FieldLabel>
+                                                    {t("projectStream")}
+                                                </FieldLabel>
+
+                                                <Select
+                                                    value={field.value ?? ""}
+                                                    onValueChange={
+                                                        field.onChange
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            {projectStreams.map(
+                                                                stream => {
+                                                                    return (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                stream
+                                                                            }
+                                                                            value={
+                                                                                stream
+                                                                            }
+                                                                        >
+                                                                            {t(
+                                                                                stream
+                                                                            )}
+                                                                        </SelectItem>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                {fieldState.invalid && (
+                                                    <FieldError
+                                                        errors={[
+                                                            fieldState.error,
+                                                        ]}
+                                                    />
+                                                )}
+                                            </Field>
+                                        );
+                                    }}
+                                />
+                            )}
+
+                            {/* Project item */}
+                            {selectedGroup === "project" && (
+                                <Controller
+                                    control={form.control}
+                                    name="projectItemId"
+                                    render={({ field, fieldState }) => {
+                                        return (
+                                            <Field>
+                                                <FieldLabel>
+                                                    {t("projectItem")}
+                                                </FieldLabel>
+
+                                                <Select
+                                                    value={field.value ?? ""}
+                                                    onValueChange={
+                                                        field.onChange
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            {projectItems?.map(
+                                                                item => {
+                                                                    return (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                item.id
+                                                                            }
+                                                                            value={
+                                                                                item.id
+                                                                            }
+                                                                        >
+                                                                            {"name" in
+                                                                            item
+                                                                                ? item.name
+                                                                                : item.date.toDateString()}
+                                                                        </SelectItem>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                {fieldState.invalid && (
+                                                    <FieldError
+                                                        errors={[
+                                                            fieldState.error,
+                                                        ]}
+                                                    />
+                                                )}
+                                            </Field>
+                                        );
+                                    }}
+                                />
+                            )}
+
+                            {/* Is GST */}
                             <Controller
                                 control={form.control}
-                                name="projectId"
+                                name="isGst"
                                 render={({ field, fieldState }) => {
                                     return (
-                                        <Field>
-                                            <FieldLabel>
-                                                {t("project")}
-                                            </FieldLabel>
+                                        <Field orientation="horizontal">
+                                            <Checkbox
+                                                id="gst-checkbox"
+                                                checked={field.value ?? false}
+                                                onCheckedChange={field.onChange}
+                                            />
 
-                                            <Select
-                                                value={field.value ?? ""}
-                                                onValueChange={field.onChange}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectGroup>
-                                                        {projects?.items.map(
-                                                            project => {
-                                                                return (
-                                                                    <SelectItem
-                                                                        key={
-                                                                            project.id
-                                                                        }
-                                                                        value={
-                                                                            project.id
-                                                                        }
-                                                                    >
-                                                                        {`${project.humanId} - ${project.title}`}
-                                                                    </SelectItem>
-                                                                );
-                                                            }
-                                                        )}
-                                                    </SelectGroup>
-                                                </SelectContent>
-                                            </Select>
+                                            <FieldLabel htmlFor="gst-checkbox">
+                                                {t("isGst")}
+                                            </FieldLabel>
 
                                             {fieldState.invalid && (
                                                 <FieldError
@@ -411,46 +620,17 @@ export const CreateConsolidation = ({
                                     );
                                 }}
                             />
-                        )}
-
-                        {/* Is GST */}
-                        <Controller
-                            control={form.control}
-                            name="isGst"
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field orientation="horizontal">
-                                        <Checkbox
-                                            id="gst-checkbox"
-                                            checked={field.value ?? false}
-                                            onCheckedChange={field.onChange}
-                                        />
-
-                                        <FieldLabel htmlFor="gst-checkbox">
-                                            {t("isGst")}
-                                        </FieldLabel>
-
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-                    </FieldGroup>
+                        </FieldGroup>
+                    </fieldset>
                 </form>
 
                 <DialogFooter>
                     <Button
-                        disabled={createMutation.isPending}
+                        disabled={isPending}
                         type="submit"
                         form="consolidate-transaction-form"
                     >
-                        {createMutation.isPending && (
-                            <Loader2 className="animate-spin" />
-                        )}
+                        {isPending && <Loader2 className="animate-spin" />}
                         <span>{tc("save")}</span>
                     </Button>
                 </DialogFooter>

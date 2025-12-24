@@ -13,7 +13,6 @@ export const fillForm = <T extends FieldValues>(
     const values = form.getValues();
     Object.keys(values).forEach(tmp => {
         const key = tmp as Path<T>;
-        if (data[key] === null || data[key] === undefined) return;
-        form.setValue(key, data[key]);
+        form.setValue(key, (data[key] ?? undefined)!);
     });
 };

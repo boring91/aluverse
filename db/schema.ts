@@ -1,4 +1,5 @@
 import {
+    projectStreams,
     transactionBudgetCategories,
     transactionConsolidationGroups,
     transactionTypes,
@@ -120,6 +121,10 @@ export const transactionBudgetCategory = pgEnum(
     "consolidation_budget_category",
     transactionBudgetCategories
 );
+export const projectStream = pgEnum(
+    "consolidation_project_stream",
+    projectStreams
+);
 
 export const consolidations = pgTable(
     "consolidations",
@@ -136,6 +141,8 @@ export const consolidations = pgTable(
         projectId: uuid().references(() => projects.id, {
             onDelete: "set null",
         }),
+        projectStream: projectStream(),
+        projectItemId: uuid(),
         createdAt: timestamp().notNull().defaultNow(),
         updatedAt: timestamp()
             .notNull()
@@ -186,6 +193,14 @@ export const projectSupplies = pgTable("project_supplies", {
     name: varchar({ length: 1024 }).notNull(),
     quantity: integer().notNull(),
     unitPrice: integer().notNull(), // in cents
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
 });
 
 export const projectLabors = pgTable("project_labors", {
@@ -196,6 +211,14 @@ export const projectLabors = pgTable("project_labors", {
     name: varchar({ length: 1024 }).notNull(),
     hours: integer().notNull(),
     rate: integer().notNull(), // in cents per hour
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
 });
 
 export const projectMisc = pgTable("project_misc", {
@@ -205,6 +228,14 @@ export const projectMisc = pgTable("project_misc", {
         .notNull(),
     name: varchar({ length: 1024 }).notNull(),
     amount: integer().notNull(), // in cents
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
 });
 
 export const projectPayments = pgTable("project_payments", {
@@ -214,4 +245,12 @@ export const projectPayments = pgTable("project_payments", {
         .notNull(),
     amount: integer().notNull(), // in cents
     date: date({ mode: "date" }).notNull(),
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
 });

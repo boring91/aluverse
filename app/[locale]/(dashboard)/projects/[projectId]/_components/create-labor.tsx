@@ -7,13 +7,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-    SheetFooter,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
 import { createProjectLaborSchema } from "@/lib/trpc-schemas";
 import { useTRPC } from "@/trpc/client";
@@ -114,7 +114,7 @@ export const CreateLabor = ({
     const isPending = createMutation.isPending || updateMutation.isPending;
 
     return (
-        <Sheet
+        <Dialog
             open={open}
             onOpenChange={value => {
                 if (isPending) return;
@@ -122,15 +122,15 @@ export const CreateLabor = ({
                 onOpenChange(value);
             }}
         >
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>{t("labors")}</SheetTitle>
-                    <SheetDescription>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{t("labors")}</DialogTitle>
+                    <DialogDescription>
                         {isUpdate
                             ? t("updateExistingLabor")
                             : t("createNewLabor")}
-                    </SheetDescription>
-                </SheetHeader>
+                    </DialogDescription>
+                </DialogHeader>
 
                 <form
                     id="create-labor-form"
@@ -221,7 +221,7 @@ export const CreateLabor = ({
                     </FieldGroup>
                 </form>
 
-                <SheetFooter>
+                <DialogFooter>
                     <Button
                         disabled={isPending}
                         type="submit"
@@ -233,8 +233,8 @@ export const CreateLabor = ({
                         )}
                         {tc("save")}
                     </Button>
-                </SheetFooter>
-            </SheetContent>
-        </Sheet>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };

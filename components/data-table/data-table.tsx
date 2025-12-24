@@ -26,6 +26,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { Loader2 } from "lucide-react";
 
 type Props<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -138,7 +139,16 @@ export const DataTable = <TData, TValue>({
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows?.length ? (
+                        {!data ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={columns.length}
+                                    className="h-24 text-center"
+                                >
+                                    <Loader2 className="animate-spin inline" />
+                                </TableCell>
+                            </TableRow>
+                        ) : table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map(row => (
                                 <TableRow key={row.id}>
                                     {row.getVisibleCells().map(cell => (

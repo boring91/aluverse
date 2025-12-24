@@ -83,7 +83,13 @@
         "youHaveCountPendingConsolidations": "You have {count} pending consolidations",
         "consolidations": "Consolidations",
         "consolidationsListDetails": "Assign this transaction to a consolidation group and categorize it accordingly.",
-        "countConsolidations": "{count} consolidations"
+        "countConsolidations": "{count} consolidations",
+        "projectStream": "Project stream",
+        "projectItem": "Project item",
+        "supplies": "Supplies",
+        "labors": "Labors",
+        "misc": "Misc",
+        "payments": "Payments"
     },
     "Projects": {
         "humanId": "Human ID",

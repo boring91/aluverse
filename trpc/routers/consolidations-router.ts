@@ -1,18 +1,16 @@
 import { listSchema } from "@/lib/util-schemas";
 import { createTRPCRouter, protectedProcedure } from "../init";
+import { and, asc, count, desc, eq, ilike, ne, sql } from "drizzle-orm";
 import {
-    and,
-    asc,
-    count,
-    desc,
-    eq,
-    ilike,
-    isNull,
-    ne,
-    sql,
-    sum,
-} from "drizzle-orm";
-import { consolidations, db, projects, transactions } from "@/db";
+    consolidations,
+    db,
+    projectLabors,
+    projectMisc,
+    projectPayments,
+    projects,
+    projectSupplies,
+    transactions,
+} from "@/db";
 import { z } from "zod";
 import { createConsolidationSchema } from "@/lib/trpc-schemas";
 import { createProjectedQuery, one, oneRequired } from "@/lib/server-utils";
@@ -25,6 +23,8 @@ const projection = {
         isGst: consolidations.isGst,
         consolidationGroup: consolidations.consolidationGroup,
         budgetCategory: consolidations.budgetCategory,
+        projectStream: consolidations.projectStream,
+        projectItemId: consolidations.projectItemId,
         project: one({
             key: "id",
             fields: {
@@ -164,7 +164,37 @@ export const consolidationsRouter = createTRPCRouter({
                 }))
         )
         .mutation(async ({ input }) => {
-            return await db.insert(consolidations).values(input).returning();
+            db.transaction(async tx => {
+                const consolidation = (
+                    await tx.insert(consolidations).values(input).returning()
+                )[0];
+
+                const { projectStream, projectItemId } = input;
+
+                if (projectStream && projectItemId) {
+                    await tx
+                        .update(
+                            {
+                                supplies: projectSupplies,
+                                labors: projectLabors,
+                                misc: projectMisc,
+                                payments: projectPayments,
+                            }[projectStream]
+                        )
+                        .set({ consolidationId: consolidation.id })
+                        .where(
+                            eq(
+                                {
+                                    supplies: projectSupplies.id,
+                                    labors: projectLabors.id,
+                                    misc: projectMisc.id,
+                                    payments: projectPayments.id,
+                                }[projectStream],
+                                projectItemId
+                            )
+                        );
+                }
+            });
         }),
 
     update: protectedProcedure

@@ -7,13 +7,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-    SheetFooter,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
 import { createProjectSupplySchema } from "@/lib/trpc-schemas";
 import { useTRPC } from "@/trpc/client";
@@ -114,7 +114,7 @@ export const CreateSupply = ({
     const isPending = createMutation.isPending || updateMutation.isPending;
 
     return (
-        <Sheet
+        <Dialog
             open={open}
             onOpenChange={value => {
                 if (isPending) return;
@@ -122,15 +122,15 @@ export const CreateSupply = ({
                 onOpenChange(value);
             }}
         >
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>{t("supplies")}</SheetTitle>
-                    <SheetDescription>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{t("supplies")}</DialogTitle>
+                    <DialogDescription>
                         {isUpdate
                             ? t("updateExistingSupply")
                             : t("createNewSupply")}
-                    </SheetDescription>
-                </SheetHeader>
+                    </DialogDescription>
+                </DialogHeader>
 
                 <form
                     id="create-supply-form"
@@ -223,7 +223,7 @@ export const CreateSupply = ({
                     </FieldGroup>
                 </form>
 
-                <SheetFooter>
+                <DialogFooter>
                     <Button
                         disabled={isPending}
                         type="submit"
@@ -235,8 +235,8 @@ export const CreateSupply = ({
                         )}
                         {tc("save")}
                     </Button>
-                </SheetFooter>
-            </SheetContent>
-        </Sheet>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };

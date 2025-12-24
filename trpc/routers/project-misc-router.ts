@@ -43,13 +43,15 @@ export const projectMiscRouter = createTRPCRouter({
             });
 
             const { pageIndex, pageSize } = pagination;
-            const items = await db
+            const query = db
                 .select(projection)
                 .from(projectMisc)
                 .where(and(...filters))
-                .orderBy(...orderBy)
-                .offset(pageIndex * pageSize)
-                .limit(pageSize);
+                .orderBy(...orderBy);
+
+            const items = await (pageSize === -1
+                ? query
+                : query.offset(pageIndex * pageSize).limit(pageSize));
 
             const { filteredCount } = (
                 await db.select({ filteredCount: count() }).from(projectMisc)

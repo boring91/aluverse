@@ -78,6 +78,13 @@
       "when": 1766104158926,
       "tag": "0010_sloppy_blonde_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1766306912379,
+      "tag": "0011_deep_chronomancer",
+      "breakpoints": true
     }
   ]
 }

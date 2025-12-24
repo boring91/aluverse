@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-    SheetFooter,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
 import { createProjectPaymentSchema } from "@/lib/trpc-schemas";
 import { useTRPC } from "@/trpc/client";
@@ -113,7 +113,7 @@ export const CreatePayment = ({
     const isPending = createMutation.isPending || updateMutation.isPending;
 
     return (
-        <Sheet
+        <Dialog
             open={open}
             onOpenChange={value => {
                 if (isPending) return;
@@ -121,15 +121,15 @@ export const CreatePayment = ({
                 onOpenChange(value);
             }}
         >
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>{t("payments")}</SheetTitle>
-                    <SheetDescription>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{t("payments")}</DialogTitle>
+                    <DialogDescription>
                         {isUpdate
                             ? t("updateExistingPayment")
                             : t("createNewPayment")}
-                    </SheetDescription>
-                </SheetHeader>
+                    </DialogDescription>
+                </DialogHeader>
 
                 <form
                     id="create-payment-form"
@@ -189,7 +189,7 @@ export const CreatePayment = ({
                     </FieldGroup>
                 </form>
 
-                <SheetFooter>
+                <DialogFooter>
                     <Button
                         disabled={isPending}
                         type="submit"
@@ -201,8 +201,8 @@ export const CreatePayment = ({
                         )}
                         {tc("save")}
                     </Button>
-                </SheetFooter>
-            </SheetContent>
-        </Sheet>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };

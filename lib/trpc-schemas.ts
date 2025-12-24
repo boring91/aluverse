@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+    projectStreams,
     transactionBudgetCategories,
     transactionConsolidationGroups,
     transactionTypes,
@@ -23,7 +24,12 @@ export const createConsolidationSchema = z
         description: z.string().min(1).optional(),
         consolidationGroup: z.enum(transactionConsolidationGroups),
         budgetCategory: z.enum(transactionBudgetCategories).optional(),
+
+        /* for projects */
         projectId: z.uuid().optional(),
+        projectStream: z.enum(projectStreams).optional(),
+        projectItemId: z.uuid().optional(),
+
         isGst: z.boolean(),
     })
     .superRefine((data, ctx) => {
@@ -60,6 +66,28 @@ export const createConsolidationSchema = z
                     },
                     message: "PROJECT_REQUIRED",
                     path: ["projectId"],
+                });
+            }
+
+            if (!data.projectStream) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "PROJECT_STREAM_REQUIRED",
+                    },
+                    message: "PROJECT_STREAM_REQUIRED",
+                    path: ["projectStream"],
+                });
+            }
+
+            if (!data.projectItemId) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "PROJECT_ITEM_REQUIRED",
+                    },
+                    message: "PROJECT_ITEM_REQUIRED",
+                    path: ["projectItemId"],
                 });
             }
 
