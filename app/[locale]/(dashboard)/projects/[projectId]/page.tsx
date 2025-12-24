@@ -11,7 +11,6 @@ import {
     CalendarIcon,
     DollarSignIcon,
     Edit3Icon,
-    Loader2Icon,
     RulerIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -35,6 +34,7 @@ import { LaborsList } from "./_components/labors-list";
 import { MiscList } from "./_components/misc-list";
 import { PaymentsList } from "./_components/payments-list";
 import { cn } from "@/lib/client-utils";
+import { PageLoader } from "@/components/page-loader";
 
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 
@@ -274,12 +274,7 @@ const Page = () => {
     if (isLoading) {
         return (
             <PageContainer>
-                <div className="flex items-center justify-center py-16">
-                    <div className="flex items-center gap-3 text-muted-foreground">
-                        <Loader2Icon className="size-5 animate-spin" />
-                        <span className="text-sm">{tc("loading")}</span>
-                    </div>
-                </div>
+                <PageLoader />
             </PageContainer>
         );
     }

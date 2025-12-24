@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2Icon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateFinancialAccount } from "./_components/create-financial-account";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
 import { FinancialAccountsGrid } from "./_components/financial-accounts-grid";
 import { PageContainer } from "@/components/page-container";
+import { PageLoader } from "@/components/page-loader";
 
 const Page = () => {
     const tc = useTranslations("Common");
@@ -106,7 +107,7 @@ const Page = () => {
 
                 {/* Content */}
                 {isLoading ? (
-                    <Loader2Icon className="animate-spin" />
+                    <PageLoader />
                 ) : (
                     <FinancialAccountsGrid
                         items={data!}
