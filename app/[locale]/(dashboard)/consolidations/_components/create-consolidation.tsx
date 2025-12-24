@@ -36,7 +36,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -44,6 +44,7 @@ import {
     CreateProjectItem,
     CreateProjectItemHandle,
 } from "./create-project-item";
+import { CreateProject } from "../../projects/_components/create-project";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;
 
@@ -128,6 +129,36 @@ const usePendingProjectItemSelection = (
     }, [projectId, projectStream]);
 
     return handleItemCreated;
+};
+
+const usePendingProjectSelection = (
+    form: UseFormReturn<SchemaType>,
+    projects: { id: string }[] | undefined,
+    open: boolean
+) => {
+    const pendingProjectIdRef = useRef<string | null>(null);
+
+    const handleProjectCreated = (projectId: string) => {
+        pendingProjectIdRef.current = projectId;
+    };
+
+    useEffect(() => {
+        if (
+            pendingProjectIdRef.current &&
+            projects?.some(project => project.id === pendingProjectIdRef.current)
+        ) {
+            form.setValue("projectId", pendingProjectIdRef.current);
+            form.setValue("projectStream", undefined);
+            form.setValue("projectItemId", undefined);
+            pendingProjectIdRef.current = null;
+        }
+    }, [projects, form]);
+
+    useEffect(() => {
+        if (!open) pendingProjectIdRef.current = null;
+    }, [open]);
+
+    return handleProjectCreated;
 };
 
 type Props = {
@@ -266,6 +297,7 @@ export const CreateConsolidation = ({
     const projectId = form.watch("projectId");
     const projectStream = form.watch("projectStream");
 
+    const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
     const createProjectItemRef = useRef<CreateProjectItemHandle>(null);
     const handleItemCreated = usePendingProjectItemSelection(
         form,
@@ -274,13 +306,21 @@ export const CreateConsolidation = ({
         projectId,
         projectStream
     );
+    const handleProjectCreated = usePendingProjectSelection(
+        form,
+        projects?.items,
+        open
+    );
 
     return (
         <Dialog
             open={open}
             onOpenChange={value => {
                 if (isPending) return;
-                if (!value) form.reset();
+                if (!value) {
+                    form.reset();
+                    setIsCreateProjectOpen(false);
+                }
                 onOpenChange(value);
             }}
         >
@@ -491,9 +531,36 @@ export const CreateConsolidation = ({
 
                                                 <Select
                                                     value={field.value ?? ""}
-                                                    onValueChange={
-                                                        field.onChange
+                                                onValueChange={value => {
+                                                    if (
+                                                        value ===
+                                                        "__create_new_project__"
+                                                    ) {
+                                                        setIsCreateProjectOpen(
+                                                            true
+                                                        );
+                                                        field.onChange("");
+                                                        form.setValue(
+                                                            "projectStream",
+                                                            undefined
+                                                        );
+                                                        form.setValue(
+                                                            "projectItemId",
+                                                            undefined
+                                                        );
+                                                        return;
                                                     }
+
+                                                    field.onChange(value);
+                                                    form.setValue(
+                                                        "projectStream",
+                                                        undefined
+                                                    );
+                                                    form.setValue(
+                                                        "projectItemId",
+                                                        undefined
+                                                    );
+                                                }}
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue />
@@ -516,6 +583,17 @@ export const CreateConsolidation = ({
                                                                     );
                                                                 }
                                                             )}
+                                                            {projects?.items &&
+                                                                projects.items
+                                                                    .length >
+                                                                    0 && (
+                                                                    <SelectSeparator />
+                                                                )}
+                                                            <SelectItem value="__create_new_project__">
+                                                                {tc(
+                                                                    "createNew"
+                                                                )}
+                                                            </SelectItem>
                                                         </SelectGroup>
                                                     </SelectContent>
                                                 </Select>
@@ -725,6 +803,12 @@ export const CreateConsolidation = ({
                     onItemCreated={handleItemCreated}
                 />
             )}
+            <CreateProject
+                open={isCreateProjectOpen}
+                onOpenChange={setIsCreateProjectOpen}
+                itemId={null}
+                onCreated={handleProjectCreated}
+            />
         </Dialog>
     );
 };
