@@ -292,7 +292,10 @@ export const CreateConsolidation = ({
         }
     }, [open, data, defaults, form, isUpdate]);
 
-    const isPending = createMutation.isPending || updateMutation.isPending;
+    const isPending =
+        createMutation.isPending ||
+        updateMutation.isPending ||
+        (!data && !defaults);
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const selectedGroup = form.watch("consolidationGroup");
@@ -348,7 +351,7 @@ export const CreateConsolidation = ({
                     onSubmit={form.handleSubmit(handleSubmit)}
                     className="flex flex-col gap-8 px-4"
                 >
-                    <fieldset disabled={!data && !defaults}>
+                    <fieldset disabled={isPending}>
                         <FieldGroup>
                             {/* Description */}
                             <Controller
