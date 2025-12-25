@@ -3,7 +3,7 @@
 import { PageContainer } from "@/components/page-container";
 import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
-import { TransactionsList } from "../financial-accounts/_components/transactions-list";
+import { TransactionsList } from "@/features/financial-accounts/components/transactions-list";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";

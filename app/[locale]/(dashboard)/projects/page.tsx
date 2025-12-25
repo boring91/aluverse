@@ -1,7 +1,7 @@
 "use client";
 
 import { PageContainer } from "@/components/page-container";
-import { ProjectsList } from "./_components/projects-list";
+import { ProjectsList } from "@/features/projects/components/projects-list";
 import { useTranslations } from "next-intl";
 import { useTitle } from "@/hooks/use-title";
 

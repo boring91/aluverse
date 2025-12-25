@@ -1,12 +1,17 @@
 import { createTRPCRouter } from "../init";
-import { consolidationsRouter } from "./consolidations-router";
-import { financialAccountsRouter } from "./financial-accounts-router";
-import { projectLaborsRouter } from "./project-labors-router";
-import { projectMiscRouter } from "./project-misc-router";
-import { projectPaymentsRouter } from "./project-payments-router";
-import { projectSuppliesRouter } from "./project-supplies-router";
-import { projectsRouter } from "./projects-router";
-import { transactionsRouter } from "./transactions-router";
+import {
+    financialAccountsRouter,
+    transactionsRouter,
+} from "@/features/financial-accounts";
+import { consolidationsRouter } from "@/features/consolidations";
+import {
+    projectsRouter,
+    projectSuppliesRouter,
+    projectLaborsRouter,
+    projectMiscRouter,
+    projectPaymentsRouter,
+} from "@/features/projects";
+
 export const appRouter = createTRPCRouter({
     financialAccounts: financialAccountsRouter,
     transactions: transactionsRouter,
@@ -17,5 +22,5 @@ export const appRouter = createTRPCRouter({
     projectMisc: projectMiscRouter,
     projectPayments: projectPaymentsRouter,
 });
-// export type definition of API
+
 export type AppRouter = typeof appRouter;

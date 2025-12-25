@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { notFound, useParams } from "next/navigation";
 import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
-import { TransactionsList } from "../_components/transactions-list";
+import { TransactionsList } from "@/features/financial-accounts/components/transactions-list";
 import { formatCurrency } from "@/lib/utils";
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";

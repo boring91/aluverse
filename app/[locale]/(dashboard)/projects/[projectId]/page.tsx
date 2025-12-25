@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { notFound, useParams } from "next/navigation";
-import { ProjectStatusBadge } from "../_components/project-status-badge";
-import { CreateProject } from "../_components/create-project";
+import { ProjectStatusBadge } from "@/features/projects/components/project-status-badge";
+import { CreateProject } from "@/features/projects/components/create-project";
 import { useState } from "react";
 import {
     Card,
@@ -28,13 +28,13 @@ import {
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { formatCurrency } from "@/lib/utils";
-import { SuppliesList } from "./_components/supplies-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LaborsList } from "./_components/labors-list";
-import { MiscList } from "./_components/misc-list";
-import { PaymentsList } from "./_components/payments-list";
 import { cn } from "@/lib/client-utils";
 import { PageLoader } from "@/components/page-loader";
+import { LaborsList } from "@/features/projects/components/labors-list";
+import { MiscList } from "@/features/projects/components/misc-list";
+import { PaymentsList } from "@/features/projects/components/payments-list";
+import { SuppliesList } from "@/features/projects/components/supplies-list";
 
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 

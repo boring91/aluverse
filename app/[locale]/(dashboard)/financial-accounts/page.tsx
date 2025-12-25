@@ -6,11 +6,11 @@ import { useTRPC } from "@/trpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { CreateFinancialAccount } from "./_components/create-financial-account";
+import { CreateFinancialAccount } from "@/features/financial-accounts/components/create-financial-account";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
-import { FinancialAccountsGrid } from "./_components/financial-accounts-grid";
+import { FinancialAccountsGrid } from "@/features/financial-accounts/components/financial-accounts-grid";
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";
 
