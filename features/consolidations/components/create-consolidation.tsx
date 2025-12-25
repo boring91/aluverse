@@ -24,6 +24,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    SearchableSelect,
+    SearchableSelectContent,
+    SearchableSelectEmpty,
+    SearchableSelectGroup,
+    SearchableSelectItem,
+    SearchableSelectSeparator,
+    SearchableSelectTrigger,
+    SearchableSelectValue,
+} from "@/components/ui/searchable-select";
 import { fillForm } from "@/lib/client-utils";
 import {
     projectStreams,
@@ -145,7 +155,9 @@ const usePendingProjectSelection = (
     useEffect(() => {
         if (
             pendingProjectIdRef.current &&
-            projects?.some(project => project.id === pendingProjectIdRef.current)
+            projects?.some(
+                project => project.id === pendingProjectIdRef.current
+            )
         ) {
             form.setValue("projectId", pendingProjectIdRef.current);
             form.setValue("projectStream", undefined);
@@ -528,17 +540,29 @@ export const CreateConsolidation = ({
                                                     {t("project")}
                                                 </FieldLabel>
 
-                                                <Select
+                                                <SearchableSelect
                                                     value={field.value ?? ""}
-                                                onValueChange={value => {
-                                                    if (
-                                                        value ===
-                                                        "__create_new_project__"
-                                                    ) {
-                                                        setIsCreateProjectOpen(
-                                                            true
-                                                        );
-                                                        field.onChange("");
+                                                    onValueChange={value => {
+                                                        if (
+                                                            value ===
+                                                            "__create_new_project__"
+                                                        ) {
+                                                            setIsCreateProjectOpen(
+                                                                true
+                                                            );
+                                                            field.onChange("");
+                                                            form.setValue(
+                                                                "projectStream",
+                                                                undefined
+                                                            );
+                                                            form.setValue(
+                                                                "projectItemId",
+                                                                undefined
+                                                            );
+                                                            return;
+                                                        }
+
+                                                        field.onChange(value);
                                                         form.setValue(
                                                             "projectStream",
                                                             undefined
@@ -547,29 +571,30 @@ export const CreateConsolidation = ({
                                                             "projectItemId",
                                                             undefined
                                                         );
-                                                        return;
-                                                    }
-
-                                                    field.onChange(value);
-                                                    form.setValue(
-                                                        "projectStream",
-                                                        undefined
-                                                    );
-                                                    form.setValue(
-                                                        "projectItemId",
-                                                        undefined
-                                                    );
-                                                }}
+                                                    }}
                                                 >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectGroup>
+                                                    <SearchableSelectTrigger className="w-full">
+                                                        <SearchableSelectValue
+                                                            placeholder={t(
+                                                                "selectProject"
+                                                            )}
+                                                        />
+                                                    </SearchableSelectTrigger>
+                                                    <SearchableSelectContent
+                                                        searchPlaceholder={t(
+                                                            "searchProject"
+                                                        )}
+                                                    >
+                                                        <SearchableSelectGroup>
+                                                            <SearchableSelectEmpty>
+                                                                {t(
+                                                                    "noProjectsFound"
+                                                                )}
+                                                            </SearchableSelectEmpty>
                                                             {projects?.items.map(
                                                                 project => {
                                                                     return (
-                                                                        <SelectItem
+                                                                        <SearchableSelectItem
                                                                             key={
                                                                                 project.id
                                                                             }
@@ -578,7 +603,7 @@ export const CreateConsolidation = ({
                                                                             }
                                                                         >
                                                                             {`${project.humanId} - ${project.title}`}
-                                                                        </SelectItem>
+                                                                        </SearchableSelectItem>
                                                                     );
                                                                 }
                                                             )}
@@ -586,16 +611,16 @@ export const CreateConsolidation = ({
                                                                 projects.items
                                                                     .length >
                                                                     0 && (
-                                                                    <SelectSeparator />
+                                                                    <SearchableSelectSeparator />
                                                                 )}
-                                                            <SelectItem value="__create_new_project__">
+                                                            <SearchableSelectItem value="__create_new_project__">
                                                                 {tc(
                                                                     "createNew"
                                                                 )}
-                                                            </SelectItem>
-                                                        </SelectGroup>
-                                                    </SelectContent>
-                                                </Select>
+                                                            </SearchableSelectItem>
+                                                        </SearchableSelectGroup>
+                                                    </SearchableSelectContent>
+                                                </SearchableSelect>
 
                                                 {fieldState.invalid && (
                                                     <FieldError

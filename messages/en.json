@@ -89,7 +89,10 @@
         "supplies": "Supplies",
         "labors": "Labors",
         "misc": "Misc",
-        "payments": "Payments"
+        "payments": "Payments",
+        "selectProject": "Select a project...",
+        "searchProject": "Search projects...",
+        "noProjectsFound": "No projects found."
     },
     "Projects": {
         "humanId": "Human ID",
