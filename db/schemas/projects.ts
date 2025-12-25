@@ -1,4 +1,14 @@
-import { pgTable, uuid, varchar, date, text, doublePrecision, integer, timestamp } from "drizzle-orm/pg-core";
+import {
+    pgTable,
+    uuid,
+    varchar,
+    date,
+    text,
+    doublePrecision,
+    integer,
+    timestamp,
+} from "drizzle-orm/pg-core";
+import { consolidations } from "./consolidations";
 
 // Projects
 export const projects = pgTable("projects", {
@@ -27,7 +37,9 @@ export const projectSupplies = pgTable("project_supplies", {
     name: varchar({ length: 1024 }).notNull(),
     quantity: integer().notNull(),
     unitPrice: integer().notNull(), // in cents
-    consolidationId: uuid(), // Reference will be set up in index.ts
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
         .notNull()
@@ -43,7 +55,9 @@ export const projectLabors = pgTable("project_labors", {
     name: varchar({ length: 1024 }).notNull(),
     hours: integer().notNull(),
     rate: integer().notNull(), // in cents per hour
-    consolidationId: uuid(), // Reference will be set up in index.ts
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
         .notNull()
@@ -58,7 +72,9 @@ export const projectMisc = pgTable("project_misc", {
         .notNull(),
     name: varchar({ length: 1024 }).notNull(),
     amount: integer().notNull(), // in cents
-    consolidationId: uuid(), // Reference will be set up in index.ts
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
         .notNull()
@@ -73,11 +89,12 @@ export const projectPayments = pgTable("project_payments", {
         .notNull(),
     amount: integer().notNull(), // in cents
     date: date({ mode: "date" }).notNull(),
-    consolidationId: uuid(), // Reference will be set up in index.ts
+    consolidationId: uuid().references(() => consolidations.id, {
+        onDelete: "set null",
+    }),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
         .notNull()
         .defaultNow()
         .$onUpdate(() => new Date()),
 });
-
