@@ -8,23 +8,23 @@ import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateFinancialAccount } from "@/features/financial-accounts/components/create-financial-account";
 import { useState } from "react";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
 import { FinancialAccountsGrid } from "@/features/financial-accounts/components/financial-accounts-grid";
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";
+import { useConfirm } from "@/lib/confirm-context";
 
 const Page = () => {
     const tc = useTranslations("Common");
+    const { confirm } = useConfirm();
+
     useTitle(tc("financialAccounts"));
 
     const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
     const [updatingItemId, setUpdatingItemId] = useState<string | undefined>(
         undefined
     );
-    const [deletingItemId, setDeletingItemId] = useState<string | undefined>(
-        undefined
-    );
+
     const [currentlyDeleting, setCurrentlyDeleting] = useState<Set<string>>(
         new Set()
     );
@@ -68,25 +68,22 @@ const Page = () => {
         setIsCreateSheetOpen(true);
     };
 
-    const handleDelete = async () => {
-        if (!deletingItemId) return;
-        deleteMutation.mutate({ id: deletingItemId });
-        setCurrentlyDeleting(set => {
-            set.add(deletingItemId);
-            return new Set(set);
+    const handleDelete = async (itemId: string) => {
+        confirm({
+            title: tc("delete"),
+            description: tc("areYouSureYouWantToDeleteThisItem"),
+            onConfirm: () => {
+                deleteMutation.mutate({ id: itemId });
+                setCurrentlyDeleting(set => {
+                    set.add(itemId);
+                    return new Set(set);
+                });
+            },
         });
-        setDeletingItemId(undefined);
     };
 
     return (
         <>
-            <ConfirmDialog
-                title={tc("delete")}
-                description={tc("areYouSureYouWantToDeleteThisItem")}
-                onConfirm={handleDelete}
-                open={!!deletingItemId}
-                onOpenChange={() => setDeletingItemId(undefined)}
-            />
             <CreateFinancialAccount
                 open={isCreateSheetOpen}
                 onOpenChange={setIsCreateSheetOpen}
@@ -112,7 +109,7 @@ const Page = () => {
                     <FinancialAccountsGrid
                         items={data!}
                         onClickForUpdate={itemId => handleUpdate(itemId)}
-                        onClickForDelete={itemId => setDeletingItemId(itemId)}
+                        onClickForDelete={itemId => handleDelete(itemId)}
                         currentlyProcessing={currentlyDeleting}
                     />
                 )}

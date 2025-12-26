@@ -1,6 +1,5 @@
 "use client";
 
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -12,10 +11,10 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
+import { useConfirm } from "@/lib/confirm-context";
 import { LogOutIcon, MoonIcon, SunIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useState } from "react";
 
 const ThemeSwitcher = () => {
     const { theme, setTheme } = useTheme();
@@ -33,10 +32,11 @@ const ThemeSwitcher = () => {
 };
 
 const UserNav = () => {
+    const { confirm } = useConfirm();
+
     const { data } = useSession();
     const tc = useTranslations("Common");
     const router = useRouter();
-    const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
     const handleSignOut = async () => {
         await signOut();
@@ -45,13 +45,6 @@ const UserNav = () => {
 
     return (
         <>
-            <ConfirmDialog
-                title={tc("logout")}
-                description={tc("areYouSureYouWantToLogout")}
-                onConfirm={handleSignOut}
-                open={isConfirmDialogOpen}
-                onOpenChange={setIsConfirmDialogOpen}
-            />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -67,7 +60,13 @@ const UserNav = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         variant="destructive"
-                        onClick={() => setIsConfirmDialogOpen(true)}
+                        onClick={() =>
+                            confirm({
+                                title: tc("logout"),
+                                description: tc("areYouSureYouWantToLogout"),
+                                onConfirm: handleSignOut,
+                            })
+                        }
                     >
                         <LogOutIcon />
                         <span>{tc("logout")}</span>
