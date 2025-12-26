@@ -23,7 +23,7 @@ import {
     TableRow,
 } from "../ui/table";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { PageLoader } from "@/components/page-loader";
@@ -43,6 +43,7 @@ type Props<TData, TValue> = {
     columnVisibility?: VisibilityState;
     setColumnVisibility?: OnChangeFn<VisibilityState>;
     setOpenCreateSheet?: (open: boolean) => void;
+    filtersSlot?: ReactNode;
 };
 
 export const DataTable = <TData, TValue>({
@@ -57,6 +58,7 @@ export const DataTable = <TData, TValue>({
     columnVisibility: controlledColumnVisibility,
     setColumnVisibility: setControlledColumnVisibility,
     setOpenCreateSheet,
+    filtersSlot,
 }: Props<TData, TValue>) => {
     const tc = useTranslations("Common");
 
@@ -110,6 +112,7 @@ export const DataTable = <TData, TValue>({
 
     return (
         <div className="flex flex-col gap-4">
+            {filtersSlot && <div>{filtersSlot}</div>}
             <DataTableToolbar
                 table={table}
                 setOpenCreateSheet={setOpenCreateSheet}

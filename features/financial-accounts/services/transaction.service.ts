@@ -1,5 +1,19 @@
 import { db, transactions, consolidations, projects } from "@/db";
-import { count, desc, asc, eq, ilike, and, sum } from "drizzle-orm";
+import {
+    count,
+    desc,
+    asc,
+    eq,
+    ilike,
+    and,
+    sum,
+    gte,
+    lte,
+    ne,
+    or,
+    isNull,
+    SQL,
+} from "drizzle-orm";
 import { createProjectedQuery, many, one } from "@/lib/server-utils";
 import { z } from "zod";
 import {
@@ -51,24 +65,43 @@ const transactionProjection = {
 
 export class TransactionService {
     async list(input: z.infer<typeof listTransactionSchema>) {
-        const { accountId, pagination, sorting, columnFilters } = input;
+        const { accountId, pagination, sorting, columnFilters, filters } =
+            input;
 
-        const filters = accountId
+        const whereFilters: SQL[] = accountId
             ? [eq(transactions.accountId, accountId)]
             : [];
 
+        // Handle column filters (legacy support)
         if (columnFilters) {
             for (const filter of columnFilters) {
                 if (
                     filter.id === "description" &&
                     typeof filter.value === "string"
                 ) {
-                    filters.push(
+                    whereFilters.push(
                         ilike(transactions.description, `%${filter.value}%`)
                     );
                 }
             }
         }
+
+        // Handle typed filters
+        if (filters) {
+            // Date range filter
+            if (filters.dateRange) {
+                if (filters.dateRange.from) {
+                    whereFilters.push(gte(transactions.date, filters.dateRange.from));
+                }
+                if (filters.dateRange.to) {
+                    whereFilters.push(lte(transactions.date, filters.dateRange.to));
+                }
+            }
+        }
+
+        // isConsolidated filter requires a separate having clause applied after joins
+        // We'll handle it as a post-join filter
+        const isConsolidatedFilter = filters?.isConsolidated;
 
         const orderBy = [];
         if (sorting && sorting.length > 0) {
@@ -98,6 +131,31 @@ export class TransactionService {
             transactionProjection
         );
 
+        // Build the base query with isConsolidated filter
+        let consolidatedWhereClause: SQL | undefined = undefined;
+        if (isConsolidatedFilter === true) {
+            // Consolidated: amount equals consolidated total
+            consolidatedWhereClause = eq(
+                transactions.amount,
+                consolidationsSq.total
+            );
+        } else if (isConsolidatedFilter === false) {
+            // Not consolidated: amount does not equal consolidated total OR no consolidations
+            consolidatedWhereClause = or(
+                ne(transactions.amount, consolidationsSq.total),
+                isNull(consolidationsSq.total)
+            );
+        }
+
+        const finalWhereClause =
+            consolidatedWhereClause && whereFilters.length > 0
+                ? and(...whereFilters, consolidatedWhereClause)
+                : consolidatedWhereClause
+                  ? consolidatedWhereClause
+                  : whereFilters.length > 0
+                    ? and(...whereFilters)
+                    : undefined;
+
         const items = await db
             .select(selection)
             .from(transactions)
@@ -110,7 +168,7 @@ export class TransactionService {
                 eq(transactions.id, consolidations.transactionId)
             )
             .leftJoin(projects, eq(consolidations.projectId, projects.id))
-            .where(and(...filters))
+            .where(finalWhereClause)
             .orderBy(...orderBy)
             .offset(pageIndex * pageSize)
             .limit(pageSize);
@@ -119,12 +177,17 @@ export class TransactionService {
             await db.select({ _count: count() }).from(transactions)
         )[0];
 
-        const { filteredCount } = (
-            await db
-                .select({ filteredCount: count() })
-                .from(transactions)
-                .where(and(...filters))
-        )[0];
+        // For filtered count, we need to include the isConsolidated filter
+        const filteredCountQuery = db
+            .select({ filteredCount: count() })
+            .from(transactions)
+            .leftJoin(
+                consolidationsSq,
+                eq(transactions.id, consolidationsSq.transactionId)
+            )
+            .where(finalWhereClause);
+
+        const { filteredCount } = (await filteredCountQuery)[0];
 
         return {
             items: transform(items),

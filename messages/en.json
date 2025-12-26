@@ -37,7 +37,14 @@
         "desc": "Desc",
         "hide": "Hide",
         "dates": "Dates",
-        "itemNotFound": "Item not found"
+        "itemNotFound": "Item not found",
+        "all": "All",
+        "yes": "Yes",
+        "no": "No",
+        "resetFilters": "Reset filters",
+        "dateRange": "Date range",
+        "consolidated": "Consolidated",
+        "notConsolidated": "Not consolidated"
     },
     "Login": {
         "pageTitle": "Login",

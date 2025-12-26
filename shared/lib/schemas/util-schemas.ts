@@ -25,3 +25,27 @@ export const listSchema = z.object({
         .optional(),
 });
 
+// Generic filter schemas for reuse
+export const dateRangeFilterSchema = z.object({
+    from: z.coerce.date().optional(),
+    to: z.coerce.date().optional(),
+});
+
+export const booleanFilterSchema = z
+    .enum(["true", "false", "all"])
+    .optional()
+    .transform(val => {
+        if (val === "true") return true;
+        if (val === "false") return false;
+        return undefined;
+    });
+
+// Helper to create a list schema with typed filters
+export const createListSchemaWithFilters = <T extends z.ZodRawShape>(
+    filtersSchema: z.ZodObject<T>
+) => {
+    return listSchema.extend({
+        filters: filtersSchema.optional(),
+    });
+};
+

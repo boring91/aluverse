@@ -1,9 +1,21 @@
 import { z } from "zod";
 import { transactionTypes } from "@/lib/constants";
-import { listSchema } from "@/shared/lib/schemas/util-schemas";
+import {
+    listSchema,
+    dateRangeFilterSchema,
+    booleanFilterSchema,
+} from "@/shared/lib/schemas/util-schemas";
+
+export const transactionFiltersSchema = z.object({
+    dateRange: dateRangeFilterSchema.optional(),
+    isConsolidated: booleanFilterSchema,
+});
+
+export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
 
 export const listTransactionSchema = listSchema.safeExtend({
     accountId: z.uuid().optional(),
+    filters: transactionFiltersSchema.optional(),
 });
 
 export const createTransactionSchema = z.object({
