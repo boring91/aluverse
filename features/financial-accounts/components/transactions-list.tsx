@@ -7,7 +7,7 @@ import {
     useQueryClient,
 } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CreateTransaction } from "./create-transaction";
 import {
@@ -56,18 +56,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
     });
 
     // Transaction filters (only used in consolidation mode)
-    const {
-        dateRange,
-        isConsolidated,
-        setDateRange,
-        setIsConsolidated,
-        resetFilters,
-    } = useTransactionFilters();
-
-    // Check if any filters are active
-    const hasActiveFilters = useMemo(() => {
-        return !!(dateRange.from || dateRange.to || isConsolidated);
-    }, [dateRange.from, dateRange.to, isConsolidated]);
+    const { filter, reset, isActive } = useTransactionFilters();
 
     const queryClient = useQueryClient();
     const trpc = useTRPC();
@@ -81,15 +70,15 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                     mode === "consolidation"
                         ? {
                               dateRange: {
-                                  from: dateRange.from,
-                                  to: dateRange.to,
+                                  from: filter.dateRange.value.from,
+                                  to: filter.dateRange.value.to,
                               },
                               isConsolidated:
-                                  isConsolidated === "true"
+                                  filter.isConsolidated.value === "true"
                                       ? "true"
-                                      : isConsolidated === "false"
-                                        ? "false"
-                                        : undefined,
+                                      : filter.isConsolidated.value === "false"
+                                      ? "false"
+                                      : undefined,
                           }
                         : undefined,
             },
@@ -184,18 +173,18 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                 filtersSlot={
                     mode === "consolidation" ? (
                         <DataTableFilters
-                            onReset={resetFilters}
-                            hasActiveFilters={hasActiveFilters}
+                            onReset={reset}
+                            hasActiveFilters={isActive}
                         >
                             <DateRangeFilter
                                 label={tc("dateRange")}
-                                value={dateRange}
-                                onChange={setDateRange}
+                                value={filter.dateRange.value}
+                                onChange={filter.dateRange.set}
                             />
                             <BooleanFilter
                                 label={tc("consolidated")}
-                                value={isConsolidated}
-                                onChange={setIsConsolidated}
+                                value={filter.isConsolidated.value}
+                                onChange={filter.isConsolidated.set}
                                 trueLabel={tc("consolidated")}
                                 falseLabel={tc("notConsolidated")}
                             />
@@ -206,4 +195,3 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         </>
     );
 };
-

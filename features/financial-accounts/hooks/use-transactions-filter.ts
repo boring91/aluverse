@@ -1,6 +1,11 @@
 import { useQueryStates, parseAsString, parseAsIsoDateTime } from "nuqs";
 import { useCallback, useMemo } from "react";
 
+type FilterControl<T> = {
+    value: T | null;
+    set: (value: T | null) => void;
+};
+
 // Parser definitions for different filter types
 const filterParsers = {
     dateRange: {
@@ -28,8 +33,7 @@ export type TransactionFilterSetters = {
     resetFilters: () => void;
 };
 
-export const useTransactionFilters = (): TransactionFilterValues &
-    TransactionFilterSetters & { filters: TransactionFilterValues } => {
+export const useTransactionFilters = () => {
     const [dateRangeState, setDateRangeState] = useQueryStates(
         filterParsers.dateRange,
         {
@@ -81,26 +85,27 @@ export const useTransactionFilters = (): TransactionFilterValues &
         [setIsConsolidatedState]
     );
 
-    const resetFilters = useCallback(() => {
+    const reset = useCallback(() => {
         setDateRangeState({ from: null, to: null });
         setIsConsolidatedState({ isConsolidated: null });
     }, [setDateRangeState, setIsConsolidatedState]);
 
-    // Prepare filters object for API calls
-    const filters: TransactionFilterValues = useMemo(
-        () => ({
-            dateRange,
-            isConsolidated,
-        }),
-        [dateRange, isConsolidated]
-    );
+    const filter = useMemo(() => {
+        return {
+            dateRange: { value: dateRange, set: setDateRange },
+            isConsolidated: { value: isConsolidated, set: setIsConsolidated },
+        };
+    }, [dateRange, isConsolidated, setDateRange, setIsConsolidated]);
+
+    const isActive = useMemo(() => {
+        return (
+            !!dateRange.from || !!dateRange.to || isConsolidated !== undefined
+        );
+    }, [dateRange.from, dateRange.to, isConsolidated]);
 
     return {
-        dateRange,
-        isConsolidated,
-        setDateRange,
-        setIsConsolidated,
-        resetFilters,
-        filters,
+        filter,
+        reset,
+        isActive,
     };
 };
