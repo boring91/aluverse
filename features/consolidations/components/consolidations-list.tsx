@@ -95,6 +95,8 @@ export const ConsolidationsList = ({
                     set.delete(id);
                     return new Set(set);
                 });
+
+                toast(tc("deletedSuccessfully"));
             },
 
             onError: error => {
