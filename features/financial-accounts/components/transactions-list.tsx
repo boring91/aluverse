@@ -178,13 +178,11 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                         >
                             <DateRangeFilter
                                 label={tc("dateRange")}
-                                value={filter.dateRange.value}
-                                onChange={filter.dateRange.set}
+                                control={filter.dateRange}
                             />
                             <BooleanFilter
                                 label={tc("consolidated")}
-                                value={filter.isConsolidated.value}
-                                onChange={filter.isConsolidated.set}
+                                control={filter.isConsolidated}
                                 trueLabel={tc("consolidated")}
                                 falseLabel={tc("notConsolidated")}
                             />

@@ -1,11 +1,6 @@
 import { useQueryStates, parseAsString, parseAsIsoDateTime } from "nuqs";
 import { useCallback, useMemo } from "react";
 
-type FilterControl<T> = {
-    value: T | null;
-    set: (value: T | null) => void;
-};
-
 // Parser definitions for different filter types
 const filterParsers = {
     dateRange: {

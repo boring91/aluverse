@@ -12,6 +12,7 @@ import { cn } from "@/lib/client-utils";
 import { format } from "date-fns";
 import { CalendarIcon, XIcon } from "lucide-react";
 import { useState } from "react";
+import { FilterControl } from "../types";
 
 type DateRange = {
     from?: Date;
@@ -20,15 +21,15 @@ type DateRange = {
 
 type Props = {
     label: string;
-    value: DateRange;
-    onChange: (value: DateRange) => void;
+    control: FilterControl<DateRange>;
 };
 
-export const DateRangeFilter = ({ label, value, onChange }: Props) => {
+export const DateRangeFilter = ({ label, control }: Props) => {
     const [fromOpen, setFromOpen] = useState(false);
     const [toOpen, setToOpen] = useState(false);
 
-    const hasValue = value.from || value.to;
+    const value = control.value;
+    const hasValue = value?.from || value?.to;
 
     return (
         <div className="flex flex-col gap-1.5">
@@ -42,11 +43,11 @@ export const DateRangeFilter = ({ label, value, onChange }: Props) => {
                             size="sm"
                             className={cn(
                                 "h-9 w-[140px] justify-start text-left font-normal",
-                                !value.from && "text-muted-foreground"
+                                !value?.from && "text-muted-foreground"
                             )}
                         >
                             <CalendarIcon className="size-4" />
-                            {value.from
+                            {value?.from
                                 ? format(value.from, "MMM d, yyyy")
                                 : "From"}
                         </Button>
@@ -54,13 +55,13 @@ export const DateRangeFilter = ({ label, value, onChange }: Props) => {
                     <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                             mode="single"
-                            selected={value.from}
+                            selected={value?.from}
                             onSelect={date => {
-                                onChange({ ...value, from: date });
+                                control.set({ ...value, from: date });
                                 setFromOpen(false);
                             }}
                             disabled={date =>
-                                value.to ? date > value.to : false
+                                value?.to ? date > value.to : false
                             }
                             initialFocus
                         />
@@ -77,23 +78,23 @@ export const DateRangeFilter = ({ label, value, onChange }: Props) => {
                             size="sm"
                             className={cn(
                                 "h-9 w-[140px] justify-start text-left font-normal",
-                                !value.to && "text-muted-foreground"
+                                !value?.to && "text-muted-foreground"
                             )}
                         >
                             <CalendarIcon className="size-4" />
-                            {value.to ? format(value.to, "MMM d, yyyy") : "To"}
+                            {value?.to ? format(value.to, "MMM d, yyyy") : "To"}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                             mode="single"
-                            selected={value.to}
+                            selected={value?.to}
                             onSelect={date => {
-                                onChange({ ...value, to: date });
+                                control.set({ ...value, to: date });
                                 setToOpen(false);
                             }}
                             disabled={date =>
-                                value.from ? date < value.from : false
+                                value?.from ? date < value.from : false
                             }
                             initialFocus
                         />
@@ -106,7 +107,9 @@ export const DateRangeFilter = ({ label, value, onChange }: Props) => {
                         variant="ghost"
                         size="icon"
                         className="size-9"
-                        onClick={() => onChange({ from: undefined, to: undefined })}
+                        onClick={() =>
+                            control.set({ from: undefined, to: undefined })
+                        }
                     >
                         <XIcon className="size-4" />
                     </Button>
@@ -115,4 +118,3 @@ export const DateRangeFilter = ({ label, value, onChange }: Props) => {
         </div>
     );
 };
-
