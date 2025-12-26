@@ -28,9 +28,18 @@ import {
 import { Controller, UseFormReturn } from "react-hook-form";
 import { createConsolidationSchema } from "../schemas/consolidation.schema";
 import { z } from "zod";
-import { CreateProjectItemHandle } from "./create-project-item";
+import {
+    CreateProjectItem,
+    CreateProjectItemHandle,
+} from "./create-project-item";
 import { useProjectItems } from "../hooks/use-project-items";
 import { useTranslations } from "next-intl";
+import { useState, useRef, forwardRef, useImperativeHandle } from "react";
+import { usePendingProjectItemSelection } from "../hooks/use-pending-project-item-selection";
+import { usePendingProjectSelection } from "../hooks/use-pending-project-selection";
+import { CreateProject } from "@/features/projects/components/create-project";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;
 
@@ -206,31 +215,56 @@ export const BudgetCategoryField = ({ control }: BudgetCategoryFieldProps) => {
 };
 
 type ProjectFieldsProps = FieldProps & {
-    selectedGroup: SchemaType["consolidationGroup"];
-    projects: { id: string; humanId: string; title: string }[] | undefined;
-    projectItems: ReturnType<typeof useProjectItems>;
-    projectStream?: SchemaType["projectStream"];
-    isCreateProjectOpen: boolean;
-    setIsCreateProjectOpen: (open: boolean) => void;
-    createProjectItemRef: React.RefObject<CreateProjectItemHandle | null>;
     form: UseFormReturn<SchemaType>;
+    createConsolidationOpen: boolean;
 };
 
-export const ProjectFields = ({
-    control,
-    form,
-    selectedGroup,
-    projects,
-    projectItems,
-    projectStream,
-    isCreateProjectOpen,
-    setIsCreateProjectOpen,
-    createProjectItemRef,
-}: ProjectFieldsProps) => {
+export type ProjectFieldsHandle = {
+    closeAll: () => void;
+};
+
+export const ProjectFields = forwardRef<
+    ProjectFieldsHandle,
+    ProjectFieldsProps
+>(({ control, form, createConsolidationOpen }, ref) => {
     const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
 
-    if (selectedGroup !== "project") return null;
+    const projectId = form.watch("projectId");
+    const projectStream = form.watch("projectStream");
+
+    const trpc = useTRPC();
+
+    const { data: projects } = useQuery(
+        trpc.projects.list.queryOptions({
+            pagination: { pageSize: -1, pageIndex: 0 },
+        })
+    );
+    const projectItems = useProjectItems(form);
+
+    const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+    const createProjectItemRef = useRef<CreateProjectItemHandle>(null);
+    const handleItemCreated = usePendingProjectItemSelection(
+        form,
+        projectItems,
+        createConsolidationOpen,
+        projectId,
+        projectStream
+    );
+    const handleProjectCreated = usePendingProjectSelection(
+        form,
+        projects?.items,
+        createConsolidationOpen
+    );
+
+    useImperativeHandle(ref, () => {
+        return {
+            closeAll: () => {
+                setIsCreateProjectOpen(false);
+                createProjectItemRef.current?.close();
+            },
+        };
+    });
 
     return (
         <>
@@ -276,7 +310,7 @@ export const ProjectFields = ({
                                         <SearchableSelectEmpty>
                                             {t("noProjectsFound")}
                                         </SearchableSelectEmpty>
-                                        {projects?.map(project => {
+                                        {projects?.items.map(project => {
                                             return (
                                                 <SearchableSelectItem
                                                     key={project.id}
@@ -286,9 +320,10 @@ export const ProjectFields = ({
                                                 </SearchableSelectItem>
                                             );
                                         })}
-                                        {projects && projects.length > 0 && (
-                                            <SearchableSelectSeparator />
-                                        )}
+                                        {projects &&
+                                            projects.items.length > 0 && (
+                                                <SearchableSelectSeparator />
+                                            )}
                                         <SearchableSelectItem value="__create_new_project__">
                                             {tc("createNew")}
                                         </SearchableSelectItem>
@@ -402,9 +437,26 @@ export const ProjectFields = ({
                     );
                 }}
             />
+
+            {/* Nested create modal handler */}
+            {projectId && (
+                <CreateProjectItem
+                    ref={createProjectItemRef}
+                    projectId={projectId}
+                    stream={projectStream}
+                    onItemCreated={handleItemCreated}
+                />
+            )}
+            <CreateProject
+                open={isCreateProjectOpen}
+                onOpenChange={setIsCreateProjectOpen}
+                itemId={null}
+                onCreated={handleProjectCreated}
+            />
         </>
     );
-};
+});
+ProjectFields.displayName = "ProjectFields";
 
 type IsGstFieldProps = FieldProps;
 

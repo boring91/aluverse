@@ -22,6 +22,7 @@ const projection = {
     fields: {
         id: consolidations.id,
         amount: consolidations.amount,
+        description: consolidations.description,
         isGst: consolidations.isGst,
         consolidationGroup: consolidations.consolidationGroup,
         budgetCategory: consolidations.budgetCategory,

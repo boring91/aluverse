@@ -11,6 +11,7 @@ type Stream = (typeof projectStreams)[number];
 
 export type CreateProjectItemHandle = {
     open: () => void;
+    close: () => void;
 };
 
 type Props = {
@@ -26,8 +27,11 @@ export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
         const trpc = useTRPC();
 
         useImperativeHandle(ref, () => ({
-            open() {
+            open: () => {
                 if (stream) setOpenStream(stream);
+            },
+            close: () => {
+                setOpenStream(null);
             },
         }));
 
