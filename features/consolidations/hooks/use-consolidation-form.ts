@@ -116,6 +116,7 @@ export const useConsolidationForm = ({
         if (defaults && !isUpdate) {
             fillForm(form, {
                 ...defaults,
+                isGst: true,
                 amount: defaults.remainingAmount / 100,
             });
             form.setFocus("consolidationGroup");
