@@ -1,11 +1,9 @@
 import {
     ColumnDef,
-    ColumnFiltersState,
     flexRender,
     getCoreRowModel,
     getFacetedRowModel,
     getFacetedUniqueValues,
-    getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
     OnChangeFn,
@@ -38,8 +36,6 @@ type Props<TData, TValue> = {
     setPagination: OnChangeFn<PaginationState>;
     sorting?: SortingState;
     setSorting?: OnChangeFn<SortingState>;
-    columnFilters?: ColumnFiltersState;
-    setColumnFilters?: OnChangeFn<ColumnFiltersState>;
     columnVisibility?: VisibilityState;
     setColumnVisibility?: OnChangeFn<VisibilityState>;
     setOpenCreateSheet?: (open: boolean) => void;
@@ -53,8 +49,6 @@ export const DataTable = <TData, TValue>({
     setPagination,
     sorting: controlledSorting,
     setSorting: setControlledSorting,
-    columnFilters: controlledColumnFilters,
-    setColumnFilters: setControlledColumnFilters,
     columnVisibility: controlledColumnVisibility,
     setColumnVisibility: setControlledColumnVisibility,
     setOpenCreateSheet,
@@ -64,25 +58,17 @@ export const DataTable = <TData, TValue>({
 
     // Internal state fallback
     const [internalSorting, setInternalSorting] = useState<SortingState>([]);
-    const [internalColumnFilters, setInternalColumnFilters] =
-        useState<ColumnFiltersState>([]);
     const [internalColumnVisibility, setInternalColumnVisibility] =
         useState<VisibilityState>({});
 
     const sorting = controlledSorting ?? internalSorting;
     const setSorting = setControlledSorting ?? setInternalSorting;
-    const columnFilters = controlledColumnFilters ?? internalColumnFilters;
-    const setColumnFilters =
-        setControlledColumnFilters ?? setInternalColumnFilters;
     const columnVisibility =
         controlledColumnVisibility ?? internalColumnVisibility;
     const setColumnVisibility =
         setControlledColumnVisibility ?? setInternalColumnVisibility;
 
-    const isServerSide =
-        !!controlledSorting ||
-        !!controlledColumnFilters ||
-        !!setControlledSorting;
+    const isServerSide = !!controlledSorting || !!setControlledSorting;
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
@@ -92,20 +78,16 @@ export const DataTable = <TData, TValue>({
             pagination,
             sorting,
             columnVisibility,
-            columnFilters,
         },
         onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
         onColumnVisibilityChange: setColumnVisibility,
         getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
         manualPagination: true,
         manualSorting: isServerSide,
-        manualFiltering: isServerSide,
         rowCount: data?.count,
         onPaginationChange: setPagination,
     });

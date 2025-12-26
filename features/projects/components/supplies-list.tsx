@@ -130,7 +130,6 @@ export const SuppliesList = ({ projectId }: Props) => {
                 projectId,
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
-                columnFilters: dataTable.columnFilters,
             },
             {
                 placeholderData: keepPreviousData,
@@ -147,7 +146,6 @@ export const SuppliesList = ({ projectId }: Props) => {
                         projectId,
                         pagination: dataTable.pagination,
                         sorting: dataTable.sorting,
-                        columnFilters: dataTable.columnFilters,
                     })
                 );
                 queryClient.invalidateQueries(

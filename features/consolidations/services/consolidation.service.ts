@@ -51,23 +51,10 @@ const projection = {
 
 export class ConsolidationService {
     async list(input: z.infer<typeof listConsolidationSchema>) {
-        const { transactionId, pagination, columnFilters, sorting } = input;
+        const { transactionId, pagination, sorting } = input;
 
         const baseFilters = [eq(consolidations.transactionId, transactionId)];
         const filters = [...baseFilters];
-
-        if (columnFilters?.length) {
-            for (const filter of columnFilters) {
-                if (
-                    filter.id === "description" &&
-                    typeof filter.value === "string"
-                ) {
-                    filters.push(
-                        ilike(transactions.description, `%${filter.value}%`)
-                    );
-                }
-            }
-        }
 
         const orderBy = [];
         if (sorting && sorting.length > 0) {

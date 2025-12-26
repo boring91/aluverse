@@ -15,14 +15,6 @@ export const listSchema = z.object({
             })
         )
         .optional(),
-    columnFilters: z
-        .array(
-            z.object({
-                id: z.string(),
-                value: z.unknown(),
-            })
-        )
-        .optional(),
 });
 
 // Generic filter schemas for reuse
@@ -48,4 +40,3 @@ export const createListSchemaWithFilters = <T extends z.ZodRawShape>(
         filters: filtersSchema.optional(),
     });
 };
-

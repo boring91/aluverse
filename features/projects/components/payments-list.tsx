@@ -118,7 +118,6 @@ export const PaymentsList = ({ projectId }: Props) => {
                 projectId,
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
-                columnFilters: dataTable.columnFilters,
             },
             {
                 placeholderData: keepPreviousData,
@@ -135,7 +134,6 @@ export const PaymentsList = ({ projectId }: Props) => {
                         projectId,
                         pagination: dataTable.pagination,
                         sorting: dataTable.sorting,
-                        columnFilters: dataTable.columnFilters,
                     })
                 );
                 queryClient.invalidateQueries(

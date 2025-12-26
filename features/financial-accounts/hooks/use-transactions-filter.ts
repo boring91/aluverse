@@ -75,7 +75,7 @@ export const useTransactionFilters = (): TransactionFilterValues &
     const setIsConsolidated = useCallback(
         (value: BooleanFilterValue) => {
             setIsConsolidatedState({
-                isConsolidated: value === "all" ? null : (value ?? null),
+                isConsolidated: value === "all" ? null : value ?? null,
             });
         },
         [setIsConsolidatedState]
@@ -104,4 +104,3 @@ export const useTransactionFilters = (): TransactionFilterValues &
         filters,
     };
 };
-

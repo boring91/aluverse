@@ -51,7 +51,6 @@ export const ProjectsList = () => {
             {
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
-                columnFilters: dataTable.columnFilters,
             },
             {
                 placeholderData: keepPreviousData,
@@ -67,7 +66,6 @@ export const ProjectsList = () => {
                     trpc.projects.list.queryOptions({
                         pagination: dataTable.pagination,
                         sorting: dataTable.sorting,
-                        columnFilters: dataTable.columnFilters,
                     })
                 );
                 setCurrentlyProcessing(set => {

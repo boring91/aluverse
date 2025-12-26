@@ -1,6 +1,14 @@
-import { and, asc, count, desc, eq, ilike, SQL, sql, sum } from "drizzle-orm";
-import { db, projectLabors, projectMisc, projectPayments, projects, projectSupplies } from "@/db";
+import { and, asc, count, desc, eq, SQL, sql, sum } from "drizzle-orm";
+import {
+    db,
+    projectLabors,
+    projectMisc,
+    projectPayments,
+    projects,
+    projectSupplies,
+} from "@/db";
 import { listSchema } from "@/shared/lib/schemas/util-schemas";
+import { z } from "zod";
 
 const paymentsSq = db
     .select({
@@ -58,24 +66,10 @@ const projection = {
 } as const;
 
 export class ProjectService {
-    async list(input: {
-        pagination: { pageIndex: number; pageSize: number };
-        sorting?: Array<{ id: string; desc: boolean }>;
-        columnFilters?: Array<{ id: string; value: unknown }>;
-    }) {
-        const { pagination, columnFilters, sorting } = input;
+    async list(input: z.infer<typeof listSchema>) {
+        const { pagination, sorting } = input;
 
         const filters: SQL[] = [];
-
-        columnFilters?.forEach(filter => {
-            if (filter.id === "title" && typeof filter.value === "string") {
-                filters.push(ilike(projects.title, `%${filter.value}%`));
-            }
-
-            if (filter.id === "humanId" && typeof filter.value === "string") {
-                filters.push(ilike(projects.humanId, `%${filter.value}%`));
-            }
-        });
 
         const orderBy: SQL[] = [];
         sorting?.forEach(sort => {
@@ -192,10 +186,6 @@ export class ProjectService {
     }
 
     async delete(id: string) {
-        return await db
-            .delete(projects)
-            .where(eq(projects.id, id))
-            .returning();
+        return await db.delete(projects).where(eq(projects.id, id)).returning();
     }
 }
-

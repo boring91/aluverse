@@ -48,15 +48,9 @@ const paymentProjection = {
 export class ProjectItemService {
     // Supplies
     async listSupplies(input: z.infer<typeof listProjectItemSchema>) {
-        const { projectId, pagination, columnFilters, sorting } = input;
+        const { projectId, pagination, sorting } = input;
 
         const filters: SQL[] = [eq(projectSupplies.projectId, projectId)];
-
-        columnFilters?.forEach(filter => {
-            if (filter.id === "name" && typeof filter.value === "string") {
-                filters.push(ilike(projectSupplies.name, `%${filter.value}%`));
-            }
-        });
 
         const orderBy: SQL[] = [];
         sorting?.forEach(sort => {
@@ -141,15 +135,9 @@ export class ProjectItemService {
 
     // Labors
     async listLabors(input: z.infer<typeof listProjectItemSchema>) {
-        const { projectId, pagination, columnFilters, sorting } = input;
+        const { projectId, pagination, sorting } = input;
 
         const filters: SQL[] = [eq(projectLabors.projectId, projectId)];
-
-        columnFilters?.forEach(filter => {
-            if (filter.id === "name" && typeof filter.value === "string") {
-                filters.push(ilike(projectLabors.name, `%${filter.value}%`));
-            }
-        });
 
         const orderBy: SQL[] = [];
         sorting?.forEach(sort => {
@@ -234,15 +222,9 @@ export class ProjectItemService {
 
     // Misc
     async listMisc(input: z.infer<typeof listProjectItemSchema>) {
-        const { projectId, pagination, columnFilters, sorting } = input;
+        const { projectId, pagination, sorting } = input;
 
         const filters: SQL[] = [eq(projectMisc.projectId, projectId)];
-
-        columnFilters?.forEach(filter => {
-            if (filter.id === "name" && typeof filter.value === "string") {
-                filters.push(ilike(projectMisc.name, `%${filter.value}%`));
-            }
-        });
 
         const orderBy: SQL[] = [];
         sorting?.forEach(sort => {
@@ -323,11 +305,9 @@ export class ProjectItemService {
 
     // Payments
     async listPayments(input: z.infer<typeof listProjectItemSchema>) {
-        const { projectId, pagination, columnFilters, sorting } = input;
+        const { projectId, pagination, sorting } = input;
 
         const filters: SQL[] = [eq(projectPayments.projectId, projectId)];
-
-        columnFilters?.forEach(() => {});
 
         const orderBy: SQL[] = [];
         sorting?.forEach(sort => {

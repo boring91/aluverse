@@ -20,7 +20,7 @@ import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
 import { useTransactionsColumns } from "../hooks/use-transactions-columns";
 import { ConsolidationsList } from "@/features/consolidations/components/consolidations-list";
-import { useTransactionFilters } from "@/hooks/use-data-table-filters";
+import { useTransactionFilters } from "@/features/financial-accounts/hooks/use-transactions-filter";
 
 type Props = {
     mode: "account" | "consolidation";
@@ -77,7 +77,6 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                 accountId,
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
-                columnFilters: dataTable.columnFilters,
                 filters:
                     mode === "consolidation"
                         ? {

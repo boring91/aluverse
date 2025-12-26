@@ -64,7 +64,6 @@ export const ConsolidationsList = ({
                 transactionId,
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
-                columnFilters: dataTable.columnFilters,
             },
             {
                 placeholderData: keepPreviousData,

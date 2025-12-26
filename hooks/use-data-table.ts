@@ -1,8 +1,4 @@
-import {
-    ColumnFiltersState,
-    PaginationState,
-    SortingState,
-} from "@tanstack/react-table";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { useState } from "react";
 
 type Props = {
@@ -17,7 +13,6 @@ export const useDataTable = ({ pageIndex = 0, pageSize = 20 }: Props = {}) => {
         pageSize,
     });
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
     return {
         openCreateSheet,
@@ -26,7 +21,5 @@ export const useDataTable = ({ pageIndex = 0, pageSize = 20 }: Props = {}) => {
         setPagination,
         sorting,
         setSorting,
-        columnFilters,
-        setColumnFilters,
     };
 };
