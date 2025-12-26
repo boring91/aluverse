@@ -9,6 +9,7 @@ import { Providers } from "./_components/providers";
 import { getDir } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { GlobalLoadingIndicator } from "@/components/global-loading-indicator";
 
 export const dynamic = "force-dynamic"; // no full-route cache
 export const revalidate = 0; // no ISR
@@ -45,6 +46,7 @@ const RootLayout = async ({
             >
                 <NuqsAdapter>
                     <TRPCReactProvider>
+                        <GlobalLoadingIndicator />
                         <NextIntlClientProvider>
                             <ThemeProvider
                                 attribute="class"
