@@ -12,6 +12,7 @@ import {
     or,
     isNull,
     SQL,
+    ilike,
 } from "drizzle-orm";
 import { createProjectedQuery, many, one } from "@/lib/server-utils";
 import { z } from "zod";
@@ -71,6 +72,12 @@ export class TransactionService {
             : [];
 
         if (filters) {
+            if (filters.keyword) {
+                whereFilters.push(
+                    ilike(transactions.description, filters.keyword)
+                );
+            }
+
             if (filters.dateRange) {
                 if (filters.dateRange.from) {
                     whereFilters.push(

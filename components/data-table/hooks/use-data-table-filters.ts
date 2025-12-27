@@ -42,8 +42,10 @@ type FilterRuntimeValues<T extends z.ZodObject<z.ZodRawShape>> = {
                   Record<string, "true" | "false" | "all">
               >
             ? BooleanFilterValue
+            : UnwrapZodType<T["shape"][K]> extends z.ZodString
+            ? string
             : unknown
-        : z.input<T>[K];
+        : unknown;
 };
 
 // Filter controls type
@@ -61,11 +63,7 @@ type UrlKeysConfig<T extends z.ZodObject<z.ZodRawShape>> = {
               to: z.ZodTypeAny;
           }>
             ? { from: string; to: string }
-            : UnwrapZodType<T["shape"][K]> extends z.ZodEnum<
-                  Record<string, "true" | "false" | "all">
-              >
-            ? string
-            : unknown
+            : string
         : unknown;
 };
 
@@ -222,7 +220,6 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
 
     const state = options?.disableUrlKeys ? localState : urlState;
     const setState = options?.disableUrlKeys ? setLocalState : setUrlState;
-
 
     // Build filter values
     const filterValues = useMemo(() => {

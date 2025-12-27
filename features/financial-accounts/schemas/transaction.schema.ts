@@ -7,6 +7,7 @@ import {
 } from "@/shared/lib/schemas/util-schemas";
 
 export const transactionFiltersSchema = z.object({
+    keyword: z.string().optional(),
     dateRange: dateRangeFilterSchema.optional(),
     isConsolidated: booleanFilterSchema.optional(),
 });

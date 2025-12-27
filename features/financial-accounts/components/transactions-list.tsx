@@ -16,6 +16,7 @@ import {
     BooleanFilter,
     useDataTable,
     useDataTableFilters,
+    StringFilter,
 } from "@/components/data-table";
 import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
@@ -163,6 +164,11 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                         onReset={reset}
                         hasActiveFilters={isActive}
                     >
+                        <StringFilter
+                            label={tc("keyword")}
+                            control={filter.keyword}
+                        />
+
                         <DateRangeFilter
                             label={tc("dateRange")}
                             control={filter.dateRange}

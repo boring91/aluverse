@@ -44,7 +44,9 @@
         "resetFilters": "Reset filters",
         "dateRange": "Date range",
         "consolidated": "Consolidated",
-        "notConsolidated": "Not consolidated"
+        "notConsolidated": "Not consolidated",
+        "keyword": "Keyword",
+        "startTyping": "Start typing..."
     },
     "Login": {
         "pageTitle": "Login",
