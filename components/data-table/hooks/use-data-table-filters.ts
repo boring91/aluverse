@@ -2,7 +2,6 @@ import { useQueryStates, parseAsString, parseAsIsoDateTime } from "nuqs";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 import type { FilterControl } from "@/components/data-table/types";
-import { transactionFiltersSchema } from "@/features/financial-accounts";
 
 // Re-export FilterControl for convenience
 export type { FilterControl } from "@/components/data-table/types";
