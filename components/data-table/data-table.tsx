@@ -94,11 +94,11 @@ export const DataTable = <TData, TValue>({
 
     return (
         <div className="flex flex-col gap-4">
-            {filtersSlot && <div>{filtersSlot}</div>}
             <DataTableToolbar
                 table={table}
                 setOpenCreateSheet={setOpenCreateSheet}
             />
+            {filtersSlot && <div>{filtersSlot}</div>}
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
