@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import { CreateLoanPayoff } from "@/features/loans/components/create-loan-payoff";
+import { CreateLoanPayoff as BaseCreateLoanPayoff } from "@/features/loans/components/create-loan-payoff";
 
 export type CreateLoanPayoffHandle = {
     open: () => void;
@@ -45,7 +45,7 @@ export const CreateLoanPayoff = forwardRef<CreateLoanPayoffHandle, Props>(
         };
 
         return (
-            <CreateLoanPayoff
+            <BaseCreateLoanPayoff
                 open={open}
                 onOpenChange={setOpen}
                 loanId={loanId}
@@ -57,4 +57,3 @@ export const CreateLoanPayoff = forwardRef<CreateLoanPayoffHandle, Props>(
 );
 
 CreateLoanPayoff.displayName = "CreateLoanPayoff";
-
