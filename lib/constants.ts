@@ -3,6 +3,7 @@ export const transactionTypes = ["income", "expense"] as const;
 export const transactionConsolidationGroups = [
     "budget",
     "project",
+    "loan",
     "unclassified",
 ] as const;
 
@@ -22,3 +23,5 @@ export const projectStreams = [
     "misc",
     "payments",
 ] as const;
+
+export const loanTypes = ["lent", "borrowed"] as const;

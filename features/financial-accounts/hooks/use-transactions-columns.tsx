@@ -142,6 +142,9 @@ export const useTransactionsColumns = (
                                             item.consolidations[0]
                                                 .consolidationGroup ===
                                             "project",
+                                        "bg-amber-400 dark:bg-amber-600":
+                                            item.consolidations[0]
+                                                .consolidationGroup === "loan",
                                     }
                                 )}
                             >
@@ -204,4 +207,3 @@ export const useTransactionsColumns = (
         handleUpdate,
     ]);
 };
-

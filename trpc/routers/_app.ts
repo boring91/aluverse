@@ -11,6 +11,10 @@ import {
     projectMiscRouter,
     projectPaymentsRouter,
 } from "@/features/projects";
+import {
+    loansRouter,
+    loanPayoffsRouter,
+} from "@/features/loans";
 
 export const appRouter = createTRPCRouter({
     financialAccounts: financialAccountsRouter,
@@ -21,6 +25,8 @@ export const appRouter = createTRPCRouter({
     projectLabors: projectLaborsRouter,
     projectMisc: projectMiscRouter,
     projectPayments: projectPaymentsRouter,
+    loans: loansRouter,
+    loanPayoffs: loanPayoffsRouter,
 });
 
 export type AppRouter = typeof appRouter;

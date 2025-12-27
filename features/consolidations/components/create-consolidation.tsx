@@ -17,8 +17,10 @@ import {
     ConsolidationGroupField,
     BudgetCategoryField,
     ProjectFields,
+    LoanFields,
     IsGstField,
     ProjectFieldsHandle,
+    LoanFieldsHandle,
 } from "./consolidation-form-fields";
 import { useRef } from "react";
 
@@ -48,6 +50,7 @@ export const CreateConsolidation = ({
     const selectedGroup = form.watch("consolidationGroup");
 
     const projectFieldsRef = useRef<ProjectFieldsHandle>(null);
+    const loanFieldsRef = useRef<LoanFieldsHandle>(null);
 
     return (
         <Dialog
@@ -57,6 +60,7 @@ export const CreateConsolidation = ({
                 if (!value) {
                     form.reset();
                     projectFieldsRef.current?.closeAll();
+                    loanFieldsRef.current?.closeAll();
                 }
                 onOpenChange(value);
             }}
@@ -92,6 +96,15 @@ export const CreateConsolidation = ({
                             {selectedGroup === "project" && (
                                 <ProjectFields
                                     ref={projectFieldsRef}
+                                    control={form.control}
+                                    form={form}
+                                    createConsolidationOpen={open}
+                                />
+                            )}
+
+                            {selectedGroup === "loan" && (
+                                <LoanFields
+                                    ref={loanFieldsRef}
                                     control={form.control}
                                     form={form}
                                     createConsolidationOpen={open}

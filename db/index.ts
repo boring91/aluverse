@@ -5,6 +5,7 @@ import * as financialAccountsSchema from "./schemas/financial-accounts";
 import * as transactionsSchema from "./schemas/transactions";
 import * as projectsSchema from "./schemas/projects";
 import * as consolidationsSchema from "./schemas/consolidations";
+import * as loansSchema from "./schemas/loans";
 
 // Combine all schemas
 const schema = {
@@ -13,6 +14,7 @@ const schema = {
     ...transactionsSchema,
     ...projectsSchema,
     ...consolidationsSchema,
+    ...loansSchema,
 };
 
 export const db = drizzle({
@@ -29,4 +31,5 @@ export * from "./schemas/financial-accounts";
 export * from "./schemas/transactions";
 export * from "./schemas/projects";
 export * from "./schemas/consolidations";
+export * from "./schemas/loans";
 

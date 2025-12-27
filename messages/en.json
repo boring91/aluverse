@@ -5,6 +5,7 @@
         "projects": "Projects",
         "financialAccounts": "Financial accounts",
         "consolidations": "Consolidations",
+        "loans": "Loans",
         "unknownErrorHasOccurred": "Unknown error has occurred",
         "logout": "Logout",
         "confirm": "Confirm",
@@ -101,7 +102,13 @@
         "payments": "Payments",
         "selectProject": "Select a project...",
         "searchProject": "Search projects...",
-        "noProjectsFound": "No projects found."
+        "noProjectsFound": "No projects found.",
+        "loan": "Loan",
+        "isPayoff": "Is payoff",
+        "selectLoan": "Select a loan...",
+        "searchLoan": "Search loans...",
+        "noLoansFound": "No loans found.",
+        "loanPayoff": "Loan payoff"
     },
     "Projects": {
         "humanId": "Human ID",
@@ -149,5 +156,28 @@
         "laborsDescription": "View and manage labor hours and rates for this project",
         "miscDescription": "Track miscellaneous expenses and items for this project",
         "paymentsDescription": "View and manage all payments received for this project"
+    },
+    "Loans": {
+        "loans": "Loans",
+        "createNewLoan": "Create new loan",
+        "updateExistingLoan": "Update existing loan",
+        "type": "Type",
+        "lent": "Lent",
+        "borrowed": "Borrowed",
+        "partyName": "Party name",
+        "amount": "Amount",
+        "principal": "Principal",
+        "paid": "Paid",
+        "remaining": "Remaining",
+        "dueDate": "Due date",
+        "payoffs": "Payoffs",
+        "payoffsDescription": "View and manage all payoffs for this loan",
+        "createNewPayoff": "Create new payoff",
+        "updateExistingPayoff": "Update existing payoff",
+        "loanPayoff": "Loan payoff",
+        "financialSummary": "Financial Summary",
+        "selectLoan": "Select a loan...",
+        "searchLoan": "Search loans...",
+        "noLoansFound": "No loans found."
     }
 }

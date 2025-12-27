@@ -1,0 +1,2 @@
+ALTER TABLE "consolidations" ADD CONSTRAINT "loan_id_check_constraint" CHECK ("consolidations"."consolidation_group" <> 'loan' OR "consolidations"."loan_id" IS NOT NULL);--> statement-breakpoint
+ALTER TABLE "consolidations" ADD CONSTRAINT "loan_payoff_check_constraint" CHECK ("consolidations"."is_payoff" IS NOT TRUE OR "consolidations"."loan_payoff_id" IS NOT NULL);

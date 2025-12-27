@@ -22,6 +22,11 @@ export const createConsolidationSchema = z
         projectStream: z.enum(projectStreams).optional(),
         projectItemId: z.uuid().optional(),
 
+        /* for loans */
+        loanId: z.uuid().optional(),
+        isPayoff: z.boolean().optional(),
+        loanPayoffId: z.uuid().optional(),
+
         isGst: z.boolean(),
     })
     .superRefine((data, ctx) => {
@@ -91,6 +96,52 @@ export const createConsolidationSchema = z
                     },
                     message: "CANNOT_ASSOCIATE_CATEGORY",
                     path: ["budgetCategory"],
+                });
+            }
+        }
+
+        if (data.consolidationGroup === "loan") {
+            if (!data.loanId) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "LOAN_REQUIRED",
+                    },
+                    message: "LOAN_REQUIRED",
+                    path: ["loanId"],
+                });
+            }
+
+            if (data.isPayoff && !data.loanPayoffId) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "LOAN_PAYOFF_REQUIRED",
+                    },
+                    message: "LOAN_PAYOFF_REQUIRED",
+                    path: ["loanPayoffId"],
+                });
+            }
+
+            if (data.budgetCategory) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "CANNOT_ASSOCIATE_CATEGORY",
+                    },
+                    message: "CANNOT_ASSOCIATE_CATEGORY",
+                    path: ["budgetCategory"],
+                });
+            }
+
+            if (data.projectId) {
+                ctx.addIssue({
+                    code: "custom",
+                    params: {
+                        code: "CANNOT_ASSOCIATE_PROJECT",
+                    },
+                    message: "CANNOT_ASSOCIATE_PROJECT",
+                    path: ["projectId"],
                 });
             }
         }

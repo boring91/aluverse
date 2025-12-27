@@ -31,6 +31,7 @@ import {
     FolderIcon,
     HomeIcon,
     LogOutIcon,
+    ReceiptIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -57,6 +58,12 @@ const items = [
         id: "consolidations",
         link: "/consolidations",
         icon: ChartPieIcon,
+    },
+
+    {
+        id: "loans",
+        link: "/loans",
+        icon: ReceiptIcon,
     },
 ] as const;
 

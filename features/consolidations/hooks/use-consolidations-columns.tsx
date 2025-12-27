@@ -94,6 +94,9 @@ export const useConsolidationsColumns = (
                                             "bg-emerald-400":
                                                 item.consolidationGroup ===
                                                 "project",
+                                            "bg-amber-400 dark:bg-amber-600":
+                                                item.consolidationGroup ===
+                                                "loan",
                                         }
                                     )}
                                 >

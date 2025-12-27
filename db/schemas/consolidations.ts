@@ -1,4 +1,12 @@
-import { pgTable, uuid, varchar, integer, boolean, timestamp, check } from "drizzle-orm/pg-core";
+import {
+    pgTable,
+    uuid,
+    varchar,
+    integer,
+    boolean,
+    timestamp,
+    check,
+} from "drizzle-orm/pg-core";
 import { pgEnum } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import {
@@ -8,6 +16,7 @@ import {
 } from "@/lib/constants";
 import { transactions } from "./transactions";
 import { projects } from "./projects";
+import { loans, loanPayoffs } from "./loans";
 
 export const transactionConsolidatedGroup = pgEnum(
     "consolidation_group",
@@ -39,6 +48,13 @@ export const consolidations = pgTable(
         }),
         projectStream: projectStream(),
         projectItemId: uuid(),
+        loanId: uuid().references(() => loans.id, {
+            onDelete: "set null",
+        }),
+        isPayoff: boolean(),
+        loanPayoffId: uuid().references(() => loanPayoffs.id, {
+            onDelete: "set null",
+        }),
         createdAt: timestamp().notNull().defaultNow(),
         updatedAt: timestamp()
             .notNull()
@@ -58,7 +74,18 @@ export const consolidations = pgTable(
                 "project_id_check_constraint",
                 sql`${table.consolidationGroup} <> 'project' OR ${table.projectId} IS NOT NULL`
             ),
+
+            // ensure loan id is only set if consolidation group is loan
+            check(
+                "loan_id_check_constraint",
+                sql`${table.consolidationGroup} <> 'loan' OR ${table.loanId} IS NOT NULL`
+            ),
+
+            // ensure loan payoff id is only set if isPayoff is true
+            check(
+                "loan_payoff_check_constraint",
+                sql`${table.isPayoff} IS NOT TRUE OR ${table.loanPayoffId} IS NOT NULL`
+            ),
         ];
     }
 );
-
