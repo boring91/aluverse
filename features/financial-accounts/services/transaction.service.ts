@@ -74,7 +74,7 @@ export class TransactionService {
         if (filters) {
             if (filters.keyword) {
                 whereFilters.push(
-                    ilike(transactions.description, filters.keyword)
+                    ilike(transactions.description, "%" + filters.keyword + "%")
                 );
             }
 
