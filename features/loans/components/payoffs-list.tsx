@@ -17,7 +17,7 @@ import { inferRouterOutputs } from "@trpc/server";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CreatePayoff } from "./create-payoff";
+import { CreateLoanPayoff } from "./create-loan-payoff";
 import { formatCurrency } from "@/lib/utils";
 import { useConfirm } from "@/lib/confirm-context";
 
@@ -177,7 +177,7 @@ export const PayoffsList = ({ loanId }: Props) => {
 
     return (
         <>
-            <CreatePayoff
+            <CreateLoanPayoff
                 loanId={loanId}
                 open={dataTable.openCreateSheet || !!itemId}
                 onOpenChange={value => {

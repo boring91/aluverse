@@ -38,7 +38,7 @@ type Props = {
     onItemCreated?: (itemId: string) => void;
 };
 
-export const CreatePayoff = ({
+export const CreateLoanPayoff = ({
     open,
     onOpenChange,
     loanId,
