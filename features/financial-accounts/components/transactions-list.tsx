@@ -17,6 +17,7 @@ import {
     useDataTable,
     useDataTableFilters,
     StringFilter,
+    DateFilter,
 } from "@/components/data-table";
 import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
@@ -169,10 +170,13 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                             control={filter.keyword}
                         />
 
-                        <DateRangeFilter
-                            label={tc("dateRange")}
-                            control={filter.dateRange}
+                        <DateFilter
+                            label={tc("fromDate")}
+                            control={filter.from}
                         />
+
+                        <DateFilter label={tc("toDate")} control={filter.to} />
+
                         {mode === "consolidation" && (
                             <BooleanFilter
                                 label={tc("consolidated")}

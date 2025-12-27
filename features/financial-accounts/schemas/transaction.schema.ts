@@ -2,13 +2,13 @@ import { z } from "zod";
 import { transactionTypes } from "@/lib/constants";
 import {
     listSchema,
-    dateRangeFilterSchema,
     booleanFilterSchema,
 } from "@/shared/lib/schemas/util-schemas";
 
 export const transactionFiltersSchema = z.object({
     keyword: z.string().optional(),
-    dateRange: dateRangeFilterSchema.optional(),
+    from: z.date().optional(),
+    to: z.date().optional(),
     isConsolidated: booleanFilterSchema.optional(),
 });
 

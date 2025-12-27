@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { Button } from "../ui/button";
 import { XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Card, CardContent, CardFooter } from "../ui/card";
 
 type Props = {
     children: ReactNode;
@@ -19,20 +20,25 @@ export const DataTableFilters = ({
     const tc = useTranslations("Common");
 
     return (
-        <div className="flex flex-wrap items-end gap-3">
-            {children}
+        <Card>
+            <CardContent className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {children}
+
+                <div className="absolute top-0 ltr:right-0 rtl:left-0"></div>
+            </CardContent>
             {hasActiveFilters && onReset && (
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onReset}
-                    className="h-9"
-                >
-                    <XIcon className="size-4" />
-                    {tc("resetFilters")}
-                </Button>
+                <CardFooter className='flex justify-end'>
+                    <Button
+                        variant="destructive"
+                        size="xs"
+                        onClick={onReset}
+                        className="h-9"
+                    >
+                        <XIcon className="size-4" />
+                        {tc("resetFilters")}
+                    </Button>
+                </CardFooter>
             )}
-        </div>
+        </Card>
     );
 };
-

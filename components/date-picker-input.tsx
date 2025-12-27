@@ -9,9 +9,10 @@ import { useState } from "react";
 type Props = {
     value?: Date;
     onChange: (value?: Date) => void;
+    placeholder?: string;
 };
 
-export const DatePickerInput = ({ value, onChange }: Props) => {
+export const DatePickerInput = ({ value, onChange, placeholder }: Props) => {
     const [open, setOpen] = useState(false);
 
     return (
@@ -23,7 +24,7 @@ export const DatePickerInput = ({ value, onChange }: Props) => {
                         variant="outline"
                         className="justify-start grow"
                     >
-                        {value?.toDateString() ?? "-"}
+                        {value?.toDateString() ?? placeholder ?? "-"}
                     </Button>
                     {value && (
                         <Button

@@ -54,7 +54,7 @@ export const BooleanFilter = ({
                     )
                 }
             >
-                <SelectTrigger size="sm" className="h-9 w-[160px]">
+                <SelectTrigger className="h-9 w-full">
                     <SelectValue placeholder={placeholder ?? tc("all")} />
                 </SelectTrigger>
                 <SelectContent>

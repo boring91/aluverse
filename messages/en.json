@@ -47,7 +47,9 @@
         "consolidated": "Consolidated",
         "notConsolidated": "Not consolidated",
         "keyword": "Keyword",
-        "startTyping": "Start typing..."
+        "startTyping": "Start typing...",
+        "fromDate": "From date",
+        "toDate": "To date"
     },
     "Login": {
         "pageTitle": "Login",

@@ -78,17 +78,12 @@ export class TransactionService {
                 );
             }
 
-            if (filters.dateRange) {
-                if (filters.dateRange.from) {
-                    whereFilters.push(
-                        gte(transactions.date, filters.dateRange.from)
-                    );
-                }
-                if (filters.dateRange.to) {
-                    whereFilters.push(
-                        lte(transactions.date, filters.dateRange.to)
-                    );
-                }
+            if (filters.from) {
+                whereFilters.push(gte(transactions.date, filters.from));
+            }
+
+            if (filters.to) {
+                whereFilters.push(lte(transactions.date, filters.to));
             }
 
             if (

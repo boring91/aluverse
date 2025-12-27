@@ -44,6 +44,8 @@ type FilterRuntimeValues<T extends z.ZodObject<z.ZodRawShape>> = {
             ? BooleanFilterValue
             : UnwrapZodType<T["shape"][K]> extends z.ZodString
             ? string
+            : UnwrapZodType<T["shape"][K]> extends z.ZodDate
+            ? Date
             : unknown
         : unknown;
 };
