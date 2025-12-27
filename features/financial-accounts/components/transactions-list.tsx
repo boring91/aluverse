@@ -1,4 +1,3 @@
-import { useDataTable } from "@/hooks/use-data-table";
 import { useTRPC } from "@/trpc/client";
 import {
     keepPreviousData,
@@ -15,12 +14,14 @@ import {
     DataTableFilters,
     DateRangeFilter,
     BooleanFilter,
+    useDataTable,
+    useDataTableFilters,
 } from "@/components/data-table";
 import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
 import { useTransactionsColumns } from "../hooks/use-transactions-columns";
 import { ConsolidationsList } from "@/features/consolidations/components/consolidations-list";
-import { useTransactionFilters } from "@/features/financial-accounts/hooks/use-transactions-filter";
+import { transactionFiltersSchema } from "../schemas/transaction.schema";
 
 type Props = {
     mode: "account" | "consolidation";
@@ -55,8 +56,9 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         pageSize: 100,
     });
 
-    // Transaction filters (only used in consolidation mode)
-    const { filter, reset, isActive } = useTransactionFilters();
+    const { filter, reset, isActive, raw } = useDataTableFilters(
+        transactionFiltersSchema
+    );
 
     const queryClient = useQueryClient();
     const trpc = useTRPC();
@@ -66,21 +68,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                 accountId,
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
-                filters:
-                    mode === "consolidation"
-                        ? {
-                              dateRange: {
-                                  from: filter.dateRange.value.from,
-                                  to: filter.dateRange.value.to,
-                              },
-                              isConsolidated:
-                                  filter.isConsolidated.value === "true"
-                                      ? "true"
-                                      : filter.isConsolidated.value === "false"
-                                      ? "false"
-                                      : undefined,
-                          }
-                        : undefined,
+                filters: raw,
             },
             {
                 placeholderData: keepPreviousData,
@@ -171,23 +159,23 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                     consolidationGroup: mode === "consolidation",
                 }}
                 filtersSlot={
-                    mode === "consolidation" ? (
-                        <DataTableFilters
-                            onReset={reset}
-                            hasActiveFilters={isActive}
-                        >
-                            <DateRangeFilter
-                                label={tc("dateRange")}
-                                control={filter.dateRange}
-                            />
+                    <DataTableFilters
+                        onReset={reset}
+                        hasActiveFilters={isActive}
+                    >
+                        <DateRangeFilter
+                            label={tc("dateRange")}
+                            control={filter.dateRange}
+                        />
+                        {mode === "consolidation" && (
                             <BooleanFilter
                                 label={tc("consolidated")}
                                 control={filter.isConsolidated}
                                 trueLabel={tc("consolidated")}
                                 falseLabel={tc("notConsolidated")}
                             />
-                        </DataTableFilters>
-                    ) : undefined
+                        )}
+                    </DataTableFilters>
                 }
             />
         </>

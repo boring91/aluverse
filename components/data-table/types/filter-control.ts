@@ -1,4 +1,4 @@
 export type FilterControl<T> = {
-    value: T | null;
-    set: (value: T) => void;
+    value: T | undefined;
+    set: (value: T | undefined) => void;
 };

@@ -3,7 +3,7 @@ import {
     DataTableActions,
     DataTable,
 } from "@/components/data-table";
-import { useDataTable } from "@/hooks/use-data-table";
+import { useDataTable } from "@/components/data-table/hooks/use-data-table";
 import { useTRPC } from "@/trpc/client";
 import { AppRouter } from "@/trpc/routers/_app";
 import {

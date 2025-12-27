@@ -11,7 +11,7 @@ import {
 import { useTranslations } from "next-intl";
 import { FilterControl } from "../types";
 
-type BooleanFilterValue = "true" | "false" | "all" | undefined;
+type BooleanFilterValue = "true" | "false" | "all";
 
 type Option = {
     value: string;

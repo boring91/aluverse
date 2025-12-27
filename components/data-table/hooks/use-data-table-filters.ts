@@ -2,9 +2,20 @@ import { useQueryStates, parseAsString, parseAsIsoDateTime } from "nuqs";
 import { useCallback, useMemo } from "react";
 import { z } from "zod";
 import type { FilterControl } from "@/components/data-table/types";
+import { transactionFiltersSchema } from "@/features/financial-accounts";
 
 // Re-export FilterControl for convenience
 export type { FilterControl } from "@/components/data-table/types";
+
+type UnwrapZodType<T> = T extends z.ZodOptional<infer U>
+    ? UnwrapZodType<U>
+    : T extends z.ZodNullable<infer U>
+    ? UnwrapZodType<U>
+    : T extends z.ZodDefault<infer U>
+    ? UnwrapZodType<U>
+    : T extends z.ZodPipe<infer U>
+    ? UnwrapZodType<U>
+    : T;
 
 // Type definitions
 type DateRange = {
@@ -22,16 +33,18 @@ type FilterRuntimeValue = DateRange | BooleanFilterValue | string | undefined;
 
 // Map filter values to their runtime types (before transforms)
 type FilterRuntimeValues<T extends z.ZodObject<z.ZodRawShape>> = {
-    [K in keyof z.infer<T>]: K extends keyof T["shape"]
-        ? T["shape"][K] extends z.ZodObject<{
+    [K in keyof z.input<T>]-?: K extends keyof T["shape"]
+        ? UnwrapZodType<T["shape"][K]> extends z.ZodObject<{
               from: z.ZodTypeAny;
               to: z.ZodTypeAny;
           }>
             ? DateRange
-            : T["shape"][K] extends z.ZodEnum<Record<string, string>>
+            : UnwrapZodType<T["shape"][K]> extends z.ZodEnum<
+                  Record<string, "true" | "false" | "all">
+              >
             ? BooleanFilterValue
-            : z.infer<T>[K]
-        : z.infer<T>[K];
+            : unknown
+        : z.input<T>[K];
 };
 
 // Filter controls type
@@ -41,14 +54,28 @@ type FilterControls<T extends z.ZodObject<z.ZodRawShape>> = {
     >;
 };
 
+type Test = FilterControls<typeof transactionFiltersSchema>;
+
 // URL keys configuration type - allows both formats for flexibility
 type UrlKeysConfig<T extends z.ZodObject<z.ZodRawShape>> = {
-    [K in keyof z.infer<T>]?: string | { from: string; to: string };
+    [K in keyof z.input<T>]?: K extends keyof T["shape"]
+        ? UnwrapZodType<T["shape"][K]> extends z.ZodObject<{
+              from: z.ZodTypeAny;
+              to: z.ZodTypeAny;
+          }>
+            ? { from: string; to: string }
+            : UnwrapZodType<T["shape"][K]> extends z.ZodEnum<
+                  Record<string, "true" | "false" | "all">
+              >
+            ? string
+            : unknown
+        : unknown;
 };
 
 // Return type of the hook
 export type FilterResult<T extends z.ZodObject<z.ZodRawShape>> = {
     filter: FilterControls<T>;
+    raw: FilterRuntimeValues<T>;
     reset: () => void;
     isActive: boolean;
 };
@@ -123,10 +150,10 @@ function getBaseSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
     return schema;
 }
 
-export function useFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
+export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
     schema: TSchema,
     urlKeys?: UrlKeysConfig<TSchema>
-): FilterResult<TSchema> {
+) {
     const shape = schema.shape;
     const keys = Object.keys(shape) as Array<keyof typeof shape>;
 
@@ -246,7 +273,7 @@ export function useFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
 
         for (const key of keys) {
             result[String(key)] = {
-                value: filterValues[String(key)] ?? null,
+                value: filterValues[String(key)],
                 set: setters[String(key)] as (
                     value: FilterRuntimeValue
                 ) => void,
@@ -293,8 +320,14 @@ export function useFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
         return false;
     }, [state, filterConfig.filterTypes, keys]);
 
+    // Build raw values object with proper typing
+    const raw = useMemo(() => {
+        return filterValues as unknown as FilterRuntimeValues<TSchema>;
+    }, [filterValues]);
+
     return {
         filter,
+        raw,
         reset,
         isActive,
     };

@@ -8,7 +8,7 @@ import {
 
 export const transactionFiltersSchema = z.object({
     dateRange: dateRangeFilterSchema.optional(),
-    isConsolidated: booleanFilterSchema,
+    isConsolidated: booleanFilterSchema.optional(),
 });
 
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
