@@ -34,16 +34,20 @@ import {
 } from "./create-project-item";
 import { useProjectItems } from "../hooks/use-project-items";
 import { useTranslations } from "next-intl";
-import { useState, useRef, forwardRef, useImperativeHandle } from "react";
-import { usePendingProjectItemSelection } from "../hooks/use-pending-project-item-selection";
-import { usePendingProjectSelection } from "../hooks/use-pending-project-selection";
+import {
+    useState,
+    useRef,
+    forwardRef,
+    useImperativeHandle,
+    useCallback,
+} from "react";
+import { usePendingSelection } from "@/hooks/use-pending-selection";
 import { CreateProject } from "@/features/projects/components/create-project";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { CreateLoan } from "@/features/loans/components/create-loan";
 import { CreateLoanPayoff, CreateLoanPayoffHandle } from "./create-loan-payoff";
 import { useLoanPayoffs } from "../hooks/use-loan-payoffs";
-import { usePendingLoanPayoffSelection } from "../hooks/use-pending-loan-payoff-selection";
 import { formatCurrency } from "@/lib/utils";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;
@@ -230,7 +234,6 @@ export const BudgetCategoryField = ({ control }: BudgetCategoryFieldProps) => {
 
 type ProjectFieldsProps = FieldProps & {
     form: UseFormReturn<SchemaType>;
-    createConsolidationOpen: boolean;
 };
 
 export type ProjectFieldsHandle = {
@@ -240,7 +243,7 @@ export type ProjectFieldsHandle = {
 export const ProjectFields = forwardRef<
     ProjectFieldsHandle,
     ProjectFieldsProps
->(({ control, form, createConsolidationOpen }, ref) => {
+>(({ control, form }, ref) => {
     const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
 
@@ -258,18 +261,27 @@ export const ProjectFields = forwardRef<
 
     const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
     const createProjectItemRef = useRef<CreateProjectItemHandle>(null);
-    const handleItemCreated = usePendingProjectItemSelection(
-        form,
-        projectItems,
-        createConsolidationOpen,
-        projectId,
-        projectStream
-    );
-    const handleProjectCreated = usePendingProjectSelection(
-        form,
-        projects?.items,
-        createConsolidationOpen
-    );
+
+    const handleItemCreated = usePendingSelection({
+        items: projectItems,
+        onItemFound: useCallback(
+            id => form.setValue("projectItemId", id),
+            [form]
+        ),
+        resetDependencies: [projectId, projectStream],
+    });
+
+    const handleProjectCreated = usePendingSelection({
+        items: projects?.items,
+        onItemFound: useCallback(
+            id => {
+                form.setValue("projectId", id);
+                form.setValue("projectStream", undefined);
+                form.setValue("projectItemId", undefined);
+            },
+            [form]
+        ),
+    });
 
     useImperativeHandle(ref, () => {
         return {
@@ -474,199 +486,126 @@ ProjectFields.displayName = "ProjectFields";
 
 type LoanFieldsProps = FieldProps & {
     form: UseFormReturn<SchemaType>;
-    createConsolidationOpen: boolean;
 };
 
 export type LoanFieldsHandle = {
     closeAll: () => void;
 };
 
-export const LoanFields = forwardRef<
-    LoanFieldsHandle,
-    LoanFieldsProps
->(({ control, form, createConsolidationOpen }, ref) => {
-    const t = useTranslations("FinancialAccounts");
-    const tLoans = useTranslations("Loans");
-    const tc = useTranslations("Common");
+export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
+    ({ control, form }, ref) => {
+        const t = useTranslations("FinancialAccounts");
+        const tLoans = useTranslations("Loans");
+        const tc = useTranslations("Common");
 
-    const loanId = form.watch("loanId");
-    const isPayoff = form.watch("isPayoff");
+        const loanId = form.watch("loanId");
+        const isPayoff = form.watch("isPayoff");
 
-    const trpc = useTRPC();
+        const trpc = useTRPC();
 
-    const { data: loans } = useQuery(
-        trpc.loans.list.queryOptions({
-            pagination: { pageSize: -1, pageIndex: 0 },
-        })
-    );
-    const loanPayoffs = useLoanPayoffs(form);
+        const { data: loans } = useQuery(
+            trpc.loans.list.queryOptions({
+                pagination: { pageSize: -1, pageIndex: 0 },
+            })
+        );
+        const loanPayoffs = useLoanPayoffs(form);
 
-    const [isCreateLoanOpen, setIsCreateLoanOpen] = useState(false);
-    const createLoanPayoffRef = useRef<CreateLoanPayoffHandle>(null);
-    const handlePayoffCreated = usePendingLoanPayoffSelection(
-        form,
-        loanPayoffs,
-        createConsolidationOpen,
-        loanId
-    );
-    const handleLoanCreated = (loanId: string) => {
-        form.setValue("loanId", loanId);
-        form.setValue("isPayoff", undefined);
-        form.setValue("loanPayoffId", undefined);
-    };
-
-    useImperativeHandle(ref, () => {
-        return {
-            closeAll: () => {
-                setIsCreateLoanOpen(false);
-                createLoanPayoffRef.current?.close();
-            },
+        const [isCreateLoanOpen, setIsCreateLoanOpen] = useState(false);
+        const createLoanPayoffRef = useRef<CreateLoanPayoffHandle>(null);
+        const handlePayoffCreated = usePendingSelection({
+            items: loanPayoffs,
+            onItemFound: useCallback(
+                id => form.setValue("loanPayoffId", id),
+                [form]
+            ),
+            resetDependencies: [loanId],
+        });
+        const handleLoanCreated = (loanId: string) => {
+            form.setValue("loanId", loanId);
+            form.setValue("isPayoff", undefined);
+            form.setValue("loanPayoffId", undefined);
         };
-    });
 
-    return (
-        <>
-            <Controller
-                control={control}
-                name="loanId"
-                render={({ field, fieldState }) => {
-                    return (
-                        <Field>
-                            <FieldLabel>{t("loan")}</FieldLabel>
+        useImperativeHandle(ref, () => {
+            return {
+                closeAll: () => {
+                    setIsCreateLoanOpen(false);
+                    createLoanPayoffRef.current?.close();
+                },
+            };
+        });
 
-                            <SearchableSelect
-                                value={field.value ?? ""}
-                                onValueChange={value => {
-                                    if (value === "__create_new_loan__") {
-                                        setIsCreateLoanOpen(true);
-                                        field.onChange("");
-                                        form.setValue("isPayoff", undefined);
-                                        form.setValue("loanPayoffId", undefined);
-                                        return;
-                                    }
-
-                                    field.onChange(value);
-                                    form.setValue("isPayoff", undefined);
-                                    form.setValue("loanPayoffId", undefined);
-                                }}
-                            >
-                                <SearchableSelectTrigger className="w-full">
-                                    <SearchableSelectValue
-                                        placeholder={t("selectLoan")}
-                                    />
-                                </SearchableSelectTrigger>
-                                <SearchableSelectContent
-                                    searchPlaceholder={t("searchLoan")}
-                                >
-                                    <SearchableSelectGroup>
-                                        <SearchableSelectEmpty>
-                                            {t("noLoansFound")}
-                                        </SearchableSelectEmpty>
-                                        {loans?.items.map(loan => {
-                                            return (
-                                                <SearchableSelectItem
-                                                    key={loan.id}
-                                                    value={loan.id}
-                                                >
-                                                    {`${loan.partyName} - ${tLoans(loan.type)}`}
-                                                </SearchableSelectItem>
-                                            );
-                                        })}
-                                        {loans &&
-                                            loans.items.length > 0 && (
-                                                <SearchableSelectSeparator />
-                                            )}
-                                        <SearchableSelectItem value="__create_new_loan__">
-                                            {tc("createNew")}
-                                        </SearchableSelectItem>
-                                    </SearchableSelectGroup>
-                                </SearchableSelectContent>
-                            </SearchableSelect>
-
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]} />
-                            )}
-                        </Field>
-                    );
-                }}
-            />
-
-            <Controller
-                control={control}
-                name="isPayoff"
-                render={({ field, fieldState }) => {
-                    return (
-                        <Field orientation="horizontal">
-                            <Checkbox
-                                id="is-payoff-checkbox"
-                                checked={field.value ?? false}
-                                onCheckedChange={checked => {
-                                    field.onChange(checked);
-                                    if (!checked) {
-                                        form.setValue("loanPayoffId", undefined);
-                                    }
-                                }}
-                            />
-                            <FieldLabel htmlFor="is-payoff-checkbox">
-                                {t("isPayoff")}
-                            </FieldLabel>
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]} />
-                            )}
-                        </Field>
-                    );
-                }}
-            />
-
-            {isPayoff && (
+        return (
+            <>
                 <Controller
                     control={control}
-                    name="loanPayoffId"
+                    name="loanId"
                     render={({ field, fieldState }) => {
-                        const handleValueChange = (value: string) => {
-                            if (value === "__create_new__") {
-                                createLoanPayoffRef.current?.open();
-                                field.onChange("");
-                            } else {
-                                field.onChange(value);
-                            }
-                        };
-
                         return (
                             <Field>
-                                <FieldLabel>{t("loanPayoff")}</FieldLabel>
+                                <FieldLabel>{t("loan")}</FieldLabel>
 
-                                <Select
+                                <SearchableSelect
                                     value={field.value ?? ""}
-                                    onValueChange={handleValueChange}
+                                    onValueChange={value => {
+                                        if (value === "__create_new_loan__") {
+                                            setIsCreateLoanOpen(true);
+                                            field.onChange("");
+                                            form.setValue(
+                                                "isPayoff",
+                                                undefined
+                                            );
+                                            form.setValue(
+                                                "loanPayoffId",
+                                                undefined
+                                            );
+                                            return;
+                                        }
+
+                                        field.onChange(value);
+                                        form.setValue("isPayoff", undefined);
+                                        form.setValue(
+                                            "loanPayoffId",
+                                            undefined
+                                        );
+                                    }}
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {loanPayoffs?.map(payoff => {
+                                    <SearchableSelectTrigger className="w-full">
+                                        <SearchableSelectValue
+                                            placeholder={t("selectLoan")}
+                                        />
+                                    </SearchableSelectTrigger>
+                                    <SearchableSelectContent
+                                        searchPlaceholder={t("searchLoan")}
+                                    >
+                                        <SearchableSelectGroup>
+                                            <SearchableSelectEmpty>
+                                                {t("noLoansFound")}
+                                            </SearchableSelectEmpty>
+                                            {loans?.items.map(loan => {
                                                 return (
-                                                    <SelectItem
-                                                        key={payoff.id}
-                                                        value={payoff.id}
+                                                    <SearchableSelectItem
+                                                        key={loan.id}
+                                                        value={loan.id}
                                                     >
-                                                        {payoff.date.toDateString()} - {formatCurrency(payoff.amount)}
-                                                    </SelectItem>
+                                                        {`${
+                                                            loan.partyName
+                                                        } - ${tLoans(
+                                                            loan.type
+                                                        )}`}
+                                                    </SearchableSelectItem>
                                                 );
                                             })}
-                                            {loanPayoffs &&
-                                                loanPayoffs.length > 0 && (
-                                                    <SelectSeparator />
+                                            {loans &&
+                                                loans.items.length > 0 && (
+                                                    <SearchableSelectSeparator />
                                                 )}
-                                            {loanId && (
-                                                <SelectItem value="__create_new__">
-                                                    {tc("createNew")}
-                                                </SelectItem>
-                                            )}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
+                                            <SearchableSelectItem value="__create_new_loan__">
+                                                {tc("createNew")}
+                                            </SearchableSelectItem>
+                                        </SearchableSelectGroup>
+                                    </SearchableSelectContent>
+                                </SearchableSelect>
 
                                 {fieldState.invalid && (
                                     <FieldError errors={[fieldState.error]} />
@@ -675,25 +614,120 @@ export const LoanFields = forwardRef<
                         );
                     }}
                 />
-            )}
 
-            {/* Nested create modal handler */}
-            {loanId && (
-                <CreateLoanPayoff
-                    ref={createLoanPayoffRef}
-                    loanId={loanId}
-                    onPayoffCreated={handlePayoffCreated}
+                <Controller
+                    control={control}
+                    name="isPayoff"
+                    render={({ field, fieldState }) => {
+                        return (
+                            <Field orientation="horizontal">
+                                <Checkbox
+                                    id="is-payoff-checkbox"
+                                    checked={field.value ?? false}
+                                    onCheckedChange={checked => {
+                                        field.onChange(checked);
+                                        if (!checked) {
+                                            form.setValue(
+                                                "loanPayoffId",
+                                                undefined
+                                            );
+                                        }
+                                    }}
+                                />
+                                <FieldLabel htmlFor="is-payoff-checkbox">
+                                    {t("isPayoff")}
+                                </FieldLabel>
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                )}
+                            </Field>
+                        );
+                    }}
                 />
-            )}
-            <CreateLoan
-                open={isCreateLoanOpen}
-                onOpenChange={setIsCreateLoanOpen}
-                itemId={null}
-                onCreated={handleLoanCreated}
-            />
-        </>
-    );
-});
+
+                {isPayoff && (
+                    <Controller
+                        control={control}
+                        name="loanPayoffId"
+                        render={({ field, fieldState }) => {
+                            const handleValueChange = (value: string) => {
+                                if (value === "__create_new__") {
+                                    createLoanPayoffRef.current?.open();
+                                    field.onChange("");
+                                } else {
+                                    field.onChange(value);
+                                }
+                            };
+
+                            return (
+                                <Field>
+                                    <FieldLabel>{t("loanPayoff")}</FieldLabel>
+
+                                    <Select
+                                        value={field.value ?? ""}
+                                        onValueChange={handleValueChange}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {loanPayoffs?.map(payoff => {
+                                                    return (
+                                                        <SelectItem
+                                                            key={payoff.id}
+                                                            value={payoff.id}
+                                                        >
+                                                            {payoff.date.toDateString()}{" "}
+                                                            -{" "}
+                                                            {formatCurrency(
+                                                                payoff.amount
+                                                            )}
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                                {loanPayoffs &&
+                                                    loanPayoffs.length > 0 && (
+                                                        <SelectSeparator />
+                                                    )}
+                                                {loanId && (
+                                                    <SelectItem value="__create_new__">
+                                                        {tc("createNew")}
+                                                    </SelectItem>
+                                                )}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+
+                                    {fieldState.invalid && (
+                                        <FieldError
+                                            errors={[fieldState.error]}
+                                        />
+                                    )}
+                                </Field>
+                            );
+                        }}
+                    />
+                )}
+
+                {/* Nested create modal handler */}
+                {loanId && (
+                    <CreateLoanPayoff
+                        ref={createLoanPayoffRef}
+                        loanId={loanId}
+                        onPayoffCreated={handlePayoffCreated}
+                    />
+                )}
+                <CreateLoan
+                    open={isCreateLoanOpen}
+                    onOpenChange={setIsCreateLoanOpen}
+                    itemId={null}
+                    onCreated={handleLoanCreated}
+                />
+            </>
+        );
+    }
+);
 LoanFields.displayName = "LoanFields";
 
 type IsGstFieldProps = FieldProps;

@@ -98,7 +98,6 @@ export const CreateConsolidation = ({
                                     ref={projectFieldsRef}
                                     control={form.control}
                                     form={form}
-                                    createConsolidationOpen={open}
                                 />
                             )}
 
@@ -107,7 +106,6 @@ export const CreateConsolidation = ({
                                     ref={loanFieldsRef}
                                     control={form.control}
                                     form={form}
-                                    createConsolidationOpen={open}
                                 />
                             )}
 

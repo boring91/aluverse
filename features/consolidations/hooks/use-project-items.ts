@@ -6,6 +6,8 @@ import { z } from "zod";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;
 
+type UnionOfArraysToArrayOfUnion<T> = T extends (infer U)[] ? U : never;
+
 export const useProjectItems = (form: UseFormReturn<SchemaType>) => {
     const trpc = useTRPC();
 
@@ -47,5 +49,8 @@ export const useProjectItems = (form: UseFormReturn<SchemaType>) => {
     );
 
     const dataMap = { supplies, labors, misc, payments };
-    return stream ? dataMap[stream]?.items : undefined;
+
+    const data = stream ? dataMap[stream]?.items : undefined;
+
+    return data as UnionOfArraysToArrayOfUnion<typeof data>[] | undefined;
 };
