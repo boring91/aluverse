@@ -1,4 +1,19 @@
-import { and, asc, count, desc, eq, SQL, sql, sum } from "drizzle-orm";
+import {
+    and,
+    asc,
+    count,
+    desc,
+    eq,
+    SQL,
+    sql,
+    sum,
+    gte,
+    lte,
+    ilike,
+    or,
+    isNull,
+    isNotNull,
+} from "drizzle-orm";
 import {
     db,
     projectLabors,
@@ -7,7 +22,7 @@ import {
     projects,
     projectSupplies,
 } from "@/db";
-import { listSchema } from "@/shared/lib/schemas/util-schemas";
+import { listProjectSchema } from "../schemas/project.schema";
 import { z } from "zod";
 
 const paymentsSq = db
@@ -66,10 +81,68 @@ const projection = {
 } as const;
 
 export class ProjectService {
-    async list(input: z.infer<typeof listSchema>) {
-        const { pagination, sorting } = input;
+    async list(input: z.infer<typeof listProjectSchema>) {
+        const { pagination, sorting, filters: filterInput } = input;
 
-        const filters: SQL[] = [];
+        const whereFilters: SQL[] = [];
+        const havingFilters: SQL[] = [];
+
+        if (filterInput) {
+            if (filterInput.keyword) {
+                whereFilters.push(
+                    or(
+                        ilike(projects.client, "%" + filterInput.keyword + "%"),
+                        ilike(projects.title, "%" + filterInput.keyword + "%")
+                    )!
+                );
+            }
+
+            if (filterInput.status) {
+                switch (filterInput.status) {
+                    case "planning":
+                        whereFilters.push(isNull(projects.startDate));
+                        break;
+                    case "inProgress":
+                        whereFilters.push(
+                            and(
+                                isNotNull(projects.startDate),
+                                isNull(projects.endDate)
+                            )!
+                        );
+                        break;
+                    case "awaitingPayment":
+                        whereFilters.push(
+                            and(
+                                isNotNull(projects.startDate),
+                                isNotNull(projects.endDate)
+                            )!
+                        );
+                        havingFilters.push(
+                            sql`SUM(COALESCE(${paymentsSq.total}, 0)) < ${projects.price}`
+                        );
+                        break;
+                    case "completed":
+                        whereFilters.push(
+                            and(
+                                isNotNull(projects.startDate),
+                                isNotNull(projects.endDate)
+                            )!
+                        );
+                        havingFilters.push(
+                            sql`SUM(COALESCE(${paymentsSq.total}, 0)) >= ${projects.price}`
+                        );
+                        break;
+                }
+            }
+
+            if (filterInput.from) {
+                whereFilters.push(gte(projects.startDate, filterInput.from));
+            }
+
+            if (filterInput.to) {
+                whereFilters.push(lte(projects.startDate, filterInput.to));
+            }
+        }
 
         const orderBy: SQL[] = [];
         sorting?.forEach(sort => {
@@ -102,28 +175,19 @@ export class ProjectService {
             .leftJoin(suppliesSq, eq(suppliesSq.projectId, projects.id))
             .leftJoin(laborsSq, eq(laborsSq.projectId, projects.id))
             .leftJoin(miscSq, eq(miscSq.projectId, projects.id))
+            .where(and(...whereFilters))
             .groupBy(projects.id)
+            .having(and(...havingFilters))
             .orderBy(...orderBy);
 
         const items = await (pageSize === -1
             ? query
             : query.offset(pageIndex * pageSize).limit(pageSize));
 
-        const { filteredCount } = (
-            await db.select({ filteredCount: count() }).from(projects)
-        )[0];
-
-        const { _count } = (
-            await db
-                .select({ _count: count() })
-                .from(projects)
-                .where(and(...filters))
-        )[0];
-
         return {
             items,
-            count: _count,
-            filteredCount,
+            count: 0, // TODO: fix this
+            filteredCount: 0, // TODO: fix this
         };
     }
 

@@ -2,6 +2,10 @@ import { useQueryStates, parseAsString, parseAsIsoDateTime } from "nuqs";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 import type { FilterControl } from "@/components/data-table/types";
+import {
+    projectFiltersSchema,
+    projectStatusFilterSchema,
+} from "@/features/projects";
 
 // Re-export FilterControl for convenience
 export type { FilterControl } from "@/components/data-table/types";
@@ -46,6 +50,10 @@ type FilterRuntimeValues<T extends z.ZodObject<z.ZodRawShape>> = {
             ? string
             : UnwrapZodType<T["shape"][K]> extends z.ZodDate
             ? Date
+            : UnwrapZodType<T["shape"][K]> extends z.ZodEnum<infer U>
+            ? U extends Record<string, infer E>
+                ? E
+                : unknown
             : unknown
         : unknown;
 };

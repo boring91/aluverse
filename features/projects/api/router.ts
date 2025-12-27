@@ -17,13 +17,13 @@ import {
     createProjectMiscSchemaWithProjectId,
     createProjectPaymentSchemaWithProjectId,
 } from "../schemas/project-item.schema";
-import { listSchema } from "@/shared/lib/schemas/util-schemas";
+import { listProjectSchema } from "../schemas/project.schema";
 
 const projectService = new ProjectService();
 const projectItemService = new ProjectItemService();
 
 export const projectsRouter = createTRPCRouter({
-    list: protectedProcedure.input(listSchema).query(async ({ input }) => {
+    list: protectedProcedure.input(listProjectSchema).query(async ({ input }) => {
         return await projectService.list(input);
     }),
 

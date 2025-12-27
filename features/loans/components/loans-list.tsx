@@ -1,7 +1,15 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { useDataTable } from "@/components/data-table/hooks/use-data-table";
+import {
+    useDataTable,
+    useDataTableFilters,
+    DataTableFilters,
+    StringFilter,
+    DateFilter,
+    EnumFilter,
+    BooleanFilter,
+} from "@/components/data-table";
 import { useTRPC } from "@/trpc/client";
 import {
     useQueryClient,
@@ -16,9 +24,11 @@ import { CreateLoan } from "./create-loan";
 import { useConfirm } from "@/lib/confirm-context";
 import { useQueryState, parseAsString } from "nuqs";
 import { useLoansColumns } from "../hooks/use-loans-columns";
+import { loanFiltersSchema } from "../schemas/loan.schema";
 
 export const LoansList = () => {
     const tc = useTranslations("Common");
+    const t = useTranslations("Loans");
 
     const { confirm } = useConfirm();
 
@@ -43,6 +53,10 @@ export const LoansList = () => {
         pageSize: 100,
     });
 
+    const { filter, reset, isActive, raw } = useDataTableFilters(
+        loanFiltersSchema
+    );
+
     const queryClient = useQueryClient();
     const trpc = useTRPC();
 
@@ -51,6 +65,7 @@ export const LoansList = () => {
             {
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
+                filters: raw,
             },
             {
                 placeholderData: keepPreviousData,
@@ -102,7 +117,42 @@ export const LoansList = () => {
                 }}
                 itemId={itemId}
             />
-            <DataTable columns={columns} data={data} {...dataTable} />
+            <DataTable
+                columns={columns}
+                data={data}
+                {...dataTable}
+                filtersSlot={
+                    <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
+                        <StringFilter
+                            label={tc("keyword")}
+                            control={filter.keyword}
+                        />
+
+                        <EnumFilter
+                            label={t("type")}
+                            control={filter.type}
+                            options={[
+                                { value: "lent", label: t("lent") },
+                                { value: "borrowed", label: t("borrowed") },
+                            ]}
+                        />
+
+                        <BooleanFilter
+                            label="Paid off"
+                            control={filter.isPaidOff}
+                            trueLabel={tc("yes")}
+                            falseLabel={tc("no")}
+                        />
+
+                        <DateFilter
+                            label={tc("fromDate")}
+                            control={filter.from}
+                        />
+
+                        <DateFilter label={tc("toDate")} control={filter.to} />
+                    </DataTableFilters>
+                }
+            />
         </>
     );
 };

@@ -11,13 +11,13 @@ import {
     listLoanPayoffSchema,
     createLoanPayoffSchemaWithLoanId,
 } from "../schemas/loan-payoff.schema";
-import { listSchema } from "@/shared/lib/schemas/util-schemas";
+import { listLoanSchema } from "../schemas/loan.schema";
 
 const loanService = new LoanService();
 const loanPayoffService = new LoanPayoffService();
 
 export const loansRouter = createTRPCRouter({
-    list: protectedProcedure.input(listSchema).query(async ({ input }) => {
+    list: protectedProcedure.input(listLoanSchema).query(async ({ input }) => {
         return await loanService.list(input);
     }),
 

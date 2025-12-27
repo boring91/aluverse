@@ -1,7 +1,14 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { useDataTable } from "@/components/data-table/hooks/use-data-table";
+import {
+    useDataTable,
+    useDataTableFilters,
+    DataTableFilters,
+    StringFilter,
+    DateFilter,
+    EnumFilter,
+} from "@/components/data-table";
 import { useTRPC } from "@/trpc/client";
 import {
     useQueryClient,
@@ -16,9 +23,11 @@ import { CreateProject } from "./create-project";
 import { useConfirm } from "@/lib/confirm-context";
 import { useQueryState, parseAsString } from "nuqs";
 import { useProjectsColumns } from "../hooks/use-projects-columns";
+import { projectFiltersSchema } from "../schemas/project.schema";
 
 export const ProjectsList = () => {
     const tc = useTranslations("Common");
+    const t = useTranslations("Projects");
 
     const { confirm } = useConfirm();
 
@@ -43,6 +52,10 @@ export const ProjectsList = () => {
         pageSize: 100,
     });
 
+    const { filter, reset, isActive, raw } = useDataTableFilters(
+        projectFiltersSchema
+    );
+
     const queryClient = useQueryClient();
     const trpc = useTRPC();
 
@@ -51,6 +64,7 @@ export const ProjectsList = () => {
             {
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
+                filters: raw,
             },
             {
                 placeholderData: keepPreviousData,
@@ -102,7 +116,40 @@ export const ProjectsList = () => {
                 }}
                 itemId={itemId}
             />
-            <DataTable columns={columns} data={data} {...dataTable} />
+            <DataTable
+                columns={columns}
+                data={data}
+                {...dataTable}
+                filtersSlot={
+                    <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
+                        <StringFilter
+                            label={tc("keyword")}
+                            control={filter.keyword}
+                        />
+
+                        <EnumFilter
+                            label={t("status")}
+                            control={filter.status}
+                            options={[
+                                { value: "planning", label: t("planning") },
+                                { value: "inProgress", label: t("inProgress") },
+                                {
+                                    value: "awaitingPayment",
+                                    label: t("awaitingPayment"),
+                                },
+                                { value: "completed", label: t("completed") },
+                            ]}
+                        />
+
+                        <DateFilter
+                            label={tc("fromDate")}
+                            control={filter.from}
+                        />
+
+                        <DateFilter label={tc("toDate")} control={filter.to} />
+                    </DataTableFilters>
+                }
+            />
         </>
     );
 };
