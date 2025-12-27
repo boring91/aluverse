@@ -1,5 +1,5 @@
 import { useQueryStates, parseAsString, parseAsIsoDateTime } from "nuqs";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 import type { FilterControl } from "@/components/data-table/types";
 import { transactionFiltersSchema } from "@/features/financial-accounts";
@@ -152,7 +152,10 @@ function getBaseSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
 
 export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
     schema: TSchema,
-    urlKeys?: UrlKeysConfig<TSchema>
+    options?: {
+        disableUrlKeys?: boolean;
+        urlKeys?: UrlKeysConfig<TSchema>;
+    }
 ) {
     const shape = schema.shape;
     const keys = Object.keys(shape) as Array<keyof typeof shape>;
@@ -170,7 +173,7 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
 
             if (isDateRangeFilter(baseSchema as z.ZodTypeAny)) {
                 // Date range filter - uses nested from/to keys
-                const urlKeyConfig = urlKeys?.[key] as
+                const urlKeyConfig = options?.urlKeys?.[key] as
                     | { from: string; to: string }
                     | undefined;
                 const keyStr = String(key);
@@ -186,14 +189,16 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
             } else if (isBooleanFilter(fieldSchema as z.ZodTypeAny)) {
                 // Boolean filter
                 const urlKey =
-                    (urlKeys?.[key] as string | undefined) ?? String(key);
+                    (options?.urlKeys?.[key] as string | undefined) ??
+                    String(key);
                 parsers[String(key)] = parseAsString;
                 urlKeyMap[String(key)] = urlKey;
                 filterTypes[String(key)] = "boolean";
             } else {
                 // Unknown filter type - treat as string for now
                 const urlKey =
-                    (urlKeys?.[key] as string | undefined) ?? String(key);
+                    (options?.urlKeys?.[key] as string | undefined) ??
+                    String(key);
                 parsers[String(key)] = parseAsString;
                 urlKeyMap[String(key)] = urlKey;
                 filterTypes[String(key)] = "string";
@@ -201,12 +206,26 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
         }
 
         return { parsers, urlKeyMap, filterTypes };
-    }, [urlKeys, keys, shape]);
+    }, [options?.urlKeys, keys, shape]);
 
     // Single useQueryStates call with all parsers
-    const [state, setState] = useQueryStates(filterConfig.parsers, {
+    const [urlState, setUrlState] = useQueryStates(filterConfig.parsers, {
         urlKeys: filterConfig.urlKeyMap,
     });
+
+    const [localState, setLocalState] = useState(() => {
+        const initial: Record<string, unknown> = {};
+
+        for (const key in filterConfig.parsers) {
+            initial[key] = null;
+        }
+
+        return initial;
+    });
+
+    const state = options?.disableUrlKeys ? localState : urlState;
+    const setState = options?.disableUrlKeys ? setLocalState : setUrlState;
+
 
     // Build filter values
     const filterValues = useMemo(() => {
