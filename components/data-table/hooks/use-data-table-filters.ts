@@ -54,8 +54,6 @@ type FilterControls<T extends z.ZodObject<z.ZodRawShape>> = {
     >;
 };
 
-type Test = FilterControls<typeof transactionFiltersSchema>;
-
 // URL keys configuration type - allows both formats for flexibility
 type UrlKeysConfig<T extends z.ZodObject<z.ZodRawShape>> = {
     [K in keyof z.input<T>]?: K extends keyof T["shape"]
