@@ -13,6 +13,7 @@ import {
     isNull,
     SQL,
     ilike,
+    sql,
 } from "drizzle-orm";
 import { createProjectedQuery, many, one } from "@/lib/server-utils";
 import { z } from "zod";
@@ -120,7 +121,11 @@ export class TransactionService {
                         orderBy.push(direction(transactions.description));
                         break;
                     case "amount":
-                        orderBy.push(direction(transactions.amount));
+                        orderBy.push(
+                            direction(
+                                sql`CASE WHEN ${transactions.type} = 'income' THEN ${transactions.amount} ELSE -1 * ${transactions.amount} END`
+                            )
+                        );
                         break;
                     default:
                         orderBy.push(desc(transactions.date));
