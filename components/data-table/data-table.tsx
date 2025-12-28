@@ -31,6 +31,7 @@ type Props<TData, TValue> = {
     data?: {
         items: TData[];
         count: number;
+        filteredCount: number;
     };
     pagination: PaginationState;
     setPagination: OnChangeFn<PaginationState>;
@@ -159,7 +160,11 @@ export const DataTable = <TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <DataTablePagination table={table} />
+            <DataTablePagination
+                table={table}
+                count={data?.count}
+                filteredCount={data?.filteredCount}
+            />
         </div>
     );
 };

@@ -80,10 +80,8 @@ const projectsQuery = defineQuery({
         address: projects.address,
         meters: projects.meters,
         price: projects.price,
-        paid: sql<number>`SUM(COALESCE(${paymentsSq.total}, 0))`.as("paid"),
-        cost: sql<number>`SUM(COALESCE(${suppliesSq.total}, 0)) + SUM(COALESCE(${laborsSq.total}, 0)) + SUM(COALESCE(${miscSq.total}, 0))`.as(
-            "cost"
-        ),
+        paid: sql<number>`SUM(COALESCE(${paymentsSq.total}, 0))`,
+        cost: sql<number>`SUM(COALESCE(${suppliesSq.total}, 0)) + SUM(COALESCE(${laborsSq.total}, 0)) + SUM(COALESCE(${miscSq.total}, 0))`,
     },
     joins: [
         leftJoin(paymentsSq, eq(paymentsSq.projectId, projects.id)),
@@ -95,7 +93,9 @@ const projectsQuery = defineQuery({
 });
 
 export class ProjectService {
-    private buildFilters(filterInput?: z.infer<typeof listProjectSchema>["filters"]) {
+    private buildFilters(
+        filterInput?: z.infer<typeof listProjectSchema>["filters"]
+    ) {
         const where: SQL[] = [];
         const having: SQL[] = [];
 
@@ -161,7 +161,9 @@ export class ProjectService {
         return { where, having };
     }
 
-    private buildOrderBy(sorting?: z.infer<typeof listProjectSchema>["sorting"]) {
+    private buildOrderBy(
+        sorting?: z.infer<typeof listProjectSchema>["sorting"]
+    ) {
         const orderBy: SQL[] = [];
 
         sorting?.forEach(sort => {

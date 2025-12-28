@@ -3,6 +3,7 @@ import {
     and,
     count,
     countDistinct,
+    SelectedFieldsFlat,
     type ColumnBaseConfig,
     type ColumnDataType,
     type SQL,
@@ -21,7 +22,11 @@ import { db } from "@/db";
 // ============================================
 
 // PgColumn has default type parameters, so we can use it without generics
-type ColumnLike = PgColumn | SQL.Aliased<unknown>;
+type ColumnLike =
+    | PgColumn
+    | SelectedFieldsFlat<PgColumn>[string]
+    | PgTable
+    | SelectedFieldsFlat<PgColumn>;
 
 interface ManyRelation<T extends ProjectionDef> {
     __type: "many";
@@ -73,7 +78,9 @@ type InferFieldType<T> = T extends ManyRelation<infer F>
       >
     ? C["data"] | (C["notNull"] extends true ? never : null)
     : T extends SQL.Aliased<infer D>
-    ? D | null
+    ? D
+    : T extends SQL<infer D>
+    ? D
     : unknown;
 
 type InferProjectionResult<T extends ProjectionDef> = {
@@ -399,7 +406,7 @@ type JoinDef = LeftJoinDef | InnerJoinDef;
 
 interface QueryDefinition<
     TFrom extends PgTable<TableConfig>,
-    TProjection extends ProjectionDef,
+    TProjection extends ProjectionDef
 > {
     from: TFrom;
     key: keyof TProjection & string;
@@ -409,7 +416,9 @@ interface QueryDefinition<
 }
 
 interface ListParams {
+    baseWhere?: SQL[];
     where?: SQL[];
+    baseHaving?: SQL[];
     having?: SQL[];
     orderBy?: SQL[];
     pagination: {
@@ -468,9 +477,15 @@ interface ChainableQuery {
 
 export function defineQuery<
     TFrom extends PgTable<TableConfig>,
-    TProjection extends ProjectionDef,
+    TProjection extends ProjectionDef
 >(definition: QueryDefinition<TFrom, TProjection>) {
-    const { from: fromTable, key, projection, joins = [], groupBy } = definition;
+    const {
+        from: fromTable,
+        key,
+        projection,
+        joins = [],
+        groupBy,
+    } = definition;
     // Cast to satisfy Drizzle's complex conditional type for .from()
     const from = fromTable as PgTable<TableConfig>;
 
@@ -506,7 +521,11 @@ export function defineQuery<
         const result: Record<string, unknown>[] = [];
         for (const row of rows) {
             const keyValue = row[key];
-            if (keyValue !== null && keyValue !== undefined && !seen.has(keyValue)) {
+            if (
+                keyValue !== null &&
+                keyValue !== undefined &&
+                !seen.has(keyValue)
+            ) {
                 seen.add(keyValue);
                 result.push(row);
             }
@@ -518,73 +537,97 @@ export function defineQuery<
     const keyColumn = projection[key] as PgColumn;
 
     return {
-        async list(params: ListParams): Promise<ListResult<InferProjectionResult<TProjection>>> {
-            const { where = [], having = [], orderBy = [], pagination } = params;
+        async list(
+            params: ListParams
+        ): Promise<ListResult<InferProjectionResult<TProjection>>> {
+            const {
+                baseWhere = [],
+                where = [],
+                baseHaving = [],
+                having = [],
+                orderBy = [],
+                pagination,
+            } = params;
+
+            function buildBaseQuery(
+                selection: SelectedFields,
+                target: "list" | "count" | "filterCount"
+            ) {
+                const baseQuery = db
+                    .select(selection)
+                    .from(from) as unknown as ChainableQuery;
+                const withJoins = applyJoins(baseQuery);
+
+                const withWhere =
+                    baseWhere.length > 0 ||
+                    (target !== "count" && where.length > 0)
+                        ? withJoins.where(
+                              and(
+                                  ...baseWhere,
+                                  ...(target === "count" ? [] : where)
+                              )
+                          )
+                        : withJoins;
+
+                const withGroupBy =
+                    groupBy && groupBy.length > 0
+                        ? withWhere.groupBy(...groupBy)
+                        : withWhere;
+
+                const withHaving =
+                    baseHaving.length > 0 ||
+                    (target !== "count" && having.length > 0)
+                        ? withGroupBy.having(
+                              and(
+                                  ...baseHaving,
+                                  ...(target === "count" ? [] : having)
+                              )
+                          )
+                        : withGroupBy;
+
+                if (target === "count" || target === "filterCount")
+                    return withHaving;
+
+                const withOrderBy =
+                    orderBy.length > 0
+                        ? withHaving.orderBy(...orderBy)
+                        : withHaving;
+
+                return withOrderBy;
+            }
+
             const { pageIndex, pageSize } = pagination;
 
-            // Build main query using chained calls
-            const baseQuery = db.select(selection).from(from) as unknown as ChainableQuery;
-            const withJoins = applyJoins(baseQuery);
-            
-            const withWhere = where.length > 0
-                ? withJoins.where(and(...where))
-                : withJoins;
-            
-            const withGroupBy = groupBy && groupBy.length > 0
-                ? withWhere.groupBy(...groupBy)
-                : withWhere;
-            
-            const withHaving = having.length > 0
-                ? withGroupBy.having(and(...having))
-                : withGroupBy;
-            
-            const withOrderBy = orderBy.length > 0
-                ? withHaving.orderBy(...orderBy)
-                : withHaving;
-
             // Apply pagination (unless pageSize is -1 for "all")
+            const baseQuery = buildBaseQuery(selection, "list");
             const paginatedQuery =
                 pageSize === -1
-                    ? withOrderBy
-                    : withOrderBy.offset(pageIndex * pageSize).limit(pageSize);
+                    ? baseQuery
+                    : baseQuery.offset(pageIndex * pageSize).limit(pageSize);
 
             const rows = (await paginatedQuery) as Record<string, unknown>[];
             const items = transformResults(rows);
 
             // Count total (without any filters)
-            const totalCountResult = await (groupBy
-                ? db.select({ _count: countDistinct(keyColumn) }).from(from)
-                : db.select({ _count: count() }).from(from));
-            const totalCount = totalCountResult[0]._count;
+            const totalCountQuery = buildBaseQuery(
+                {
+                    total: countDistinct(keyColumn),
+                },
+                "count"
+            );
+            const totalCountResult = (await totalCountQuery) as {
+                total: number;
+            }[];
+            const totalCount = totalCountResult[0].total;
 
             // Count filtered (with WHERE and HAVING, but no pagination)
-            let filteredCount = totalCount;
-            if (groupBy && having.length > 0) {
-                // When we have HAVING filters, we need to count the results of a grouped query
-                const baseGroupedQuery = db.select({ _key: keyColumn }).from(from) as unknown as ChainableQuery;
-                const groupedWithJoins = applyJoins(baseGroupedQuery);
-                const groupedWithWhere = where.length > 0
-                    ? groupedWithJoins.where(and(...where))
-                    : groupedWithJoins;
-                const groupedWithGroupBy = groupedWithWhere.groupBy(...groupBy);
-                const groupedWithHaving = groupedWithGroupBy.having(and(...having));
-                
-                const groupedResults = (await groupedWithHaving) as unknown[];
-                filteredCount = groupedResults.length;
-            } else {
-                const baseFilteredQuery = (
-                    groupBy
-                        ? db.select({ _count: countDistinct(keyColumn) }).from(from)
-                        : db.select({ _count: count() }).from(from)
-                ) as unknown as ChainableQuery;
-                const filteredWithJoins = applyJoins(baseFilteredQuery);
-                const filteredWithWhere = where.length > 0
-                    ? filteredWithJoins.where(and(...where))
-                    : filteredWithJoins;
-                
-                const filteredResult = (await filteredWithWhere) as { _count: number }[];
-                filteredCount = filteredResult[0]._count;
-            }
+            const totalFilterCount = (await buildBaseQuery(
+                {
+                    total: countDistinct(keyColumn),
+                },
+                "filterCount"
+            )) as { total: number }[];
+            const filteredCount = totalFilterCount[0].total;
 
             return {
                 items,
@@ -596,21 +639,24 @@ export function defineQuery<
         async get(params: GetParams) {
             const { where = [], having = [] } = params;
 
-            const baseQuery = db.select(selection).from(from) as unknown as ChainableQuery;
+            const baseQuery = db
+                .select(selection)
+                .from(from) as unknown as ChainableQuery;
             const withJoins = applyJoins(baseQuery);
-            
-            const withWhere = where.length > 0
-                ? withJoins.where(and(...where))
-                : withJoins;
-            
-            const withGroupBy = groupBy && groupBy.length > 0
-                ? withWhere.groupBy(...groupBy)
-                : withWhere;
-            
-            const withHaving = having.length > 0
-                ? withGroupBy.having(and(...having))
-                : withGroupBy;
-            
+
+            const withWhere =
+                where.length > 0 ? withJoins.where(and(...where)) : withJoins;
+
+            const withGroupBy =
+                groupBy && groupBy.length > 0
+                    ? withWhere.groupBy(...groupBy)
+                    : withWhere;
+
+            const withHaving =
+                having.length > 0
+                    ? withGroupBy.having(and(...having))
+                    : withGroupBy;
+
             const withLimit = withHaving.limit(1);
 
             const rows = (await withLimit) as Record<string, unknown>[];

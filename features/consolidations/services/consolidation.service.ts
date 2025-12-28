@@ -9,17 +9,24 @@ import {
     projectPayments,
 } from "@/db";
 import { z } from "zod";
-import { and, asc, count, desc, eq, ilike, ne, sql } from "drizzle-orm";
-import { createProjectedQuery, one, oneRequired } from "@/lib/server-utils";
+import { asc, desc, eq, ne, sql } from "drizzle-orm";
+import {
+    defineQuery,
+    innerJoin,
+    leftJoin,
+    one,
+    oneRequired,
+} from "@/lib/server-utils";
 import {
     createConsolidationWithTransactionIdSchema,
     listConsolidationSchema,
     updateConsolidationSchema,
 } from "../schemas/consolidation.schema";
 
-const projection = {
+const consolidationsQuery = defineQuery({
+    from: consolidations,
     key: "id",
-    fields: {
+    projection: {
         id: consolidations.id,
         amount: consolidations.amount,
         description: consolidations.description,
@@ -47,14 +54,18 @@ const projection = {
             },
         }),
     },
-} as const;
+    joins: [
+        innerJoin(
+            transactions,
+            eq(consolidations.transactionId, transactions.id)
+        ),
+        leftJoin(projects, eq(consolidations.projectId, projects.id)),
+    ],
+});
 
 export class ConsolidationService {
     async list(input: z.infer<typeof listConsolidationSchema>) {
         const { transactionId, pagination, sorting } = input;
-
-        const baseFilters = [eq(consolidations.transactionId, transactionId)];
-        const filters = [...baseFilters];
 
         const orderBy = [];
         if (sorting && sorting.length > 0) {
@@ -78,58 +89,17 @@ export class ConsolidationService {
             orderBy.push(desc(transactions.date));
         }
 
-        const { pageIndex, pageSize } = pagination;
-        const { selection, transform } = createProjectedQuery(projection);
-
-        const items = await db
-            .select(selection)
-            .from(consolidations)
-            .innerJoin(
-                transactions,
-                eq(consolidations.transactionId, transactions.id)
-            )
-            .leftJoin(projects, eq(consolidations.projectId, projects.id))
-            .where(and(...filters))
-            .orderBy(...orderBy)
-            .offset(pageIndex * pageSize)
-            .limit(pageSize);
-
-        const { _count } = (
-            await db
-                .select({ _count: count() })
-                .from(consolidations)
-                .where(and(...baseFilters))
-        )[0];
-
-        const { filteredCount } = (
-            await db
-                .select({ filteredCount: count() })
-                .from(consolidations)
-                .where(and(...filters))
-        )[0];
-
-        return {
-            items: transform(items),
-            count: _count,
-            filteredCount,
-        };
+        return await consolidationsQuery.list({
+            baseWhere: [eq(consolidations.transactionId, transactionId)],
+            pagination,
+            orderBy,
+        });
     }
 
     async get(id: string) {
-        const { selection, transform } = createProjectedQuery(projection);
-
-        const items = await db
-            .select(selection)
-            .from(consolidations)
-            .innerJoin(
-                transactions,
-                eq(consolidations.transactionId, transactions.id)
-            )
-            .leftJoin(projects, eq(consolidations.projectId, projects.id))
-            .where(eq(consolidations.id, id))
-            .limit(1);
-
-        return transform(items)[0] ?? null;
+        return await consolidationsQuery.get({
+            where: [eq(consolidations.id, id)],
+        });
     }
 
     async create(

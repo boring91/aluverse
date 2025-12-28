@@ -49,7 +49,9 @@
         "keyword": "Keyword",
         "startTyping": "Start typing...",
         "fromDate": "From date",
-        "toDate": "To date"
+        "toDate": "To date",
+        "totalCountItems": "Total {count} items",
+        "filteredFilteredCountOutOfCountItems": "Filtered {filteredCount} out of {count} items"
     },
     "Login": {
         "pageTitle": "Login",

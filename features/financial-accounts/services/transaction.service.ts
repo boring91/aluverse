@@ -62,8 +62,14 @@ const transactionsQuery = defineQuery({
         }),
     },
     joins: [
-        leftJoin(consolidationsSq, eq(transactions.id, consolidationsSq.transactionId)),
-        leftJoin(consolidations, eq(transactions.id, consolidations.transactionId)),
+        leftJoin(
+            consolidationsSq,
+            eq(transactions.id, consolidationsSq.transactionId)
+        ),
+        leftJoin(
+            consolidations,
+            eq(transactions.id, consolidations.transactionId)
+        ),
         leftJoin(projects, eq(consolidations.projectId, projects.id)),
     ],
 });
@@ -73,9 +79,11 @@ export class TransactionService {
         accountId?: string,
         filters?: z.infer<typeof listTransactionSchema>["filters"]
     ) {
-        const where: SQL[] = accountId
+        const baseWhere: SQL[] = accountId
             ? [eq(transactions.accountId, accountId)]
             : [];
+
+        const where: SQL[] = [];
 
         if (filters) {
             if (filters.keyword) {
@@ -92,11 +100,17 @@ export class TransactionService {
                 where.push(lte(transactions.date, filters.to));
             }
 
-            if (filters.isConsolidated !== undefined && filters.isConsolidated) {
+            if (
+                filters.isConsolidated !== undefined &&
+                filters.isConsolidated
+            ) {
                 where.push(eq(transactions.amount, consolidationsSq.total));
             }
 
-            if (filters.isConsolidated !== undefined && !filters.isConsolidated) {
+            if (
+                filters.isConsolidated !== undefined &&
+                !filters.isConsolidated
+            ) {
                 where.push(
                     or(
                         ne(transactions.amount, consolidationsSq.total),
@@ -106,10 +120,12 @@ export class TransactionService {
             }
         }
 
-        return { where, having: [] };
+        return { baseWhere, where, having: [] };
     }
 
-    private buildOrderBy(sorting?: z.infer<typeof listTransactionSchema>["sorting"]) {
+    private buildOrderBy(
+        sorting?: z.infer<typeof listTransactionSchema>["sorting"]
+    ) {
         const orderBy: SQL[] = [];
 
         if (sorting && sorting.length > 0) {
@@ -142,10 +158,14 @@ export class TransactionService {
 
     async list(input: z.infer<typeof listTransactionSchema>) {
         const { accountId, pagination, sorting, filters } = input;
-        const { where, having } = this.buildFilters(accountId, filters);
+        const { baseWhere, where, having } = this.buildFilters(
+            accountId,
+            filters
+        );
         const orderBy = this.buildOrderBy(sorting);
 
         return await transactionsQuery.list({
+            baseWhere,
             where,
             having,
             orderBy,

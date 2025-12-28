@@ -18,15 +18,36 @@ import { useTranslations } from "next-intl";
 
 type Props<TData> = {
     table: Table<TData>;
+    count?: number;
+    filteredCount?: number;
 };
 
 export function DataTablePagination<TData>({
     table,
+    count,
+    filteredCount,
 }: Props<TData>) {
     const tc = useTranslations("Common");
 
     return (
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-between">
+            {count !== undefined && filteredCount !== undefined ? (
+                <div className="grow text-muted-foreground text-sm">
+                    {filteredCount === count ? (
+                        <span>{tc("totalCountItems", { count })}</span>
+                    ) : (
+                        <span>
+                            {tc("filteredFilteredCountOutOfCountItems", {
+                                filteredCount,
+                                count,
+                            })}
+                        </span>
+                    )}
+                </div>
+            ) : (
+                <div className="grow"></div>
+            )}
+
             <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">{tc("rowsPerPage")}</p>
                 <Select
