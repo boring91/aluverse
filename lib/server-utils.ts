@@ -1,6 +1,20 @@
 // projection-utils.ts
-import type { ColumnBaseConfig, ColumnDataType, SQL } from "drizzle-orm";
-import type { PgColumn, SelectedFields } from "drizzle-orm/pg-core";
+import {
+    and,
+    count,
+    countDistinct,
+    type ColumnBaseConfig,
+    type ColumnDataType,
+    type SQL,
+    type Subquery,
+} from "drizzle-orm";
+import type {
+    PgColumn,
+    PgTable,
+    SelectedFields,
+    TableConfig,
+} from "drizzle-orm/pg-core";
+import { db } from "@/db";
 
 // ============================================
 // Types
@@ -357,5 +371,252 @@ export function createProjectedQuery<T extends ProjectionDef>(
         selection: flattenProjection(projection.fields),
         transform: (rows: Record<string, unknown>[]) =>
             nestResults(rows, projection),
+    };
+}
+
+// ============================================
+// Query Builder Types
+// ============================================
+
+// Type for tables and subqueries that can be joined
+type JoinableTable =
+    | PgTable<TableConfig>
+    | Subquery<string, Record<string, unknown>>;
+
+interface LeftJoinDef {
+    __joinType: "left";
+    table: JoinableTable;
+    condition: SQL;
+}
+
+interface InnerJoinDef {
+    __joinType: "inner";
+    table: JoinableTable;
+    condition: SQL;
+}
+
+type JoinDef = LeftJoinDef | InnerJoinDef;
+
+interface QueryDefinition<
+    TFrom extends PgTable<TableConfig>,
+    TProjection extends ProjectionDef,
+> {
+    from: TFrom;
+    key: keyof TProjection & string;
+    projection: TProjection;
+    joins?: JoinDef[];
+    groupBy?: PgColumn[];
+}
+
+interface ListParams {
+    where?: SQL[];
+    having?: SQL[];
+    orderBy?: SQL[];
+    pagination: {
+        pageIndex: number;
+        pageSize: number;
+    };
+}
+
+interface GetParams {
+    where?: SQL[];
+    having?: SQL[];
+}
+
+interface ListResult<T> {
+    items: T[];
+    count: number;
+    filteredCount: number;
+}
+
+// ============================================
+// Join Helper Functions
+// ============================================
+
+export function leftJoin(table: JoinableTable, condition: SQL): LeftJoinDef {
+    return {
+        __joinType: "left",
+        table,
+        condition,
+    };
+}
+
+export function innerJoin(table: JoinableTable, condition: SQL): InnerJoinDef {
+    return {
+        __joinType: "inner",
+        table,
+        condition,
+    };
+}
+
+// ============================================
+// Query Builder
+// ============================================
+
+// Internal interface for query-like objects that support chaining
+interface ChainableQuery {
+    leftJoin: (table: JoinableTable, condition: SQL) => ChainableQuery;
+    innerJoin: (table: JoinableTable, condition: SQL) => ChainableQuery;
+    where: (condition: SQL | undefined) => ChainableQuery;
+    groupBy: (...columns: PgColumn[]) => ChainableQuery;
+    having: (condition: SQL | undefined) => ChainableQuery;
+    orderBy: (...columns: SQL[]) => ChainableQuery;
+    offset: (offset: number) => ChainableQuery;
+    limit: (limit: number) => ChainableQuery;
+    then: <T>(onfulfilled?: (value: unknown[]) => T) => Promise<T>;
+}
+
+export function defineQuery<
+    TFrom extends PgTable<TableConfig>,
+    TProjection extends ProjectionDef,
+>(definition: QueryDefinition<TFrom, TProjection>) {
+    const { from: fromTable, key, projection, joins = [], groupBy } = definition;
+    // Cast to satisfy Drizzle's complex conditional type for .from()
+    const from = fromTable as PgTable<TableConfig>;
+
+    // Check if projection has nested relations (many, one, etc.)
+    const hasNestedRelations = Object.values(projection).some(isRelation);
+
+    // Build the selection based on whether we have nested relations
+    const projectionWithKey = { key, fields: projection };
+    const selection = hasNestedRelations
+        ? flattenProjection(projection)
+        : (projection as unknown as SelectedFields);
+
+    // Helper to apply joins to a query
+    function applyJoins(query: ChainableQuery): ChainableQuery {
+        let result = query;
+        for (const join of joins) {
+            if (join.__joinType === "left") {
+                result = result.leftJoin(join.table, join.condition);
+            } else {
+                result = result.innerJoin(join.table, join.condition);
+            }
+        }
+        return result;
+    }
+
+    // Transform function for nested relations
+    function transformResults(rows: Record<string, unknown>[]) {
+        if (hasNestedRelations) {
+            return nestResults(rows, projectionWithKey);
+        }
+        // For simple projections without nested relations, dedupe by key
+        const seen = new Set<unknown>();
+        const result: Record<string, unknown>[] = [];
+        for (const row of rows) {
+            const keyValue = row[key];
+            if (keyValue !== null && keyValue !== undefined && !seen.has(keyValue)) {
+                seen.add(keyValue);
+                result.push(row);
+            }
+        }
+        return result as InferProjectionResult<TProjection>[];
+    }
+
+    // Get the key column for counting
+    const keyColumn = projection[key] as PgColumn;
+
+    return {
+        async list(params: ListParams): Promise<ListResult<InferProjectionResult<TProjection>>> {
+            const { where = [], having = [], orderBy = [], pagination } = params;
+            const { pageIndex, pageSize } = pagination;
+
+            // Build main query using chained calls
+            const baseQuery = db.select(selection).from(from) as unknown as ChainableQuery;
+            const withJoins = applyJoins(baseQuery);
+            
+            const withWhere = where.length > 0
+                ? withJoins.where(and(...where))
+                : withJoins;
+            
+            const withGroupBy = groupBy && groupBy.length > 0
+                ? withWhere.groupBy(...groupBy)
+                : withWhere;
+            
+            const withHaving = having.length > 0
+                ? withGroupBy.having(and(...having))
+                : withGroupBy;
+            
+            const withOrderBy = orderBy.length > 0
+                ? withHaving.orderBy(...orderBy)
+                : withHaving;
+
+            // Apply pagination (unless pageSize is -1 for "all")
+            const paginatedQuery =
+                pageSize === -1
+                    ? withOrderBy
+                    : withOrderBy.offset(pageIndex * pageSize).limit(pageSize);
+
+            const rows = (await paginatedQuery) as Record<string, unknown>[];
+            const items = transformResults(rows);
+
+            // Count total (without any filters)
+            const totalCountResult = await (groupBy
+                ? db.select({ _count: countDistinct(keyColumn) }).from(from)
+                : db.select({ _count: count() }).from(from));
+            const totalCount = totalCountResult[0]._count;
+
+            // Count filtered (with WHERE and HAVING, but no pagination)
+            let filteredCount = totalCount;
+            if (groupBy && having.length > 0) {
+                // When we have HAVING filters, we need to count the results of a grouped query
+                const baseGroupedQuery = db.select({ _key: keyColumn }).from(from) as unknown as ChainableQuery;
+                const groupedWithJoins = applyJoins(baseGroupedQuery);
+                const groupedWithWhere = where.length > 0
+                    ? groupedWithJoins.where(and(...where))
+                    : groupedWithJoins;
+                const groupedWithGroupBy = groupedWithWhere.groupBy(...groupBy);
+                const groupedWithHaving = groupedWithGroupBy.having(and(...having));
+                
+                const groupedResults = (await groupedWithHaving) as unknown[];
+                filteredCount = groupedResults.length;
+            } else {
+                const baseFilteredQuery = (
+                    groupBy
+                        ? db.select({ _count: countDistinct(keyColumn) }).from(from)
+                        : db.select({ _count: count() }).from(from)
+                ) as unknown as ChainableQuery;
+                const filteredWithJoins = applyJoins(baseFilteredQuery);
+                const filteredWithWhere = where.length > 0
+                    ? filteredWithJoins.where(and(...where))
+                    : filteredWithJoins;
+                
+                const filteredResult = (await filteredWithWhere) as { _count: number }[];
+                filteredCount = filteredResult[0]._count;
+            }
+
+            return {
+                items,
+                count: totalCount,
+                filteredCount,
+            };
+        },
+
+        async get(params: GetParams) {
+            const { where = [], having = [] } = params;
+
+            const baseQuery = db.select(selection).from(from) as unknown as ChainableQuery;
+            const withJoins = applyJoins(baseQuery);
+            
+            const withWhere = where.length > 0
+                ? withJoins.where(and(...where))
+                : withJoins;
+            
+            const withGroupBy = groupBy && groupBy.length > 0
+                ? withWhere.groupBy(...groupBy)
+                : withWhere;
+            
+            const withHaving = having.length > 0
+                ? withGroupBy.having(and(...having))
+                : withGroupBy;
+            
+            const withLimit = withHaving.limit(1);
+
+            const rows = (await withLimit) as Record<string, unknown>[];
+            const items = transformResults(rows);
+
+            return items[0] ?? null;
+        },
     };
 }

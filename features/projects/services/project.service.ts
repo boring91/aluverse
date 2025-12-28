@@ -1,5 +1,4 @@
 import {
-    and,
     asc,
     count,
     desc,
@@ -13,6 +12,7 @@ import {
     or,
     isNull,
     isNotNull,
+    and,
 } from "drizzle-orm";
 import {
     db,
@@ -24,6 +24,7 @@ import {
 } from "@/db";
 import { listProjectSchema } from "../schemas/project.schema";
 import { z } from "zod";
+import { defineQuery, leftJoin } from "@/lib/server-utils";
 
 const paymentsSq = db
     .select({
@@ -65,86 +66,104 @@ const miscSq = db
     .groupBy(projectMisc.projectId)
     .as("miscSq");
 
-const projection = {
-    id: projects.id,
-    humanId: projects.humanId,
-    client: projects.client,
-    title: projects.title,
-    visitDate: projects.visitDate,
-    startDate: projects.startDate,
-    endDate: projects.endDate,
-    address: projects.address,
-    meters: projects.meters,
-    price: projects.price,
-    paid: sql<number>`SUM(COALESCE(${paymentsSq.total}, 0))`,
-    cost: sql<number>`SUM(COALESCE(${suppliesSq.total}, 0)) + SUM(COALESCE(${laborsSq.total}, 0)) + SUM(COALESCE(${miscSq.total}, 0))`,
-} as const;
+const projectsQuery = defineQuery({
+    from: projects,
+    key: "id",
+    projection: {
+        id: projects.id,
+        humanId: projects.humanId,
+        client: projects.client,
+        title: projects.title,
+        visitDate: projects.visitDate,
+        startDate: projects.startDate,
+        endDate: projects.endDate,
+        address: projects.address,
+        meters: projects.meters,
+        price: projects.price,
+        paid: sql<number>`SUM(COALESCE(${paymentsSq.total}, 0))`.as("paid"),
+        cost: sql<number>`SUM(COALESCE(${suppliesSq.total}, 0)) + SUM(COALESCE(${laborsSq.total}, 0)) + SUM(COALESCE(${miscSq.total}, 0))`.as(
+            "cost"
+        ),
+    },
+    joins: [
+        leftJoin(paymentsSq, eq(paymentsSq.projectId, projects.id)),
+        leftJoin(suppliesSq, eq(suppliesSq.projectId, projects.id)),
+        leftJoin(laborsSq, eq(laborsSq.projectId, projects.id)),
+        leftJoin(miscSq, eq(miscSq.projectId, projects.id)),
+    ],
+    groupBy: [projects.id],
+});
 
 export class ProjectService {
-    async list(input: z.infer<typeof listProjectSchema>) {
-        const { pagination, sorting, filters: filterInput } = input;
+    private buildFilters(filterInput?: z.infer<typeof listProjectSchema>["filters"]) {
+        const where: SQL[] = [];
+        const having: SQL[] = [];
 
-        const whereFilters: SQL[] = [];
-        const havingFilters: SQL[] = [];
+        if (!filterInput) {
+            return { where, having };
+        }
 
-        if (filterInput) {
-            if (filterInput.keyword) {
-                whereFilters.push(
-                    or(
-                        ilike(projects.client, "%" + filterInput.keyword + "%"),
-                        ilike(projects.title, "%" + filterInput.keyword + "%")
-                    )!
-                );
-            }
+        if (filterInput.keyword) {
+            where.push(
+                or(
+                    ilike(projects.client, "%" + filterInput.keyword + "%"),
+                    ilike(projects.title, "%" + filterInput.keyword + "%")
+                )!
+            );
+        }
 
-            if (filterInput.status) {
-                switch (filterInput.status) {
-                    case "planning":
-                        whereFilters.push(isNull(projects.startDate));
-                        break;
-                    case "inProgress":
-                        whereFilters.push(
-                            and(
-                                isNotNull(projects.startDate),
-                                isNull(projects.endDate)
-                            )!
-                        );
-                        break;
-                    case "awaitingPayment":
-                        whereFilters.push(
-                            and(
-                                isNotNull(projects.startDate),
-                                isNotNull(projects.endDate)
-                            )!
-                        );
-                        havingFilters.push(
-                            sql`SUM(COALESCE(${paymentsSq.total}, 0)) < ${projects.price}`
-                        );
-                        break;
-                    case "completed":
-                        whereFilters.push(
-                            and(
-                                isNotNull(projects.startDate),
-                                isNotNull(projects.endDate)
-                            )!
-                        );
-                        havingFilters.push(
-                            sql`SUM(COALESCE(${paymentsSq.total}, 0)) >= ${projects.price}`
-                        );
-                        break;
-                }
-            }
-
-            if (filterInput.from) {
-                whereFilters.push(gte(projects.startDate, filterInput.from));
-            }
-
-            if (filterInput.to) {
-                whereFilters.push(lte(projects.startDate, filterInput.to));
+        if (filterInput.status) {
+            switch (filterInput.status) {
+                case "planning":
+                    where.push(isNull(projects.startDate));
+                    break;
+                case "inProgress":
+                    where.push(
+                        and(
+                            isNotNull(projects.startDate),
+                            isNull(projects.endDate)
+                        )!
+                    );
+                    break;
+                case "awaitingPayment":
+                    where.push(
+                        and(
+                            isNotNull(projects.startDate),
+                            isNotNull(projects.endDate)
+                        )!
+                    );
+                    having.push(
+                        sql`SUM(COALESCE(${paymentsSq.total}, 0)) < ${projects.price}`
+                    );
+                    break;
+                case "completed":
+                    where.push(
+                        and(
+                            isNotNull(projects.startDate),
+                            isNotNull(projects.endDate)
+                        )!
+                    );
+                    having.push(
+                        sql`SUM(COALESCE(${paymentsSq.total}, 0)) >= ${projects.price}`
+                    );
+                    break;
             }
         }
 
+        if (filterInput.from) {
+            where.push(gte(projects.startDate, filterInput.from));
+        }
+
+        if (filterInput.to) {
+            where.push(lte(projects.startDate, filterInput.to));
+        }
+
+        return { where, having };
+    }
+
+    private buildOrderBy(sorting?: z.infer<typeof listProjectSchema>["sorting"]) {
         const orderBy: SQL[] = [];
+
         sorting?.forEach(sort => {
             const direction = sort.desc ? desc : asc;
             switch (sort.id) {
@@ -166,44 +185,26 @@ export class ProjectService {
             }
         });
 
-        const { pageIndex, pageSize } = pagination;
+        return orderBy;
+    }
 
-        const query = db
-            .select(projection)
-            .from(projects)
-            .leftJoin(paymentsSq, eq(paymentsSq.projectId, projects.id))
-            .leftJoin(suppliesSq, eq(suppliesSq.projectId, projects.id))
-            .leftJoin(laborsSq, eq(laborsSq.projectId, projects.id))
-            .leftJoin(miscSq, eq(miscSq.projectId, projects.id))
-            .where(and(...whereFilters))
-            .groupBy(projects.id)
-            .having(and(...havingFilters))
-            .orderBy(...orderBy);
+    async list(input: z.infer<typeof listProjectSchema>) {
+        const { pagination, sorting, filters } = input;
+        const { where, having } = this.buildFilters(filters);
+        const orderBy = this.buildOrderBy(sorting);
 
-        const items = await (pageSize === -1
-            ? query
-            : query.offset(pageIndex * pageSize).limit(pageSize));
-
-        return {
-            items,
-            count: 0, // TODO: fix this
-            filteredCount: 0, // TODO: fix this
-        };
+        return await projectsQuery.list({
+            where,
+            having,
+            orderBy,
+            pagination,
+        });
     }
 
     async get(id: string) {
-        const items = await db
-            .select(projection)
-            .from(projects)
-            .leftJoin(paymentsSq, eq(paymentsSq.projectId, projects.id))
-            .leftJoin(suppliesSq, eq(suppliesSq.projectId, projects.id))
-            .leftJoin(laborsSq, eq(laborsSq.projectId, projects.id))
-            .leftJoin(miscSq, eq(miscSq.projectId, projects.id))
-            .groupBy(projects.id)
-            .where(eq(projects.id, id))
-            .limit(1);
-
-        return items[0] ?? null;
+        return await projectsQuery.get({
+            where: [eq(projects.id, id)],
+        });
     }
 
     async create(data: {

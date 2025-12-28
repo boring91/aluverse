@@ -1,11 +1,8 @@
 import { db, transactions, consolidations, projects } from "@/db";
 import {
-    count,
     desc,
     asc,
     eq,
-    and,
-    sum,
     gte,
     lte,
     ne,
@@ -14,8 +11,9 @@ import {
     SQL,
     ilike,
     sql,
+    sum,
 } from "drizzle-orm";
-import { createProjectedQuery, many, one } from "@/lib/server-utils";
+import { defineQuery, leftJoin, many, one } from "@/lib/server-utils";
 import { z } from "zod";
 import {
     createTransactionWithAccountIdSchema,
@@ -34,9 +32,10 @@ const consolidationsSq = db
     .groupBy(consolidations.transactionId)
     .as("consolidationsSq");
 
-const transactionProjection = {
+const transactionsQuery = defineQuery({
+    from: transactions,
     key: "id",
-    fields: {
+    projection: {
         id: transactions.id,
         date: transactions.date,
         amount: transactions.amount,
@@ -62,45 +61,43 @@ const transactionProjection = {
             },
         }),
     },
-} as const;
+    joins: [
+        leftJoin(consolidationsSq, eq(transactions.id, consolidationsSq.transactionId)),
+        leftJoin(consolidations, eq(transactions.id, consolidations.transactionId)),
+        leftJoin(projects, eq(consolidations.projectId, projects.id)),
+    ],
+});
 
 export class TransactionService {
-    async list(input: z.infer<typeof listTransactionSchema>) {
-        const { accountId, pagination, sorting, filters } = input;
-
-        const whereFilters: SQL[] = accountId
+    private buildFilters(
+        accountId?: string,
+        filters?: z.infer<typeof listTransactionSchema>["filters"]
+    ) {
+        const where: SQL[] = accountId
             ? [eq(transactions.accountId, accountId)]
             : [];
 
         if (filters) {
             if (filters.keyword) {
-                whereFilters.push(
+                where.push(
                     ilike(transactions.description, "%" + filters.keyword + "%")
                 );
             }
 
             if (filters.from) {
-                whereFilters.push(gte(transactions.date, filters.from));
+                where.push(gte(transactions.date, filters.from));
             }
 
             if (filters.to) {
-                whereFilters.push(lte(transactions.date, filters.to));
+                where.push(lte(transactions.date, filters.to));
             }
 
-            if (
-                filters.isConsolidated !== undefined &&
-                filters.isConsolidated
-            ) {
-                whereFilters.push(
-                    eq(transactions.amount, consolidationsSq.total)
-                );
+            if (filters.isConsolidated !== undefined && filters.isConsolidated) {
+                where.push(eq(transactions.amount, consolidationsSq.total));
             }
 
-            if (
-                filters.isConsolidated !== undefined &&
-                !filters.isConsolidated
-            ) {
-                whereFilters.push(
+            if (filters.isConsolidated !== undefined && !filters.isConsolidated) {
+                where.push(
                     or(
                         ne(transactions.amount, consolidationsSq.total),
                         isNull(consolidationsSq.total)
@@ -109,7 +106,12 @@ export class TransactionService {
             }
         }
 
-        const orderBy = [];
+        return { where, having: [] };
+    }
+
+    private buildOrderBy(sorting?: z.infer<typeof listTransactionSchema>["sorting"]) {
+        const orderBy: SQL[] = [];
+
         if (sorting && sorting.length > 0) {
             sorting.forEach(sort => {
                 const direction = sort.desc ? desc : asc;
@@ -135,74 +137,26 @@ export class TransactionService {
             orderBy.push(desc(transactions.date));
         }
 
-        const { pageIndex, pageSize } = pagination;
+        return orderBy;
+    }
 
-        const { selection, transform } = createProjectedQuery(
-            transactionProjection
-        );
+    async list(input: z.infer<typeof listTransactionSchema>) {
+        const { accountId, pagination, sorting, filters } = input;
+        const { where, having } = this.buildFilters(accountId, filters);
+        const orderBy = this.buildOrderBy(sorting);
 
-        const items = await db
-            .select(selection)
-            .from(transactions)
-            .leftJoin(
-                consolidationsSq,
-                eq(transactions.id, consolidationsSq.transactionId)
-            )
-            .leftJoin(
-                consolidations,
-                eq(transactions.id, consolidations.transactionId)
-            )
-            .leftJoin(projects, eq(consolidations.projectId, projects.id))
-            .where(and(...whereFilters))
-            .orderBy(...orderBy)
-            .offset(pageIndex * pageSize)
-            .limit(pageSize);
-
-        const { _count } = (
-            await db.select({ _count: count() }).from(transactions)
-        )[0];
-
-        // For filtered count, we need to include the isConsolidated filter
-        const filteredCountQuery = db
-            .select({ filteredCount: count() })
-            .from(transactions)
-            .leftJoin(
-                consolidationsSq,
-                eq(transactions.id, consolidationsSq.transactionId)
-            )
-            .where(and(...whereFilters));
-
-        const { filteredCount } = (await filteredCountQuery)[0];
-
-        return {
-            items: transform(items),
-            count: _count,
-            filteredCount,
-        };
+        return await transactionsQuery.list({
+            where,
+            having,
+            orderBy,
+            pagination,
+        });
     }
 
     async get(id: string) {
-        const { selection, transform } = createProjectedQuery(
-            transactionProjection
-        );
-        const items = await db
-            .select(selection)
-            .from(transactions)
-            .leftJoin(
-                consolidationsSq,
-                eq(transactions.id, consolidationsSq.transactionId)
-            )
-            .leftJoin(
-                consolidations,
-                eq(transactions.id, consolidations.transactionId)
-            )
-            .leftJoin(projects, eq(consolidations.projectId, projects.id))
-            .where(eq(transactions.id, id))
-            .limit(1);
-
-        const result = transform(items);
-
-        return result[0] ?? null;
+        return await transactionsQuery.get({
+            where: [eq(transactions.id, id)],
+        });
     }
 
     async create(data: z.infer<typeof createTransactionWithAccountIdSchema>) {
