@@ -1,30 +1,38 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { LoanService } from "../services/loan.service";
-import { LoanPayoffService } from "../services/loan-payoff.service";
-import {
-    createLoanSchema,
-    updateLoanSchema,
-} from "../schemas/loan.schema";
+import { createLoanSchema, updateLoanSchema } from "../schemas/loan.schema";
 import {
     updateLoanPayoffSchema,
     listLoanPayoffSchema,
-    createLoanPayoffSchemaWithLoanId,
+    createLoanPayoffWithLoanIdSchema,
 } from "../schemas/loan-payoff.schema";
 import { listLoanSchema } from "../schemas/loan.schema";
-
-const loanService = new LoanService();
-const loanPayoffService = new LoanPayoffService();
+import { TRPCError } from "@trpc/server";
+import { listLoans } from "../queries/list-loans";
+import { getLoanById } from "../queries/get-loan-by-id";
+import { createLoan } from "../mutations/create-loan";
+import { updateLoan } from "../mutations/update-loan";
+import { deleteLoanPayoff } from "../mutations/delete-loan-payoff";
+import { listLoanPayoffs } from "../queries/list-loan-payoffs";
+import { getLoanPayoffById } from "../queries/get-loan-payoff-by-id";
+import { createLoanPayoff } from "../mutations/create-loan-payoff";
+import { updateLoanPayoff } from "../mutations/update-loan-payoff";
 
 export const loansRouter = createTRPCRouter({
     list: protectedProcedure.input(listLoanSchema).query(async ({ input }) => {
-        return await loanService.list(input);
+        return await listLoans(input);
     }),
 
     get: protectedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ input }) => {
-            return await loanService.get(input.id);
+            const item = await getLoanById(input.id);
+            if (!item) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return item;
         }),
 
     create: protectedProcedure
@@ -35,7 +43,7 @@ export const loansRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await loanService.create(input);
+            return await createLoan(input);
         }),
 
     update: protectedProcedure
@@ -46,13 +54,13 @@ export const loansRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await loanService.update(input);
+            return await updateLoan(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await loanService.delete(input.id);
+            return await deleteLoanPayoff(input.id);
         }),
 });
 
@@ -60,24 +68,30 @@ export const loanPayoffsRouter = createTRPCRouter({
     list: protectedProcedure
         .input(listLoanPayoffSchema)
         .query(async ({ input }) => {
-            return await loanPayoffService.list(input);
+            return await listLoanPayoffs(input);
         }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            return await loanPayoffService.get(input.id);
+            const items = await getLoanPayoffById(input.id);
+            if (!items) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return items;
         }),
 
     create: protectedProcedure
         .input(
-            createLoanPayoffSchemaWithLoanId.transform(v => ({
+            createLoanPayoffWithLoanIdSchema.transform(v => ({
                 ...v,
                 amount: v.amount * 100, // Convert dollars to cents
             }))
         )
         .mutation(async ({ input }) => {
-            return await loanPayoffService.create(input);
+            return await createLoanPayoff(input);
         }),
 
     update: protectedProcedure
@@ -88,13 +102,12 @@ export const loanPayoffsRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await loanPayoffService.update(input);
+            return await updateLoanPayoff(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await loanPayoffService.delete(input.id);
+            return await deleteLoanPayoff(input.id);
         }),
 });
-

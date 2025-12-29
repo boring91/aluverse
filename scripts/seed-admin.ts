@@ -1,18 +1,19 @@
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
-import { db, users } from "@/db";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { db } from "@/db";
 
 const main = async (): Promise<void> => {
     const email = "admin@aluverse.com.au";
     const password = "12345678";
     const name = "Admin";
 
-    const existingUser = await db.query.users.findFirst({
-        where: eq(users.email, email),
-    });
+    const existingUser = await db
+        .selectFrom("users")
+        .where("email", "=", email)
+        .select(["id"])
+        .executeTakeFirst();
 
     if (existingUser) {
         console.log("User already exists. Exiting...");

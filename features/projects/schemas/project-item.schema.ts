@@ -11,7 +11,7 @@ export const createProjectSupplySchema = z.object({
     unitPrice: z.number().min(1),
 });
 
-export const createProjectSupplySchemaWithProjectId =
+export const createProjectSupplyWithProjectIdSchema =
     createProjectSupplySchema.safeExtend({
         projectId: z.uuid(),
     });
@@ -22,7 +22,7 @@ export const createProjectLaborSchema = z.object({
     rate: z.number().min(1),
 });
 
-export const createProjectLaborSchemaWithProjectId =
+export const createProjectLaborWithProjectIdSchema =
     createProjectLaborSchema.safeExtend({
         projectId: z.uuid(),
     });
@@ -32,7 +32,7 @@ export const createProjectMiscSchema = z.object({
     amount: z.number().min(1),
 });
 
-export const createProjectMiscSchemaWithProjectId =
+export const createProjectMiscWithProjectIdSchema =
     createProjectMiscSchema.safeExtend({
         projectId: z.uuid(),
     });
@@ -42,7 +42,7 @@ export const createProjectPaymentSchema = z.object({
     amount: z.number().min(1),
 });
 
-export const createProjectPaymentSchemaWithProjectId =
+export const createProjectPaymentWithProjectIdSchema =
     createProjectPaymentSchema.safeExtend({
         projectId: z.uuid(),
     });
@@ -59,6 +59,8 @@ export const updateProjectMiscSchema = createProjectMiscSchema.safeExtend({
     id: z.uuid(),
 });
 
-export const updateProjectPaymentSchema = createProjectPaymentSchema.safeExtend({
-    id: z.uuid(),
-});
+export const updateProjectPaymentSchema = createProjectPaymentSchema.safeExtend(
+    {
+        id: z.uuid(),
+    }
+);

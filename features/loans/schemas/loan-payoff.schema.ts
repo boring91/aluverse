@@ -11,7 +11,7 @@ export const createLoanPayoffSchema = z.object({
     notes: z.string().nullable().optional(),
 });
 
-export const createLoanPayoffSchemaWithLoanId =
+export const createLoanPayoffWithLoanIdSchema =
     createLoanPayoffSchema.safeExtend({ loanId: z.uuid() });
 
 export const updateLoanPayoffSchema = createLoanPayoffSchema.safeExtend({

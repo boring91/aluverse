@@ -1,7 +1,5 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { FinancialAccountService } from "../services/financial-account.service";
-import { TransactionService } from "../services/transaction.service";
 import {
     createFinancialAccountSchema,
     updateFinancialAccountSchema,
@@ -11,37 +9,51 @@ import {
     listTransactionSchema,
     updateTransactionSchema,
 } from "../schemas/transaction.schema";
-
-const financialAccountService = new FinancialAccountService();
-const transactionService = new TransactionService();
+import { TRPCError } from "@trpc/server";
+import { listFinancialAccounts } from "../queries/list-financial-accounts";
+import { getFinancialAccountById } from "../queries/get-financial-account-by-id";
+import { createFinancialAccount } from "../mutations/create-financial-account";
+import { updateFinancialAccount } from "../mutations/update-financial-account";
+import { deleteFinancialAccount } from "../mutations/delete-financial-account";
+import { listTransactions } from "../queries/list-transactions";
+import { getTransactionById } from "../queries/get-transaction-by-id";
+import { createTransaction } from "../mutations/create-transaction";
+import { deleteTransaction } from "../mutations/delete-transaction";
+import { updateTransaction } from "../mutations/update-transaction";
 
 export const financialAccountsRouter = createTRPCRouter({
     list: protectedProcedure.query(async () => {
-        return await financialAccountService.list();
+        return await listFinancialAccounts();
     }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            return await financialAccountService.get(input.id);
+            const item = await getFinancialAccountById(input.id);
+            if (!item) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return item;
         }),
 
     create: protectedProcedure
         .input(createFinancialAccountSchema)
         .mutation(async ({ input }) => {
-            return await financialAccountService.create(input);
+            return await createFinancialAccount(input);
         }),
 
     update: protectedProcedure
         .input(updateFinancialAccountSchema)
         .mutation(async ({ input }) => {
-            return await financialAccountService.update(input);
+            return await updateFinancialAccount(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .mutation(async ({ input }) => {
-            return await financialAccountService.delete(input.id);
+            return await deleteFinancialAccount(input.id);
         }),
 });
 
@@ -49,13 +61,19 @@ export const transactionsRouter = createTRPCRouter({
     list: protectedProcedure
         .input(listTransactionSchema)
         .query(async ({ input }) => {
-            return await transactionService.list(input);
+            return await listTransactions(input);
         }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            return await transactionService.get(input.id);
+            const items = await getTransactionById(input.id);
+            if (!items) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return items;
         }),
 
     create: protectedProcedure
@@ -66,7 +84,7 @@ export const transactionsRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await transactionService.create(input);
+            return await createTransaction(input);
         }),
 
     update: protectedProcedure
@@ -77,12 +95,12 @@ export const transactionsRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await transactionService.update(input);
+            return await updateTransaction(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await transactionService.delete(input.id);
+            return await deleteTransaction(input.id);
         }),
 });

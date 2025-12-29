@@ -140,7 +140,7 @@ export const SuppliesList = ({ projectId }: Props) => {
     const deleteMutation = useMutation(
         trpc.projectSupplies.delete.mutationOptions({
             onSuccess: data => {
-                const id = data[0].id;
+                const id = data.id;
                 queryClient.invalidateQueries(
                     trpc.projectSupplies.list.queryOptions({
                         projectId,

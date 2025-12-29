@@ -52,9 +52,8 @@ export const ProjectsList = () => {
         pageSize: 100,
     });
 
-    const { filter, reset, isActive, raw } = useDataTableFilters(
-        projectFiltersSchema
-    );
+    const { filter, reset, isActive, raw } =
+        useDataTableFilters(projectFiltersSchema);
 
     const queryClient = useQueryClient();
     const trpc = useTRPC();
@@ -75,7 +74,7 @@ export const ProjectsList = () => {
     const deleteMutation = useMutation(
         trpc.projects.delete.mutationOptions({
             onSuccess: data => {
-                const id = data[0].id;
+                const id = data.id;
                 queryClient.invalidateQueries(
                     trpc.projects.list.queryOptions({
                         pagination: dataTable.pagination,
@@ -121,7 +120,10 @@ export const ProjectsList = () => {
                 data={data}
                 {...dataTable}
                 filtersSlot={
-                    <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
+                    <DataTableFilters
+                        onReset={reset}
+                        hasActiveFilters={isActive}
+                    >
                         <StringFilter
                             label={tc("keyword")}
                             control={filter.keyword}

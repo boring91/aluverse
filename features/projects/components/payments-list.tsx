@@ -128,7 +128,7 @@ export const PaymentsList = ({ projectId }: Props) => {
     const deleteMutation = useMutation(
         trpc.projectPayments.delete.mutationOptions({
             onSuccess: data => {
-                const id = data[0].id;
+                const id = data.id;
                 queryClient.invalidateQueries(
                     trpc.projectPayments.list.queryOptions({
                         projectId,

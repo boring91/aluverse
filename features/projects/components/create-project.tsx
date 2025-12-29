@@ -72,15 +72,15 @@ export const CreateProject = ({
         )
     );
 
-    const onSuccess = (data?: { id: string }[]) => {
+    const onSuccess = (data?: { id: string }) => {
         queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
         if (isUpdate) {
             queryClient.invalidateQueries(
                 trpc.projects.get.queryOptions({ id: itemId })
             );
         }
-        if (!isUpdate && data?.[0]?.id) {
-            onCreated?.(data[0].id);
+        if (!isUpdate && data?.id) {
+            onCreated?.(data.id);
         }
         form.reset();
         onOpenChange(false);

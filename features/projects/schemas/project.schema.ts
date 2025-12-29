@@ -26,7 +26,7 @@ export const projectStatusFilterSchema = z
 
 export const projectFiltersSchema = z.object({
     keyword: z.string().optional(),
-    status: projectStatusFilterSchema,
+    status: projectStatusFilterSchema.optional(),
     from: z.date().optional(),
     to: z.date().optional(),
 });

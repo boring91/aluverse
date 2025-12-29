@@ -1,7 +1,5 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { ProjectService } from "../services/project.service";
-import { ProjectItemService } from "../services/project-item.service";
 import {
     createProjectSchema,
     updateProjectSchema,
@@ -12,25 +10,56 @@ import {
     updateProjectMiscSchema,
     updateProjectPaymentSchema,
     listProjectItemSchema,
-    createProjectSupplySchemaWithProjectId,
-    createProjectLaborSchemaWithProjectId,
-    createProjectMiscSchemaWithProjectId,
-    createProjectPaymentSchemaWithProjectId,
+    createProjectSupplyWithProjectIdSchema,
+    createProjectLaborWithProjectIdSchema,
+    createProjectMiscWithProjectIdSchema,
+    createProjectPaymentWithProjectIdSchema,
 } from "../schemas/project-item.schema";
 import { listProjectSchema } from "../schemas/project.schema";
-
-const projectService = new ProjectService();
-const projectItemService = new ProjectItemService();
+import { listProjects } from "../queries/list-projects";
+import { getProjectById } from "../queries/get-project-by-id";
+import { listProjectSupplies } from "../queries/list-project-supplies";
+import { getProjectSupplyById } from "../queries/get-project-supply-by-id";
+import { createProject } from "../mutations/create-project";
+import { updateProject } from "../mutations/update-project";
+import { deleteProject } from "../mutations/delete-project";
+import { createProjectSupply } from "../mutations/create-project-supply";
+import { updateProjectSupply } from "../mutations/update-project-supply";
+import { deleteProjectSupply } from "../mutations/delete-project-supply";
+import { listProjectLabors } from "../queries/list-project-labors";
+import { getProjectLaborById } from "../queries/get-project-labor-by-id";
+import { createProjectLabor } from "../mutations/create-project-labor";
+import { createProjectMisc } from "../mutations/create-project-misc";
+import { createProjectPayment } from "../mutations/create-project-payment";
+import { deleteProjectLabor } from "../mutations/delete-project-labor";
+import { deleteProjectMisc } from "../mutations/delete-project-misc";
+import { deleteProjectPayment } from "../mutations/delete-project-payment";
+import { updateProjectLabor } from "../mutations/update-project-labor";
+import { updateProjectMisc } from "../mutations/update-project-misc";
+import { updateProjectPayment } from "../mutations/update-project-payment";
+import { listProjectMisc } from "../queries/list-project-misc";
+import { listProjectPayments } from "../queries/list-project-payments";
+import { getProjectMiscById } from "../queries/get-project-misc-by-id";
+import { getProjectPaymentById } from "../queries/get-project-payment-by-id";
+import { TRPCError } from "@trpc/server";
 
 export const projectsRouter = createTRPCRouter({
-    list: protectedProcedure.input(listProjectSchema).query(async ({ input }) => {
-        return await projectService.list(input);
-    }),
+    list: protectedProcedure
+        .input(listProjectSchema)
+        .query(async ({ input }) => {
+            return await listProjects(input);
+        }),
 
     get: protectedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ input }) => {
-            return await projectService.get(input.id);
+            const item = await getProjectById(input.id);
+            if (!item) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return item;
         }),
 
     create: protectedProcedure
@@ -41,7 +70,7 @@ export const projectsRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectService.create(input);
+            return await createProject(input);
         }),
 
     update: protectedProcedure
@@ -52,13 +81,13 @@ export const projectsRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectService.update(input);
+            return await updateProject(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await projectService.delete(input.id);
+            return await deleteProject(input.id);
         }),
 });
 
@@ -66,24 +95,30 @@ export const projectSuppliesRouter = createTRPCRouter({
     list: protectedProcedure
         .input(listProjectItemSchema)
         .query(async ({ input }) => {
-            return await projectItemService.listSupplies(input);
+            return await listProjectSupplies(input);
         }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            return await projectItemService.getSupply(input.id);
+            const item = await getProjectSupplyById(input.id);
+            if (!item) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return item;
         }),
 
     create: protectedProcedure
         .input(
-            createProjectSupplySchemaWithProjectId.transform(v => ({
+            createProjectSupplyWithProjectIdSchema.transform(v => ({
                 ...v,
                 unitPrice: v.unitPrice * 100, // Convert dollars to cents
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.createSupply(input);
+            return await createProjectSupply(input);
         }),
 
     update: protectedProcedure
@@ -94,13 +129,13 @@ export const projectSuppliesRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.updateSupply(input);
+            return await updateProjectSupply(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await projectItemService.deleteSupply(input.id);
+            return await deleteProjectSupply(input.id);
         }),
 });
 
@@ -108,24 +143,30 @@ export const projectLaborsRouter = createTRPCRouter({
     list: protectedProcedure
         .input(listProjectItemSchema)
         .query(async ({ input }) => {
-            return await projectItemService.listLabors(input);
+            return await listProjectLabors(input);
         }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            return await projectItemService.getLabor(input.id);
+            const item = await getProjectLaborById(input.id);
+            if (!item) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return item;
         }),
 
     create: protectedProcedure
         .input(
-            createProjectLaborSchemaWithProjectId.transform(v => ({
+            createProjectLaborWithProjectIdSchema.transform(v => ({
                 ...v,
                 rate: v.rate * 100, // Convert dollars to cents
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.createLabor(input);
+            return await createProjectLabor(input);
         }),
 
     update: protectedProcedure
@@ -136,13 +177,13 @@ export const projectLaborsRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.updateLabor(input);
+            return await updateProjectLabor(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await projectItemService.deleteLabor(input.id);
+            return await deleteProjectLabor(input.id);
         }),
 });
 
@@ -150,24 +191,30 @@ export const projectMiscRouter = createTRPCRouter({
     list: protectedProcedure
         .input(listProjectItemSchema)
         .query(async ({ input }) => {
-            return await projectItemService.listMisc(input);
+            return await listProjectMisc(input);
         }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            return await projectItemService.getMisc(input.id);
+            const item = await getProjectMiscById(input.id);
+            if (!item) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return item;
         }),
 
     create: protectedProcedure
         .input(
-            createProjectMiscSchemaWithProjectId.transform(v => ({
+            createProjectMiscWithProjectIdSchema.transform(v => ({
                 ...v,
                 amount: v.amount * 100, // Convert dollars to cents
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.createMisc(input);
+            return await createProjectMisc(input);
         }),
 
     update: protectedProcedure
@@ -178,13 +225,13 @@ export const projectMiscRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.updateMisc(input);
+            return await updateProjectMisc(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await projectItemService.deleteMisc(input.id);
+            return await deleteProjectMisc(input.id);
         }),
 });
 
@@ -192,24 +239,30 @@ export const projectPaymentsRouter = createTRPCRouter({
     list: protectedProcedure
         .input(listProjectItemSchema)
         .query(async ({ input }) => {
-            return await projectItemService.listPayments(input);
+            return await listProjectPayments(input);
         }),
 
     get: protectedProcedure
         .input(z.object({ id: z.uuid() }))
         .query(async ({ input }) => {
-            return await projectItemService.getPayment(input.id);
+            const item = await getProjectPaymentById(input.id);
+            if (!item) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                });
+            }
+            return item;
         }),
 
     create: protectedProcedure
         .input(
-            createProjectPaymentSchemaWithProjectId.transform(v => ({
+            createProjectPaymentWithProjectIdSchema.transform(v => ({
                 ...v,
                 amount: v.amount * 100, // Convert dollars to cents
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.createPayment(input);
+            return await createProjectPayment(input);
         }),
 
     update: protectedProcedure
@@ -220,12 +273,12 @@ export const projectPaymentsRouter = createTRPCRouter({
             }))
         )
         .mutation(async ({ input }) => {
-            return await projectItemService.updatePayment(input);
+            return await updateProjectPayment(input);
         }),
 
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
-            return await projectItemService.deletePayment(input.id);
+            return await deleteProjectPayment(input.id);
         }),
 });

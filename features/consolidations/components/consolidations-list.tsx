@@ -74,7 +74,7 @@ export const ConsolidationsList = ({
     const deleteMutation = useMutation(
         trpc.consolidations.delete.mutationOptions({
             onSuccess: data => {
-                const id = data[0].id;
+                const id = data.id;
                 queryClient.invalidateQueries(
                     trpc.consolidations.list.queryOptions({ transactionId })
                 );

@@ -69,7 +69,7 @@ export const CreateSupply = ({
         )
     );
 
-    const onSuccess = (data: { id: string }[]) => {
+    const onSuccess = (data: { id: string }) => {
         queryClient.invalidateQueries(
             trpc.projectSupplies.list.queryOptions({ projectId })
         );
@@ -83,7 +83,7 @@ export const CreateSupply = ({
             );
         } else {
             // Call onItemCreated callback with the newly created item ID
-            const createdItem = data[0];
+            const createdItem = data;
             if (createdItem && onItemCreated) {
                 onItemCreated(createdItem.id);
             }

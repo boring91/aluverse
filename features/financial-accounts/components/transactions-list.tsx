@@ -12,7 +12,6 @@ import { CreateTransaction } from "./create-transaction";
 import {
     DataTable,
     DataTableFilters,
-    DateRangeFilter,
     BooleanFilter,
     useDataTable,
     useDataTableFilters,
@@ -81,7 +80,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
     const deleteMutation = useMutation(
         trpc.transactions.delete.mutationOptions({
             onSuccess: data => {
-                const transaction = data[0];
+                const transaction = data;
                 queryClient.invalidateQueries(
                     trpc.transactions.list.queryOptions({ accountId })
                 );

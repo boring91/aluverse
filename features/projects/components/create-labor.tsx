@@ -24,7 +24,7 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { createProjectLaborSchema } from '../schemas/project-item.schema';
+import { createProjectLaborSchema } from "../schemas/project-item.schema";
 
 type SchemaType = z.infer<typeof createProjectLaborSchema>;
 
@@ -69,7 +69,7 @@ export const CreateLabor = ({
         )
     );
 
-    const onSuccess = (data: { id: string }[]) => {
+    const onSuccess = (data: { id: string }) => {
         queryClient.invalidateQueries(
             trpc.projectLabors.list.queryOptions({ projectId })
         );
@@ -83,7 +83,7 @@ export const CreateLabor = ({
             );
         } else {
             // Call onItemCreated callback with the newly created item ID
-            const createdItem = data[0];
+            const createdItem = data;
             if (createdItem && onItemCreated) {
                 onItemCreated(createdItem.id);
             }
