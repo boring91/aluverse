@@ -1,7 +1,7 @@
 import { listConsolidationSchema } from "@/features/consolidations";
 import { z } from "zod";
 import { db } from "@/db";
-import { consolidationMapper } from "@/db/mappers"
+import { consolidationMapper } from "@/db/mappers";
 
 export async function listConsolidations(
     input: z.infer<typeof listConsolidationSchema>
