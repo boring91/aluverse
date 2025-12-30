@@ -10,6 +10,7 @@ import { ProjectStatusBadge } from "../components/project-status-badge";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { useTranslations } from "next-intl";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Project =
     inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
@@ -147,10 +148,26 @@ export const useProjectsColumns = (
                                 </span>
                             </p>
 
-                            {/* Cost */}
-                            <p className="font-mono text-rose-500">
-                                <span>{formatCurrency(project.cost)}</span>
-                            </p>
+                            {/* Cost & unconsolidated items */}
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono text-rose-500">
+                                    {formatCurrency(project.cost)}
+                                </span>
+                                {project.unconsolidatedItemsCount > 0 && (
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <span className="text-xs rounded-full bg-amber-100 dark:bg-amber-900 px-2 text-amber-600 dark:text-amber-200">
+                                                {
+                                                    project.unconsolidatedItemsCount
+                                                }
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            {t("totalPendingConsolidationItems")}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )}
+                            </div>
                         </div>
                     );
                 },

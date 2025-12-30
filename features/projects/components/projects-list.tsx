@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/components/data-table";
+import { BooleanFilter, DataTable } from "@/components/data-table";
 import {
     useDataTable,
     useDataTableFilters,
@@ -149,6 +149,13 @@ export const ProjectsList = () => {
                         />
 
                         <DateFilter label={tc("toDate")} control={filter.to} />
+
+                        <BooleanFilter
+                            label={tc("consolidated")}
+                            control={filter.isConsolidated}
+                            trueLabel={tc("consolidated")}
+                            falseLabel={tc("notConsolidated")}
+                        />
                     </DataTableFilters>
                 }
             />

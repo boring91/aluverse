@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { listSchema } from "@/shared/lib/schemas/util-schemas";
+import {
+    booleanFilterSchema,
+    listSchema,
+} from "@/shared/lib/schemas/util-schemas";
 
 export const createProjectSchema = z.object({
     client: z.string().min(1),
@@ -27,6 +30,7 @@ export const projectStatusFilterSchema = z
 export const projectFiltersSchema = z.object({
     keyword: z.string().optional(),
     status: projectStatusFilterSchema.optional(),
+    isConsolidated: booleanFilterSchema.optional(),
     from: z.date().optional(),
     to: z.date().optional(),
 });

@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { CreateSupply } from "./create-supply";
 import { formatCurrency } from "@/lib/utils";
 import { useConfirm } from "@/lib/confirm-context";
+import { CheckIcon, XIcon } from "lucide-react";
 
 type ProjectSupply =
     inferRouterOutputs<AppRouter>["projectSupplies"]["list"]["items"][number];
@@ -47,12 +48,15 @@ const useColumns = (
                     <DataTableColumnHeader
                         column={column}
                         title={t("quantity")}
+                        className="text-center"
                     />
                 ),
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <p className="font-mono">{item.quantity.toFixed(2)}</p>
+                        <p className="font-mono flex items-center justify-center">
+                            {item.quantity.toFixed(2)}
+                        </p>
                     );
                 },
             },
@@ -63,13 +67,37 @@ const useColumns = (
                     <DataTableColumnHeader
                         column={column}
                         title={t("unitPrice")}
+                        className="text-center"
                     />
                 ),
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <p className="font-mono">
+                        <p className="font-mono flex items-center justify-center">
                             {formatCurrency(item.unitPrice)}
+                        </p>
+                    );
+                },
+            },
+
+            {
+                id: "isConsolidated",
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        className="text-center"
+                        column={column}
+                        title={t("isConsolidated")}
+                    />
+                ),
+                cell: ({ row }) => {
+                    const item = row.original;
+                    return (
+                        <p className="flex items-center justify-center">
+                            {item.isConsolidated ? (
+                                <CheckIcon className="text-emerald-500" />
+                            ) : (
+                                <XIcon className="text-rose-500" />
+                            )}
                         </p>
                     );
                 },

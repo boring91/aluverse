@@ -1,7 +1,7 @@
 import { listProjectSchema } from "@/features/projects";
 import { db } from "@/db";
-import { projectPaid } from "@/db/expressions"
-import { projectMapper } from "@/db/mappers"
+import { projectPaid, unconsolidatedItemsCount } from "@/db/expressions";
+import { projectMapper } from "@/db/mappers";
 import { z } from "zod";
 
 export async function listProjects(input: z.infer<typeof listProjectSchema>) {
@@ -25,6 +25,14 @@ export async function listProjects(input: z.infer<typeof listProjectSchema>) {
 
     if (filters?.to) {
         query = query.where("startDate", "<", filters.to);
+    }
+
+    if (filters?.isConsolidated !== undefined && filters.isConsolidated) {
+        query = query.where(eb => eb(unconsolidatedItemsCount, "=", 0));
+    }
+
+    if (filters?.isConsolidated !== undefined && !filters.isConsolidated) {
+        query = query.where(eb => eb(unconsolidatedItemsCount, ">", 0));
     }
 
     switch (filters?.status) {

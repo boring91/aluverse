@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { CreateLabor } from "./create-labor";
 import { formatCurrency } from "@/lib/utils";
 import { useConfirm } from "@/lib/confirm-context";
+import { CheckIcon, XIcon } from "lucide-react";
 
 type ProjectLabor =
     inferRouterOutputs<AppRouter>["projectLabors"]["list"]["items"][number];
@@ -44,23 +45,60 @@ const useColumns = (
             {
                 id: "hours",
                 header: ({ column }) => (
-                    <DataTableColumnHeader column={column} title={t("hours")} />
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t("hours")}
+                        className="text-center"
+                    />
                 ),
                 cell: ({ row }) => {
                     const item = row.original;
-                    return <p className="font-mono">{item.hours.toFixed(2)}</p>;
+                    return (
+                        <p className="font-mono flex items-center justify-center">
+                            {item.hours.toFixed(2)}
+                        </p>
+                    );
                 },
             },
 
             {
                 id: "rate",
                 header: ({ column }) => (
-                    <DataTableColumnHeader column={column} title={t("rate")} />
+                    <DataTableColumnHeader
+                        column={column}
+                        title={t("rate")}
+                        className="text-center"
+                    />
                 ),
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <p className="font-mono">{formatCurrency(item.rate)}</p>
+                        <p className="font-mono flex items-center justify-center">
+                            {formatCurrency(item.rate)}
+                        </p>
+                    );
+                },
+            },
+
+            {
+                id: "isConsolidated",
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        className="text-center"
+                        column={column}
+                        title={t("isConsolidated")}
+                    />
+                ),
+                cell: ({ row }) => {
+                    const item = row.original;
+                    return (
+                        <p className="flex items-center justify-center">
+                            {item.isConsolidated ? (
+                                <CheckIcon className="text-emerald-500" />
+                            ) : (
+                                <XIcon className="text-rose-500" />
+                            )}
+                        </p>
                     );
                 },
             },

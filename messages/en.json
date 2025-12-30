@@ -159,7 +159,9 @@
         "suppliesDescription": "Manage and track all supplies and materials for this project",
         "laborsDescription": "View and manage labor hours and rates for this project",
         "miscDescription": "Track miscellaneous expenses and items for this project",
-        "paymentsDescription": "View and manage all payments received for this project"
+        "paymentsDescription": "View and manage all payments received for this project",
+        "totalPendingConsolidationItems": "Total pending consolidation items",
+        "isConsolidated": "Is consolidated"
     },
     "Loans": {
         "loans": "Loans",

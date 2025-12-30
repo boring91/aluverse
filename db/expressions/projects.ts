@@ -1,5 +1,5 @@
 import { ExpressionBuilder } from "kysely";
-import { DB } from './types';
+import { DB } from "../types";
 
 export const projectPaid = (eb: ExpressionBuilder<DB, "projects">) =>
     eb
@@ -56,49 +56,61 @@ export const miscCost = (eb: ExpressionBuilder<DB, "projects">) =>
 export const cost = (eb: ExpressionBuilder<DB, "projects">) =>
     eb(eb(suppliesCost, "+", laborCost), "+", miscCost).$notNull();
 
-export const consolidatedAmount = (
-    eb: ExpressionBuilder<DB, "transactions">
-) => {
-    return eb
-        .selectFrom("consolidations")
-        .whereRef("consolidations.transactionId", "=", "transactions.id")
+export const unconsolidatedSuppliesCount = (
+    eb: ExpressionBuilder<DB, "projects">
+) =>
+    eb
+        .selectFrom("projectSupplies")
+        .whereRef("projectSupplies.projectId", "=", "projects.id")
+        .where("consolidationId", "is", null)
         .select(sub =>
-            sub.fn.coalesce(sub.fn.sum<number>("amount"), sub.lit(0)).as("sum")
+            sub.fn.count<number>("id").as("unconsolidatedSuppliesCount")
         )
         .$asScalar();
-};
 
-export const balance = (eb: ExpressionBuilder<DB, "financialAccounts">) => {
-    return eb
-        .selectFrom("transactions")
-        .whereRef("transactions.accountId", "=", "financialAccounts.id")
+export const unconsolidatedLaborsCount = (
+    eb: ExpressionBuilder<DB, "projects">
+) =>
+    eb
+        .selectFrom("projectLabors")
+        .whereRef("projectLabors.projectId", "=", "projects.id")
+        .where("consolidationId", "is", null)
         .select(sub =>
-            sub.fn
-                .coalesce(
-                    sub.fn.sum<number>(
-                        sub
-                            .case("type")
-                            .when("income")
-                            .then(sub.ref("amount"))
-                            .else(sub("amount", "*", sub.lit(-1)))
-                            .end()
-                    ),
-                    sub.lit(0)
-                )
-                .as("balance")
+            sub.fn.count<number>("id").as("unconsolidatedLaborsCount")
         )
         .$asScalar();
-};
 
-export const loanPaid = (eb: ExpressionBuilder<DB, "loans">) => {
-    return eb
-        .selectFrom("loanPayoffs")
-        .whereRef("loanPayoffs.loanId", "=", "loans.id")
+export const unconsolidatedMiscCount = (
+    eb: ExpressionBuilder<DB, "projects">
+) =>
+    eb
+        .selectFrom("projectMisc")
+        .whereRef("projectMisc.projectId", "=", "projects.id")
+        .where("consolidationId", "is", null)
+        .select(sub => sub.fn.count<number>("id").as("unconsolidatedMiscCount"))
+        .$asScalar();
+
+export const unconsolidatedPaymentsCount = (
+    eb: ExpressionBuilder<DB, "projects">
+) =>
+    eb
+        .selectFrom("projectPayments")
+        .whereRef("projectPayments.projectId", "=", "projects.id")
+        .where("consolidationId", "is", null)
         .select(sub =>
-            sub.fn.coalesce(sub.fn.sum<number>("amount"), sub.lit(0)).as("paid")
+            sub.fn.count<number>("id").as("unconsolidatedPaymentsCount")
         )
         .$asScalar();
-};
 
-export const loanRemaining = (eb: ExpressionBuilder<DB, "loans">) =>
-    eb("amount", "-", loanPaid(eb)).$notNull();
+export const unconsolidatedItemsCount = (
+    eb: ExpressionBuilder<DB, "projects">
+) =>
+    eb(
+        eb(
+            eb(unconsolidatedSuppliesCount, "+", unconsolidatedLaborsCount),
+            "+",
+            unconsolidatedMiscCount
+        ),
+        "+",
+        unconsolidatedPaymentsCount
+    ).$notNull();

@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { CreatePayment } from "./create-payment";
 import { formatCurrency } from "@/lib/utils";
 import { useConfirm } from "@/lib/confirm-context";
+import { CheckIcon, XIcon } from "lucide-react";
 
 type ProjectPayment =
     inferRouterOutputs<AppRouter>["projectPayments"]["list"]["items"][number];
@@ -51,13 +52,37 @@ const useColumns = (
                     <DataTableColumnHeader
                         column={column}
                         title={t("amount")}
+                        className="text-center"
                     />
                 ),
                 cell: ({ row }) => {
                     const item = row.original;
                     return (
-                        <p className="font-mono">
+                        <p className="font-mono flex items-center justify-center">
                             {formatCurrency(item.amount)}
+                        </p>
+                    );
+                },
+            },
+
+            {
+                id: "isConsolidated",
+                header: ({ column }) => (
+                    <DataTableColumnHeader
+                        className="text-center"
+                        column={column}
+                        title={t("isConsolidated")}
+                    />
+                ),
+                cell: ({ row }) => {
+                    const item = row.original;
+                    return (
+                        <p className="flex items-center justify-center">
+                            {item.isConsolidated ? (
+                                <CheckIcon className="text-emerald-500" />
+                            ) : (
+                                <XIcon className="text-rose-500" />
+                            )}
                         </p>
                     );
                 },
