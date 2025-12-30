@@ -99,8 +99,7 @@ export const useTransactionsColumns = (
                     const item = row.original;
                     return (
                         <p className="flex items-center justify-center">
-                            {item.consolidatedAmount &&
-                            item.consolidatedAmount == item.amount ? (
+                            {item.isConsolidated ? (
                                 <CheckIcon
                                     className="text-emerald-500"
                                     size={16}

@@ -1,6 +1,6 @@
 import { ExpressionBuilder, SelectExpression } from "kysely";
 import { jsonArrayFrom, jsonObjectFrom } from "../json-helpers";
-import { consolidatedAmount } from "../expressions";
+import { consolidatedAmount, isTransactionConsolidated } from "../expressions";
 import { DB } from "../types";
 
 export const transactionMapper = (eb: ExpressionBuilder<DB, "transactions">) =>
@@ -11,6 +11,7 @@ export const transactionMapper = (eb: ExpressionBuilder<DB, "transactions">) =>
         "type",
         "description",
         "accountId",
+        isTransactionConsolidated(eb).as("isConsolidated"),
         consolidatedAmount(eb).as("consolidatedAmount"),
 
         jsonArrayFrom(

@@ -53,9 +53,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         });
     };
 
-    const { setOpenCreateSheet, ...dataTable } = useDataTable({
-        pageSize: 10,
-    });
+    const { setOpenCreateSheet, ...dataTable } = useDataTable();
 
     const { filter, reset, isActive, raw } = useDataTableFilters(
         transactionFiltersSchema

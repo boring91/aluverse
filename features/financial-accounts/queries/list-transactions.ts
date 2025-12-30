@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { db } from "@/db";
 import { listTransactionSchema } from "@/features/financial-accounts";
-import { consolidatedAmount } from "@/db/expressions"
-import { transactionMapper } from "@/db/mappers"
+import { isTransactionConsolidated } from "@/db/expressions";
+import { transactionMapper } from "@/db/mappers";
 
 export async function listTransactions(
     input: z.infer<typeof listTransactionSchema>
@@ -28,11 +28,13 @@ export async function listTransactions(
     }
 
     if (filters?.isConsolidated !== undefined && filters.isConsolidated) {
-        query = query.where("amount", "=", consolidatedAmount);
+        query = query.where(eb => isTransactionConsolidated(eb));
     }
 
     if (filters?.isConsolidated !== undefined && !filters.isConsolidated) {
-        query = query.where("amount", "!=", consolidatedAmount);
+        query = query.where(eb =>
+            eb(isTransactionConsolidated(eb), "=", false)
+        );
     }
 
     const [count, filteredCount] = await Promise.all([

@@ -89,7 +89,7 @@ export const DataTable = <TData, TValue>({
         getFacetedUniqueValues: getFacetedUniqueValues(),
         manualPagination: true,
         manualSorting: isServerSide,
-        rowCount: data?.count,
+        rowCount: data?.filteredCount,
         onPaginationChange: setPagination,
     });
 

@@ -34,3 +34,27 @@ export const balance = (eb: ExpressionBuilder<DB, "financialAccounts">) => {
         )
         .$asScalar();
 };
+
+export const isTransactionConsolidated = (
+    eb: ExpressionBuilder<DB, "transactions">
+) => {
+    return eb
+        .selectFrom("consolidations")
+        .whereRef("consolidations.transactionId", "=", "transactions.id")
+        .select(sub =>
+            sub
+                .case()
+                .when(
+                    eb(sub.fn.count<number>("id"), ">", sub.lit(0)).and(
+                        sub.fn.sum<number>("consolidations.amount"),
+                        "=",
+                        sub.ref("transactions.amount")
+                    )
+                )
+                .then(sub.lit(true))
+                .else(sub.lit(false))
+                .end()
+                .as("isConsolidated")
+        )
+        .$asScalar();
+};
