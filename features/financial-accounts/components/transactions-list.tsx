@@ -23,6 +23,7 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useTransactionsColumns } from "../hooks/use-transactions-columns";
 import { ConsolidationsList } from "@/features/consolidations/components/consolidations-list";
 import { transactionFiltersSchema } from "../schemas/transaction.schema";
+import { NumberFilter } from "@/components/data-table/filters/number-filter";
 
 type Props = {
     mode: "account" | "consolidation";
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export const TransactionsList = ({ mode = "account", accountId }: Props) => {
+    const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
     const { confirm } = useConfirm();
 
@@ -67,7 +69,13 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                 accountId,
                 pagination: dataTable.pagination,
                 sorting: dataTable.sorting,
-                filters: raw,
+                filters: {
+                    ...raw,
+                    fromAmount: raw.fromAmount
+                        ? raw.fromAmount * 100
+                        : undefined,
+                    toAmount: raw.toAmount ? raw.toAmount * 100 : undefined,
+                },
             },
             {
                 placeholderData: keepPreviousData,
@@ -173,6 +181,16 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                         />
 
                         <DateFilter label={tc("toDate")} control={filter.to} />
+
+                        <NumberFilter
+                            label={t("fromAmount")}
+                            control={filter.fromAmount}
+                        />
+
+                        <NumberFilter
+                            label={t("toAmount")}
+                            control={filter.toAmount}
+                        />
 
                         {mode === "consolidation" && (
                             <BooleanFilter

@@ -112,7 +112,9 @@
         "selectLoan": "Select a loan...",
         "searchLoan": "Search loans...",
         "noLoansFound": "No loans found.",
-        "loanPayoff": "Loan payoff"
+        "loanPayoff": "Loan payoff",
+        "fromAmount": "From amount",
+        "toAmount": "To amount"
     },
     "Projects": {
         "humanId": "Human ID",

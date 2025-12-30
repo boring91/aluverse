@@ -1,4 +1,9 @@
-import { useQueryStates, parseAsString, parseAsIsoDateTime } from "nuqs";
+import {
+    useQueryStates,
+    parseAsString,
+    parseAsIsoDateTime,
+    parseAsFloat,
+} from "nuqs";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 import type { FilterControl } from "@/components/data-table/types";
@@ -25,10 +30,13 @@ type DateRange = {
 type BooleanFilterValue = "true" | "false" | "all" | undefined;
 
 // Type for nuqs parsers
-type NuqsParser = typeof parseAsString | typeof parseAsIsoDateTime;
+type NuqsParser =
+    | typeof parseAsString
+    | typeof parseAsIsoDateTime
+    | typeof parseAsFloat;
 
 // Type for filter runtime values (union of all possible filter value types)
-type FilterRuntimeValue = DateRange | BooleanFilterValue | string | undefined;
+type FilterRuntimeValue = DateRange | BooleanFilterValue | string | number | Date | undefined;
 
 // Map filter values to their runtime types (before transforms)
 type FilterRuntimeValues<T extends z.ZodObject<z.ZodRawShape>> = {
@@ -44,6 +52,8 @@ type FilterRuntimeValues<T extends z.ZodObject<z.ZodRawShape>> = {
             ? BooleanFilterValue
             : UnwrapZodType<T["shape"][K]> extends z.ZodString
             ? string
+            : UnwrapZodType<T["shape"][K]> extends z.ZodNumber
+            ? number
             : UnwrapZodType<T["shape"][K]> extends z.ZodDate
             ? Date
             : UnwrapZodType<T["shape"][K]> extends z.ZodEnum<infer U>
@@ -103,6 +113,18 @@ function isDateRangeFilter(
         }
     }
     return false;
+}
+
+// Helper to check if a schema is a number filter
+function isNumberFilter(schema: z.ZodTypeAny): boolean {
+    const baseSchema = getBaseSchema(schema);
+    return baseSchema instanceof z.ZodNumber;
+}
+
+// Helper to check if a schema is a single date filter (not a date range)
+function isSingleDateFilter(schema: z.ZodTypeAny): boolean {
+    const baseSchema = getBaseSchema(schema);
+    return baseSchema instanceof z.ZodDate;
 }
 
 // Helper to check if a schema is a boolean filter
@@ -165,8 +187,10 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
     const filterConfig = useMemo(() => {
         const parsers: Record<string, NuqsParser> = {};
         const urlKeyMap: Record<string, string> = {};
-        const filterTypes: Record<string, "dateRange" | "boolean" | "string"> =
-            {};
+        const filterTypes: Record<
+            string,
+            "dateRange" | "boolean" | "string" | "date" | "number"
+        > = {};
 
         for (const key of keys) {
             const fieldSchema = shape[key];
@@ -187,6 +211,22 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
                 urlKeyMap[`${keyStr}From`] = fromKey;
                 urlKeyMap[`${keyStr}To`] = toKey;
                 filterTypes[keyStr] = "dateRange";
+            } else if (isSingleDateFilter(fieldSchema as z.ZodTypeAny)) {
+                // Single date filter
+                const urlKey =
+                    (options?.urlKeys?.[key] as string | undefined) ??
+                    String(key);
+                parsers[String(key)] = parseAsIsoDateTime;
+                urlKeyMap[String(key)] = urlKey;
+                filterTypes[String(key)] = "date";
+            } else if (isNumberFilter(fieldSchema as z.ZodTypeAny)) {
+                // Number filter
+                const urlKey =
+                    (options?.urlKeys?.[key] as string | undefined) ??
+                    String(key);
+                parsers[String(key)] = parseAsFloat;
+                urlKeyMap[String(key)] = urlKey;
+                filterTypes[String(key)] = "number";
             } else if (isBooleanFilter(fieldSchema as z.ZodTypeAny)) {
                 // Boolean filter
                 const urlKey =
@@ -239,6 +279,14 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
                     from: state[`${String(key)}From`] ?? undefined,
                     to: state[`${String(key)}To`] ?? undefined,
                 } as DateRange;
+            } else if (filterType === "date") {
+                result[String(key)] =
+                    (state[String(key)] as Date | null | undefined) ??
+                    undefined;
+            } else if (filterType === "number") {
+                result[String(key)] =
+                    (state[String(key)] as number | null | undefined) ??
+                    undefined;
             } else {
                 result[String(key)] =
                     (state[String(key)] as string | null | undefined) ??
@@ -253,6 +301,8 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
     const setters = useMemo(() => {
         type SetterFunction =
             | ((value: DateRange) => void)
+            | ((value: Date | undefined) => void)
+            | ((value: number | undefined) => void)
             | ((value: BooleanFilterValue) => void)
             | ((value: string | undefined) => void);
         const result: Record<string, SetterFunction> = {};
@@ -266,6 +316,18 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
                     setState({
                         [`${keyStr}From`]: value.from ?? null,
                         [`${keyStr}To`]: value.to ?? null,
+                    });
+                }) as SetterFunction;
+            } else if (filterType === "date") {
+                result[keyStr] = ((value: Date | undefined) => {
+                    setState({
+                        [keyStr]: value ?? null,
+                    });
+                }) as SetterFunction;
+            } else if (filterType === "number") {
+                result[keyStr] = ((value: number | undefined) => {
+                    setState({
+                        [keyStr]: value ?? null,
                     });
                 }) as SetterFunction;
             } else if (filterType === "boolean") {

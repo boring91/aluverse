@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@/db";
 import { listTransactionSchema } from "@/features/financial-accounts";
-import { isTransactionConsolidated } from "@/db/expressions";
+import { isTransactionConsolidated, signedAmount } from "@/db/expressions";
 import { transactionMapper } from "@/db/mappers";
 
 export async function listTransactions(
@@ -25,6 +25,16 @@ export async function listTransactions(
 
     if (filters?.to) {
         query = query.where("date", "<=", filters.to);
+    }
+
+    if (filters?.fromAmount !== undefined) {
+        query = query.where(eb =>
+            eb(signedAmount(eb), ">=", filters.fromAmount!)
+        );
+    }
+
+    if (filters?.toAmount !== undefined) {
+        query = query.where(eb => eb(signedAmount(eb), "<", filters.toAmount!));
     }
 
     if (filters?.isConsolidated !== undefined && filters.isConsolidated) {
@@ -52,13 +62,13 @@ export async function listTransactions(
         const dir = sort.desc ? "desc" : "asc";
         switch (sort.id) {
             case "date":
-                query = query.orderBy(`date ${dir}`);
+                query = query.orderBy("date", dir);
                 break;
             case "description":
-                query = query.orderBy(`description ${dir}`);
+                query = query.orderBy("description", dir);
                 break;
             case "amount":
-                query = query.orderBy(`amount ${dir}`);
+                query = query.orderBy(eb => signedAmount(eb), dir);
                 break;
         }
     });

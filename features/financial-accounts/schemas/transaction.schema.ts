@@ -9,6 +9,8 @@ export const transactionFiltersSchema = z.object({
     keyword: z.string().optional(),
     from: z.date().optional(),
     to: z.date().optional(),
+    fromAmount: z.number().optional(),
+    toAmount: z.number().optional(),
     isConsolidated: booleanFilterSchema.optional(),
 });
 
