@@ -40,7 +40,9 @@ export const consolidationMapper = (
 export const financialAccountMapper = (
     eb: ExpressionBuilder<DB, "financialAccounts">
 ) =>
-    ["id", "name", balance(eb).as("balance")] satisfies SelectExpression<
-        DB,
-        "financialAccounts"
-    >[];
+    [
+        "id",
+        "name",
+        "syncWithBank",
+        balance(eb).as("balance"),
+    ] satisfies SelectExpression<DB, "financialAccounts">[];

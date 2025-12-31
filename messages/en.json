@@ -114,7 +114,10 @@
         "noLoansFound": "No loans found.",
         "loanPayoff": "Loan payoff",
         "fromAmount": "From amount",
-        "toAmount": "To amount"
+        "toAmount": "To amount",
+        "syncWithBank": "Sync with bank",
+        "westpac": "Westpac",
+        "successfullySyncedCountTransactions": "Successfully synced {count} transactions"
     },
     "Projects": {
         "humanId": "Human ID",

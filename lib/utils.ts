@@ -36,3 +36,5 @@ export const getProjectStatus = (
     if (project.paid < project.price) return "awaitingPayment";
     return "completed";
 };
+
+export const getCurrentTime = () => new Date();

@@ -20,6 +20,7 @@ import { getTransactionById } from "../queries/get-transaction-by-id";
 import { createTransaction } from "../mutations/create-transaction";
 import { deleteTransaction } from "../mutations/delete-transaction";
 import { updateTransaction } from "../mutations/update-transaction";
+import { syncFinancialAccountWithBank } from "../mutations/sync-financial-account-with-bank";
 
 export const financialAccountsRouter = createTRPCRouter({
     list: protectedProcedure.query(async () => {
@@ -54,6 +55,12 @@ export const financialAccountsRouter = createTRPCRouter({
         .input(z.object({ id: z.uuid() }))
         .mutation(async ({ input }) => {
             return await deleteFinancialAccount(input.id);
+        }),
+
+    syncWithBank: protectedProcedure
+        .input(z.object({ id: z.uuid() }))
+        .mutation(async ({ input }) => {
+            return await syncFinancialAccountWithBank(input.id);
         }),
 });
 

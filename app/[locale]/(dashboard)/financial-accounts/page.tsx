@@ -15,6 +15,7 @@ import { PageLoader } from "@/components/page-loader";
 import { useConfirm } from "@/lib/confirm-context";
 
 const Page = () => {
+    const t = useTranslations("FinancialAccounts");
     const tc = useTranslations("Common");
     const { confirm } = useConfirm();
 
@@ -25,7 +26,7 @@ const Page = () => {
         undefined
     );
 
-    const [currentlyDeleting, setCurrentlyDeleting] = useState<Set<string>>(
+    const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
         new Set()
     );
 
@@ -45,7 +46,7 @@ const Page = () => {
                 queryClient.invalidateQueries(
                     trpc.financialAccounts.get.queryOptions({ id })
                 );
-                setCurrentlyDeleting(set => {
+                setCurrentlyProcessing(set => {
                     set.delete(id);
                     return new Set(set);
                 });
@@ -54,6 +55,40 @@ const Page = () => {
 
             onError: error => {
                 toast.error(error.message);
+            },
+        })
+    );
+
+    const syncMutation = useMutation(
+        trpc.financialAccounts.syncWithBank.mutationOptions({
+            onSuccess: (syncedTransactionCount, { id }) => {
+                toast.success(
+                    t("successfullySyncedCountTransactions", {
+                        count: syncedTransactionCount,
+                    })
+                );
+
+                queryClient.invalidateQueries(
+                    trpc.financialAccounts.list.queryOptions()
+                );
+
+                queryClient.invalidateQueries(
+                    trpc.financialAccounts.get.queryOptions({ id })
+                );
+
+                setCurrentlyProcessing(set => {
+                    set.delete(id);
+                    return new Set(set);
+                });
+            },
+
+            onError: (error, { id }) => {
+                toast.error(error.message);
+
+                setCurrentlyProcessing(set => {
+                    set.delete(id);
+                    return new Set(set);
+                });
             },
         })
     );
@@ -68,13 +103,21 @@ const Page = () => {
         setIsCreateSheetOpen(true);
     };
 
+    const handleSync = async (itemId: string) => {
+        setCurrentlyProcessing(set => {
+            set.add(itemId);
+            return new Set(set);
+        });
+        syncMutation.mutate({ id: itemId });
+    };
+
     const handleDelete = async (itemId: string) => {
         confirm({
             title: tc("delete"),
             description: tc("areYouSureYouWantToDeleteThisItem"),
             onConfirm: () => {
                 deleteMutation.mutate({ id: itemId });
-                setCurrentlyDeleting(set => {
+                setCurrentlyProcessing(set => {
                     set.add(itemId);
                     return new Set(set);
                 });
@@ -109,8 +152,9 @@ const Page = () => {
                     <FinancialAccountsGrid
                         items={data!}
                         onClickForUpdate={itemId => handleUpdate(itemId)}
+                        onClickForSync={itemId => handleSync(itemId)}
                         onClickForDelete={itemId => handleDelete(itemId)}
-                        currentlyProcessing={currentlyDeleting}
+                        currentlyProcessing={currentlyProcessing}
                     />
                 )}
             </PageContainer>

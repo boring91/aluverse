@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/db";
-import { financialAccountMapper } from "@/db/mappers"
+import { financialAccountMapper } from "@/db/mappers";
 import { updateFinancialAccountSchema } from "../schemas/financial-accounts.schema";
 
 export async function updateFinancialAccount(
@@ -9,6 +9,7 @@ export async function updateFinancialAccount(
     return await db
         .updateTable("financialAccounts")
         .set(data)
+        .where("id", "=", data.id)
         .returning(financialAccountMapper)
         .executeTakeFirstOrThrow();
 }

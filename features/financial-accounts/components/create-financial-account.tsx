@@ -17,7 +17,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { createFinancialAccountSchema } from "../schemas/financial-accounts.schema";
-import { fillForm } from '@/lib/client-utils';
+import { fillForm } from "@/lib/client-utils";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +27,15 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { banks } from "../lib/bank-syncer/constants";
 
 type SchemaType = z.infer<typeof createFinancialAccountSchema>;
 
@@ -55,10 +64,11 @@ export const CreateFinancialAccount = ({
         )
     );
 
-    const form = useForm({
+    const form = useForm<SchemaType>({
         resolver: zodResolver(createFinancialAccountSchema),
         defaultValues: {
             name: "",
+            syncWithBank: undefined,
         },
     });
 
@@ -129,6 +139,7 @@ export const CreateFinancialAccount = ({
                     className="flex flex-col gap-8 px-4"
                 >
                     <FieldGroup>
+                        {/* Name */}
                         <Controller
                             control={form.control}
                             name="name"
@@ -137,6 +148,46 @@ export const CreateFinancialAccount = ({
                                     <Field>
                                         <FieldLabel>{tc("name")}</FieldLabel>
                                         <Input {...field} />
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
+
+                        {/* Sync with bank */}
+                        <Controller
+                            control={form.control}
+                            name="syncWithBank"
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field>
+                                        <FieldLabel>
+                                            {t("syncWithBank")}
+                                        </FieldLabel>
+                                        <Select
+                                            value={field.value ?? ""}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {banks.map(bank => (
+                                                        <SelectItem
+                                                            key={bank}
+                                                            value={bank}
+                                                        >
+                                                            {t(bank)}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
                                         {fieldState.invalid && (
                                             <FieldError
                                                 errors={[fieldState.error]}
@@ -162,4 +213,3 @@ export const CreateFinancialAccount = ({
         </Dialog>
     );
 };
-

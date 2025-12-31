@@ -2,14 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/client-utils";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
-import { Edit3Icon, Trash2Icon } from "lucide-react";
+import { Edit3Icon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 
 type Props = {
     items: inferRouterOutputs<AppRouter>["financialAccounts"]["list"];
     onClickForUpdate: (itemId: string) => void;
+    onClickForSync: (itemId: string) => void;
     onClickForDelete: (itemId: string) => void;
     currentlyProcessing: Set<string>;
 };
@@ -17,6 +18,7 @@ type Props = {
 export const FinancialAccountsGrid = ({
     items,
     onClickForUpdate,
+    onClickForSync,
     onClickForDelete,
     currentlyProcessing,
 }: Props) => {
@@ -32,6 +34,7 @@ export const FinancialAccountsGrid = ({
                             <CardHeader className="flex items-center justify-between gap-2">
                                 <CardTitle>{account.name}</CardTitle>
                                 <div className="flex items-center gap-2">
+                                    {/* Edit */}
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -47,6 +50,27 @@ export const FinancialAccountsGrid = ({
                                     >
                                         <Edit3Icon />
                                     </Button>
+
+                                    {/* Sync */}
+                                    {account.syncWithBank && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-muted-foreground"
+                                            onClick={event => {
+                                                event.stopPropagation();
+                                                event.preventDefault();
+                                                onClickForSync(account.id);
+                                            }}
+                                            disabled={currentlyProcessing.has(
+                                                account.id
+                                            )}
+                                        >
+                                            <RefreshCwIcon />
+                                        </Button>
+                                    )}
+
+                                    {/* Delete */}
                                     <Button
                                         variant="ghostDestructive"
                                         size="icon-sm"
@@ -78,4 +102,3 @@ export const FinancialAccountsGrid = ({
         </div>
     );
 };
-

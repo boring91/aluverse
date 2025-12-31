@@ -11,6 +11,8 @@ export type ConsolidationGroup = "budget" | "loan" | "project" | "unclassified";
 
 export type ConsolidationProjectStream = "labors" | "misc" | "payments" | "supplies";
 
+export type FinancialAccountBankSyncers = "westpac";
+
 export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
@@ -78,6 +80,7 @@ export interface FinancialAccounts {
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
   name: string;
+  syncWithBank: FinancialAccountBankSyncers | null;
   updatedAt: Generated<Timestamp>;
 }
 
