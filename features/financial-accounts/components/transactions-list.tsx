@@ -71,10 +71,14 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                 sorting: dataTable.sorting,
                 filters: {
                     ...raw,
-                    fromAmount: raw.fromAmount
-                        ? raw.fromAmount * 100
-                        : undefined,
-                    toAmount: raw.toAmount ? raw.toAmount * 100 : undefined,
+                    fromAmount:
+                        raw.fromAmount === undefined
+                            ? undefined
+                            : raw.fromAmount * 100,
+                    toAmount:
+                        raw.toAmount === undefined
+                            ? undefined
+                            : raw.toAmount * 100,
                 },
             },
             {

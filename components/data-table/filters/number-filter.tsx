@@ -18,7 +18,11 @@ export const NumberFilter = ({ label, control, placeholder }: Props) => {
                 type="number"
                 value={control.value ?? ""}
                 onChange={event =>
-                    control.set(Number(event.target.value) ?? undefined)
+                    control.set(
+                        event.target.value === ""
+                            ? undefined
+                            : Number(event.target.value)
+                    )
                 }
                 placeholder={placeholder}
             />
