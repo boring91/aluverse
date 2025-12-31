@@ -25,7 +25,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { transactionTypes } from "@/lib/constants";
-import { createTransactionSchema } from "../schemas/transaction.schema";
+import { createTransactionSchema } from "../schemas/transactions.schema";
 import { fillForm } from "@/lib/client-utils";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";

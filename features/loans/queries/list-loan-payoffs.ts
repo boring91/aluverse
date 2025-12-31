@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { loanPayoffMapper } from "@/db/mappers"
-import { listLoanPayoffSchema } from "../schemas/loan-payoff.schema";
+import { listLoanPayoffSchema } from "../schemas/loan-payoffs.schema";
 import { z } from "zod";
 
 export async function listLoanPayoffs(

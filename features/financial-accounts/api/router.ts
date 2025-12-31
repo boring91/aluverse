@@ -3,12 +3,12 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import {
     createFinancialAccountSchema,
     updateFinancialAccountSchema,
-} from "../schemas/financial-account.schema";
+} from "../schemas/financial-accounts.schema";
 import {
     createTransactionWithAccountIdSchema,
     listTransactionSchema,
     updateTransactionSchema,
-} from "../schemas/transaction.schema";
+} from "../schemas/transactions.schema";
 import { TRPCError } from "@trpc/server";
 import { listFinancialAccounts } from "../queries/list-financial-accounts";
 import { getFinancialAccountById } from "../queries/get-financial-account-by-id";

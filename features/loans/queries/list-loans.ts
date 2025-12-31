@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { listLoanSchema } from "../schemas/loan.schema";
+import { listLoanSchema } from "../schemas/loan.schemas";
 import { db } from "@/db";
 import { loanRemaining } from "@/db/expressions"
 import { loanMapper } from "@/db/mappers"

@@ -16,7 +16,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { createFinancialAccountSchema } from "../schemas/financial-account.schema";
+import { createFinancialAccountSchema } from "../schemas/financial-accounts.schema";
 import { fillForm } from '@/lib/client-utils';
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";

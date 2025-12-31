@@ -4,7 +4,7 @@ import {
     createConsolidationWithTransactionIdSchema,
     listConsolidationSchema,
     updateConsolidationSchema,
-} from "../schemas/consolidation.schema";
+} from "../schemas/consolidations.schema";
 import { listConsolidations } from "../queries/list-consolidations";
 import { getConsolidationById } from "../queries/get-consolidation-by-id";
 import { createConsolidation } from "../mutations/create-consolidation";

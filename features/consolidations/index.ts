@@ -1,2 +1,2 @@
 export { consolidationsRouter } from "./api/router";
-export * from "./schemas/consolidation.schema";
+export * from "./schemas/consolidations.schema";

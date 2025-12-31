@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/db";
-import { updateProjectLaborSchema } from "../schemas/project-item.schema";
+import { updateProjectLaborSchema } from "../schemas/project-items.schema";
 
 export async function updateProjectLabor(
     data: z.infer<typeof updateProjectLaborSchema>

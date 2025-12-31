@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { fillForm } from "@/lib/client-utils";
-import { createLoanPayoffSchema } from "../schemas/loan-payoff.schema";
+import { createLoanPayoffSchema } from "../schemas/loan-payoffs.schema";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

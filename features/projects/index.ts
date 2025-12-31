@@ -5,5 +5,5 @@ export {
     projectPaymentsRouter,
     projectSuppliesRouter,
 } from "./api/router";
-export * from "./schemas/project.schema";
-export * from "./schemas/project-item.schema";
+export * from "./schemas/projects.schema";
+export * from "./schemas/project-items.schema";

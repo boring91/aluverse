@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/db";
-import { createProjectPaymentWithProjectIdSchema } from "../schemas/project-item.schema";
+import { createProjectPaymentWithProjectIdSchema } from "../schemas/project-items.schema";
 
 export async function createProjectPayment(
     data: z.infer<typeof createProjectPaymentWithProjectIdSchema>

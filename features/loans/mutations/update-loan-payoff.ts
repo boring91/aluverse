@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/db";
-import { updateLoanPayoffSchema } from "../schemas/loan-payoff.schema";
+import { updateLoanPayoffSchema } from "../schemas/loan-payoffs.schema";
 
 export async function updateLoanPayoff(
     data: z.infer<typeof updateLoanPayoffSchema>

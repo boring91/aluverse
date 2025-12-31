@@ -1,4 +1,4 @@
-import { listProjectItemSchema } from "../schemas/project-item.schema";
+import { listProjectItemSchema } from "../schemas/project-items.schema";
 import { db } from "@/db";
 import { projectPaymentMapper } from "@/db/mappers"
 import { z } from "zod";

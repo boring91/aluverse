@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { createLoanSchema, updateLoanSchema } from "../schemas/loan.schema";
+import { createLoanSchema, updateLoanSchema } from "../schemas/loan.schemas";
 import {
     updateLoanPayoffSchema,
     listLoanPayoffSchema,
     createLoanPayoffWithLoanIdSchema,
-} from "../schemas/loan-payoff.schema";
-import { listLoanSchema } from "../schemas/loan.schema";
+} from "../schemas/loan-payoffs.schema";
+import { listLoanSchema } from "../schemas/loan.schemas";
 import { TRPCError } from "@trpc/server";
 import { listLoans } from "../queries/list-loans";
 import { getLoanById } from "../queries/get-loan-by-id";

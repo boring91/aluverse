@@ -1,4 +1,4 @@
 export { financialAccountsRouter, transactionsRouter } from "./api/router";
-export * from "./schemas/financial-account.schema";
-export * from "./schemas/transaction.schema";
+export * from "./schemas/financial-accounts.schema";
+export * from "./schemas/transactions.schema";
 

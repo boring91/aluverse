@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import {
     createProjectSchema,
     updateProjectSchema,
-} from "../schemas/project.schema";
+} from "../schemas/projects.schema";
 import {
     updateProjectSupplySchema,
     updateProjectLaborSchema,
@@ -14,8 +14,8 @@ import {
     createProjectLaborWithProjectIdSchema,
     createProjectMiscWithProjectIdSchema,
     createProjectPaymentWithProjectIdSchema,
-} from "../schemas/project-item.schema";
-import { listProjectSchema } from "../schemas/project.schema";
+} from "../schemas/project-items.schema";
+import { listProjectSchema } from "../schemas/projects.schema";
 import { listProjects } from "../queries/list-projects";
 import { getProjectById } from "../queries/get-project-by-id";
 import { listProjectSupplies } from "../queries/list-project-supplies";

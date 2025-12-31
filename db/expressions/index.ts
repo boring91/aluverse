@@ -1,3 +1,4 @@
-export * from "./financial-accounts";
-export * from "./loans";
-export * from "./projects";
+export * from "./financial-accounts.expression";
+export * from "./transactions.expression";
+export * from "./loans.expression";
+export * from "./projects.expression";

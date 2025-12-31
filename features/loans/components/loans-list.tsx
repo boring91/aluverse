@@ -24,7 +24,7 @@ import { CreateLoan } from "./create-loan";
 import { useConfirm } from "@/lib/confirm-context";
 import { useQueryState, parseAsString } from "nuqs";
 import { useLoansColumns } from "../hooks/use-loans-columns";
-import { loanFiltersSchema } from "../schemas/loan.schema";
+import { loanFiltersSchema } from "../schemas/loan.schemas";
 
 export const LoansList = () => {
     const tc = useTranslations("Common");

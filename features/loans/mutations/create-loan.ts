@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createLoanSchema } from "../schemas/loan.schema";
+import { createLoanSchema } from "../schemas/loan.schemas";
 import { db } from "@/db";
 
 export async function createLoan(data: z.infer<typeof createLoanSchema>) {

@@ -15,7 +15,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
-import { createProjectSupplySchema } from "../schemas/project-item.schema";
+import { createProjectSupplySchema } from "../schemas/project-items.schema";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

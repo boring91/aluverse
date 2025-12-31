@@ -26,7 +26,7 @@ import {
     transactionConsolidationGroups,
 } from "@/lib/constants";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { createConsolidationSchema } from "../schemas/consolidation.schema";
+import { createConsolidationSchema } from "../schemas/consolidations.schema";
 import { z } from "zod";
 import {
     CreateProjectItem,

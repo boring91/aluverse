@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@/db";
 import { transactionMapper } from "@/db/mappers"
-import { updateTransactionSchema } from "../schemas/transaction.schema";
+import { updateTransactionSchema } from "../schemas/transactions.schema";
 
 export async function updateTransaction(
     data: z.infer<typeof updateTransactionSchema>

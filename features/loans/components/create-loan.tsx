@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { fillForm } from "@/lib/client-utils";
-import { createLoanSchema } from "../schemas/loan.schema";
+import { createLoanSchema } from "../schemas/loan.schemas";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";

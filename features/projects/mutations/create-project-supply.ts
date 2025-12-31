@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/db";
-import { createProjectSupplyWithProjectIdSchema } from "../schemas/project-item.schema";
+import { createProjectSupplyWithProjectIdSchema } from "../schemas/project-items.schema";
 
 export async function createProjectSupply(
     data: z.infer<typeof createProjectSupplyWithProjectIdSchema>

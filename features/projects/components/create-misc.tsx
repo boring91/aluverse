@@ -24,7 +24,7 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { createProjectMiscSchema } from "../schemas/project-item.schema";
+import { createProjectMiscSchema } from "../schemas/project-items.schema";
 
 type SchemaType = z.infer<typeof createProjectMiscSchema>;
 

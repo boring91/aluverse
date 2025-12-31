@@ -18,7 +18,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
-import { createProjectSchema } from "../schemas/project.schema";
+import { createProjectSchema } from "../schemas/projects.schema";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";

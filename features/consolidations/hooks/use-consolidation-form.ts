@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { fillForm } from "@/lib/client-utils";
 import { useTRPC } from "@/trpc/client";
-import { createConsolidationSchema } from "../schemas/consolidation.schema";
+import { createConsolidationSchema } from "../schemas/consolidations.schema";
 import { useTranslations } from "next-intl";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;

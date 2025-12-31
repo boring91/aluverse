@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@/db";
 import { projectMapper } from "@/db/mappers"
-import { createProjectSchema } from "../schemas/project.schema";
+import { createProjectSchema } from "../schemas/projects.schema";
 
 export async function createProject(data: z.infer<typeof createProjectSchema>) {
     // Compute a new human id in this format PXXXX:

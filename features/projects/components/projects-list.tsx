@@ -23,7 +23,7 @@ import { CreateProject } from "./create-project";
 import { useConfirm } from "@/lib/confirm-context";
 import { useQueryState, parseAsString } from "nuqs";
 import { useProjectsColumns } from "../hooks/use-projects-columns";
-import { projectFiltersSchema } from "../schemas/project.schema";
+import { projectFiltersSchema } from "../schemas/projects.schema";
 
 export const ProjectsList = () => {
     const tc = useTranslations("Common");
