@@ -1,14 +1,7 @@
 "use client";
 
-import { useTitle } from "@/hooks/use-title";
-import { useTranslations } from "next-intl";
+import { DashboardView } from "@/features/dashboard/views/dashboard-view";
 
-const Page = () => {
-    const t = useTranslations("Common");
-
-    useTitle(t("dashboard"));
-
-    return <p>Hey</p>;
-};
-
-export default Page;
+export default function Page() {
+    return <DashboardView />;
+}
