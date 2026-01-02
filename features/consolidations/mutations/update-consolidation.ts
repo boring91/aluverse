@@ -2,6 +2,7 @@ import { z } from "zod";
 import { updateConsolidationSchema } from "@/features/consolidations";
 import { db } from "@/db";
 import { consolidationMapper } from "@/db/mappers";
+import { updateConsolidationWithRelatedItem } from "../utils";
 
 export async function updateConsolidation(
   data: z.infer<typeof updateConsolidationSchema>
@@ -9,11 +10,15 @@ export async function updateConsolidation(
   const oldConsolidation = await db
     .selectFrom("consolidations")
     .where("id", "=", data.id)
-    .select(["projectStream", "projectItemId"])
+    .select(["projectStream", "projectItemId", "loanId", "loanPayoffId"])
     .executeTakeFirstOrThrow();
 
-  const { projectStream: oldProjectStream, projectItemId: oldProjectItemId } =
-    oldConsolidation;
+  const {
+    projectStream: oldProjectStream,
+    projectItemId: oldProjectItemId,
+    loanId: oldLoanId,
+    loanPayoffId: oldLoanPayoffId,
+  } = oldConsolidation;
 
   return await db.transaction().execute(async (tx) => {
     const consolidation = await tx
@@ -42,13 +47,23 @@ export async function updateConsolidation(
         .execute();
     }
 
-    if (data.projectStream && data.projectItemId) {
+    if (oldLoanId && oldLoanId !== data.loanId) {
       await tx
-        .updateTable(tableMap[data.projectStream])
-        .set({ consolidationId: consolidation.id })
-        .where("id", "=", data.projectItemId)
+        .updateTable("loans")
+        .set({ consolidationId: null })
+        .where("id", "=", oldLoanId)
         .execute();
     }
+
+    if (oldLoanPayoffId && oldLoanPayoffId !== data.loanPayoffId) {
+      await tx
+        .updateTable("loanPayoffs")
+        .set({ consolidationId: null })
+        .where("id", "=", oldLoanPayoffId)
+        .execute();
+    }
+
+    await updateConsolidationWithRelatedItem(tx, consolidation.id, data);
 
     return consolidation;
   });

@@ -2,6 +2,7 @@ import { createConsolidationWithTransactionIdSchema } from "@/features/consolida
 import { z } from "zod";
 import { db } from "@/db";
 import { consolidationMapper } from "@/db/mappers";
+import { updateConsolidationWithRelatedItem } from "../utils";
 
 export async function createConsolidation(
   data: z.infer<typeof createConsolidationWithTransactionIdSchema>
@@ -13,22 +14,7 @@ export async function createConsolidation(
       .returning(consolidationMapper)
       .executeTakeFirstOrThrow();
 
-    const { projectStream, projectItemId } = data;
-
-    if (projectStream && projectItemId) {
-      const tableMap = {
-        supplies: "projectSupplies",
-        labors: "projectLabors",
-        misc: "projectMisc",
-        payments: "projectPayments",
-      } as const;
-
-      await tx
-        .updateTable(tableMap[projectStream])
-        .set({ consolidationId: consolidation.id })
-        .where("id", "=", projectItemId)
-        .execute();
-    }
+    await updateConsolidationWithRelatedItem(tx, consolidation.id, data);
 
     return consolidation;
   });
