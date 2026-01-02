@@ -4,10 +4,9 @@ import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
 
 export const DashboardView = () => {
-    const t = useTranslations("Common");
+  const t = useTranslations("Common");
 
-    useTitle(t("dashboard"));
+  useTitle(t("dashboard"));
 
-    return <p>Hey</p>;
+  return <p>Hey</p>;
 };
-

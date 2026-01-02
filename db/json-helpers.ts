@@ -1,7 +1,7 @@
 import type { Expression, RawBuilder, Simplify } from "kysely";
 import {
-    jsonObjectFrom as kyselyJsonObjectFrom,
-    jsonArrayFrom as kyselyJsonArrayFrom,
+  jsonObjectFrom as kyselyJsonObjectFrom,
+  jsonArrayFrom as kyselyJsonArrayFrom,
 } from "kysely/helpers/postgres";
 
 /**
@@ -14,22 +14,22 @@ import {
  * This type mirrors Kysely's ShallowDehydrateValue but keeps Date as Date.
  */
 type DehydrateValuePreserveDates<T> = T extends null | undefined
-    ? T
-    : T extends (infer U)[] | null | undefined
+  ? T
+  : T extends (infer U)[] | null | undefined
     ? Array<DehydrateValuePreserveDates<U>> | Extract<T, null | undefined>
     : T extends Date
-    ? Date // Keep Date as Date (Kysely converts to string)
-    : T extends Uint8Array
-    ? string // Binary data still becomes string
-    : T extends bigint
-    ? number
-    : T;
+      ? Date // Keep Date as Date (Kysely converts to string)
+      : T extends Uint8Array
+        ? string // Binary data still becomes string
+        : T extends bigint
+          ? number
+          : T;
 
 /**
  * Recursively applies date-preserving dehydration to an object type.
  */
 type DehydrateObjectPreserveDates<O> = {
-    [K in keyof O]: DehydrateValuePreserveDates<O[K]>;
+  [K in keyof O]: DehydrateValuePreserveDates<O[K]>;
 };
 
 /**
@@ -56,11 +56,11 @@ type DehydrateObjectPreserveDates<O> = {
  * ```
  */
 export function jsonObjectFrom<O>(
-    expr: Expression<O>
+  expr: Expression<O>
 ): RawBuilder<Simplify<DehydrateObjectPreserveDates<O>> | null> {
-    return kyselyJsonObjectFrom(expr) as unknown as RawBuilder<Simplify<
-        DehydrateObjectPreserveDates<O>
-    > | null>;
+  return kyselyJsonObjectFrom(expr) as unknown as RawBuilder<Simplify<
+    DehydrateObjectPreserveDates<O>
+  > | null>;
 }
 
 /**
@@ -87,11 +87,11 @@ export function jsonObjectFrom<O>(
  * ```
  */
 export function jsonArrayFrom<O>(
-    expr: Expression<O>
+  expr: Expression<O>
 ): RawBuilder<Simplify<DehydrateObjectPreserveDates<O>>[]> {
-    return kyselyJsonArrayFrom(expr) as unknown as RawBuilder<
-        Simplify<DehydrateObjectPreserveDates<O>>[]
-    >;
+  return kyselyJsonArrayFrom(expr) as unknown as RawBuilder<
+    Simplify<DehydrateObjectPreserveDates<O>>[]
+  >;
 }
 
 /**

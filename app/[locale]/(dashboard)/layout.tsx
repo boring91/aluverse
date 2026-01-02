@@ -9,32 +9,32 @@ import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-    const { data, isPending } = useSession();
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
+  const { data, isPending } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-    useEffect(() => {
-        const fullUrl = `${pathname}?${searchParams.toString()}`;
+  useEffect(() => {
+    const fullUrl = `${pathname}?${searchParams.toString()}`;
 
-        if (!data?.user && !isPending) {
-            router.push(`/login?returnUrl=${encodeURIComponent(fullUrl)}`);
-        }
-    }, [data?.user, isPending, router, pathname, searchParams]);
-
-    if (!data?.user) {
-        return null;
+    if (!data?.user && !isPending) {
+      router.push(`/login?returnUrl=${encodeURIComponent(fullUrl)}`);
     }
+  }, [data?.user, isPending, router, pathname, searchParams]);
 
-    return (
-        <SidebarProvider>
-            <AppSidebar />
-            <div className="flex flex-col w-full">
-                <AppHeader />
-                <main className="grow overflow-auto">{children}</main>
-            </div>
-        </SidebarProvider>
-    );
+  if (!data?.user) {
+    return null;
+  }
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <div className="flex flex-col w-full">
+        <AppHeader />
+        <main className="grow overflow-auto">{children}</main>
+      </div>
+    </SidebarProvider>
+  );
 };
 
 export default Layout;

@@ -3,11 +3,11 @@ import { db } from "@/db";
 import { createLoanPayoffWithLoanIdSchema } from "../schemas/loan-payoffs.schema";
 
 export async function createLoanPayoff(
-    data: z.infer<typeof createLoanPayoffWithLoanIdSchema>
+  data: z.infer<typeof createLoanPayoffWithLoanIdSchema>
 ) {
-    return await db
-        .insertInto("loanPayoffs")
-        .values(data)
-        .returning(["id"])
-        .executeTakeFirstOrThrow();
+  return await db
+    .insertInto("loanPayoffs")
+    .values(data)
+    .returning(["id"])
+    .executeTakeFirstOrThrow();
 }

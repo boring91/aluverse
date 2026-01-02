@@ -15,77 +15,76 @@ import { ProjectAccountingInfo } from "@/features/projects/components/project-ac
 import { ProjectDetailsTabs } from "@/features/projects/components/project-details-tabs";
 
 export const ProjectDetailView = () => {
-    const params = useParams();
-    const projectId = params["projectId"] as string;
+  const params = useParams();
+  const projectId = params["projectId"] as string;
 
-    const tc = useTranslations("Common");
-    const t = useTranslations("Projects");
+  const tc = useTranslations("Common");
+  const t = useTranslations("Projects");
 
-    const trpc = useTRPC();
-    const { data, isLoading } = useQuery(
-        trpc.projects.get.queryOptions({
-            id: projectId,
-        })
-    );
+  const trpc = useTRPC();
+  const { data, isLoading } = useQuery(
+    trpc.projects.get.queryOptions({
+      id: projectId,
+    })
+  );
 
-    useTitle(data ? `${data.humanId} - ${data.title}` : tc("loading"));
+  useTitle(data ? `${data.humanId} - ${data.title}` : tc("loading"));
 
-    const [openCreateSheet, setOpenCreateSheet] = useState(false);
+  const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
-    if (isLoading) {
-        return (
-            <PageContainer>
-                <PageLoader />
-            </PageContainer>
-        );
-    }
-
-    if (!data) {
-        notFound();
-        return null;
-    }
-
+  if (isLoading) {
     return (
-        <>
-            {openCreateSheet && (
-                <CreateProject
-                    open={openCreateSheet}
-                    onOpenChange={setOpenCreateSheet}
-                    itemId={data.id}
-                />
-            )}
-            <PageContainer>
-                <div className="flex flex-col gap-6">
-                    <ProjectDetailHeader
-                        project={data}
-                        onEditClick={() => setOpenCreateSheet(true)}
-                    />
-
-                    <div className="space-y-6">
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                                {t("basicInformation")}
-                            </h2>
-                            <ProjectBasicInfo project={data} />
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                                {t("financialSummary")}
-                            </h2>
-                            <ProjectAccountingInfo project={data} />
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                                {tc("details")}
-                            </h2>
-                            <ProjectDetailsTabs projectId={projectId} />
-                        </section>
-                    </div>
-                </div>
-            </PageContainer>
-        </>
+      <PageContainer>
+        <PageLoader />
+      </PageContainer>
     );
-};
+  }
 
+  if (!data) {
+    notFound();
+    return null;
+  }
+
+  return (
+    <>
+      {openCreateSheet && (
+        <CreateProject
+          open={openCreateSheet}
+          onOpenChange={setOpenCreateSheet}
+          itemId={data.id}
+        />
+      )}
+      <PageContainer>
+        <div className="flex flex-col gap-6">
+          <ProjectDetailHeader
+            project={data}
+            onEditClick={() => setOpenCreateSheet(true)}
+          />
+
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {t("basicInformation")}
+              </h2>
+              <ProjectBasicInfo project={data} />
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {t("financialSummary")}
+              </h2>
+              <ProjectAccountingInfo project={data} />
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {tc("details")}
+              </h2>
+              <ProjectDetailsTabs projectId={projectId} />
+            </section>
+          </div>
+        </div>
+      </PageContainer>
+    </>
+  );
+};

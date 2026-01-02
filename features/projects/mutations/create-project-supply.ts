@@ -3,11 +3,11 @@ import { db } from "@/db";
 import { createProjectSupplyWithProjectIdSchema } from "../schemas/project-items.schema";
 
 export async function createProjectSupply(
-    data: z.infer<typeof createProjectSupplyWithProjectIdSchema>
+  data: z.infer<typeof createProjectSupplyWithProjectIdSchema>
 ) {
-    return await db
-        .insertInto("projectSupplies")
-        .values(data)
-        .returning(["id"])
-        .executeTakeFirstOrThrow();
+  return await db
+    .insertInto("projectSupplies")
+    .values(data)
+    .returning(["id"])
+    .executeTakeFirstOrThrow();
 }

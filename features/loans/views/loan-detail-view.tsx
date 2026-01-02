@@ -15,77 +15,76 @@ import { LoanFinancialInfo } from "@/features/loans/components/loan-financial-in
 import { LoanDetailsCard } from "@/features/loans/components/loan-details-card";
 
 export const LoanDetailView = () => {
-    const params = useParams();
-    const loanId = params["loanId"] as string;
+  const params = useParams();
+  const loanId = params["loanId"] as string;
 
-    const tc = useTranslations("Common");
-    const t = useTranslations("Loans");
+  const tc = useTranslations("Common");
+  const t = useTranslations("Loans");
 
-    const trpc = useTRPC();
-    const { data, isLoading } = useQuery(
-        trpc.loans.get.queryOptions({
-            id: loanId,
-        })
-    );
+  const trpc = useTRPC();
+  const { data, isLoading } = useQuery(
+    trpc.loans.get.queryOptions({
+      id: loanId,
+    })
+  );
 
-    useTitle(data ? `${data.partyName} - ${t(data.type)}` : tc("loading"));
+  useTitle(data ? `${data.partyName} - ${t(data.type)}` : tc("loading"));
 
-    const [openCreateSheet, setOpenCreateSheet] = useState(false);
+  const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
-    if (isLoading) {
-        return (
-            <PageContainer>
-                <PageLoader />
-            </PageContainer>
-        );
-    }
-
-    if (!data) {
-        notFound();
-        return null;
-    }
-
+  if (isLoading) {
     return (
-        <>
-            {openCreateSheet && (
-                <CreateLoan
-                    open={openCreateSheet}
-                    onOpenChange={setOpenCreateSheet}
-                    itemId={data.id}
-                />
-            )}
-            <PageContainer>
-                <div className="flex flex-col gap-6">
-                    <LoanDetailHeader
-                        loan={data}
-                        onEditClick={() => setOpenCreateSheet(true)}
-                    />
-
-                    <div className="space-y-6">
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                                {tc("details")}
-                            </h2>
-                            <LoanBasicInfo loan={data} />
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                                {t("financialSummary")}
-                            </h2>
-                            <LoanFinancialInfo loan={data} />
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                                {t("payoffs")}
-                            </h2>
-                            <LoanDetailsCard loanId={loanId} />
-                        </section>
-                    </div>
-                </div>
-            </PageContainer>
-        </>
+      <PageContainer>
+        <PageLoader />
+      </PageContainer>
     );
-};
+  }
 
+  if (!data) {
+    notFound();
+    return null;
+  }
+
+  return (
+    <>
+      {openCreateSheet && (
+        <CreateLoan
+          open={openCreateSheet}
+          onOpenChange={setOpenCreateSheet}
+          itemId={data.id}
+        />
+      )}
+      <PageContainer>
+        <div className="flex flex-col gap-6">
+          <LoanDetailHeader
+            loan={data}
+            onEditClick={() => setOpenCreateSheet(true)}
+          />
+
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {tc("details")}
+              </h2>
+              <LoanBasicInfo loan={data} />
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {t("financialSummary")}
+              </h2>
+              <LoanFinancialInfo loan={data} />
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {t("payoffs")}
+              </h2>
+              <LoanDetailsCard loanId={loanId} />
+            </section>
+          </div>
+        </div>
+      </PageContainer>
+    </>
+  );
+};

@@ -5,43 +5,39 @@ import { DB } from "@/db/types";
 import { banks } from "./constants";
 
 export async function syncWithBank(
-    bank: (typeof banks)[number],
-    accountId: string,
-    since?: Date,
-    until?: Date
+  bank: (typeof banks)[number],
+  accountId: string,
+  since?: Date,
+  until?: Date
 ) {
-    if (!since && !until) {
-        // Get last existing transaction
-        const lastTransaction = await db
-            .selectFrom("transactions")
-            .where("accountId", "=", accountId)
-            .select("date")
-            .orderBy("date", "desc")
-            .limit(1)
-            .executeTakeFirst();
+  if (!since && !until) {
+    // Get last existing transaction
+    const lastTransaction = await db
+      .selectFrom("transactions")
+      .where("accountId", "=", accountId)
+      .select("date")
+      .orderBy("date", "desc")
+      .limit(1)
+      .executeTakeFirst();
 
-        since = lastTransaction?.date;
-    }
+    since = lastTransaction?.date;
+  }
 
-    let transactions: Insertable<DB["transactions"]>[] = [];
+  let transactions: Insertable<DB["transactions"]>[] = [];
 
-    switch (bank) {
-        case "westpac":
-            transactions = await getWestpacTransactions(
-                accountId,
-                since,
-                until
-            );
-            break;
-    }
+  switch (bank) {
+    case "westpac":
+      transactions = await getWestpacTransactions(accountId, since, until);
+      break;
+  }
 
-    if (!transactions.length) return 0;
+  if (!transactions.length) return 0;
 
-    await db
-        .insertInto("transactions")
-        .values(transactions)
-        .onConflict(x => x.column("id").doNothing())
-        .execute();
+  await db
+    .insertInto("transactions")
+    .values(transactions)
+    .onConflict((x) => x.column("id").doNothing())
+    .execute();
 
-    return transactions.length;
+  return transactions.length;
 }

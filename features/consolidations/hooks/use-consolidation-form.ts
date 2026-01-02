@@ -12,133 +12,133 @@ import { useTranslations } from "next-intl";
 type SchemaType = z.infer<typeof createConsolidationSchema>;
 
 type Props = {
-    transactionId: string;
-    itemId: string | null;
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+  transactionId: string;
+  itemId: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
 export const useConsolidationForm = ({
-    transactionId,
-    itemId,
-    open,
-    onOpenChange,
+  transactionId,
+  itemId,
+  open,
+  onOpenChange,
 }: Props) => {
-    const tc = useTranslations("Common");
+  const tc = useTranslations("Common");
 
-    const isUpdate = !!itemId;
+  const isUpdate = !!itemId;
 
-    const form = useForm<SchemaType>({
-        resolver: zodResolver(createConsolidationSchema),
-        defaultValues: {
-            description: "",
-            amount: 0.0,
-            budgetCategory: undefined,
-            consolidationGroup: undefined,
-            projectId: undefined,
-            projectStream: undefined,
-            projectItemId: undefined,
-            isGst: true,
-        },
-    });
+  const form = useForm<SchemaType>({
+    resolver: zodResolver(createConsolidationSchema),
+    defaultValues: {
+      description: "",
+      amount: 0.0,
+      budgetCategory: undefined,
+      consolidationGroup: undefined,
+      projectId: undefined,
+      projectStream: undefined,
+      projectItemId: undefined,
+      isGst: true,
+    },
+  });
 
-    const queryClient = useQueryClient();
-    const trpc = useTRPC();
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
 
-    const { data } = useQuery(
-        trpc.consolidations.get.queryOptions(
-            {
-                id: itemId!,
-            },
-            {
-                enabled: isUpdate,
-            }
-        )
+  const { data } = useQuery(
+    trpc.consolidations.get.queryOptions(
+      {
+        id: itemId!,
+      },
+      {
+        enabled: isUpdate,
+      }
+    )
+  );
+
+  const { data: defaults } = useQuery(
+    trpc.consolidations.getDefault.queryOptions(
+      {
+        transactionId,
+      },
+      {
+        enabled: !isUpdate,
+      }
+    )
+  );
+
+  const onSuccess = () => {
+    queryClient.invalidateQueries(
+      trpc.consolidations.list.queryOptions({ transactionId })
     );
-
-    const { data: defaults } = useQuery(
-        trpc.consolidations.getDefault.queryOptions(
-            {
-                transactionId,
-            },
-            {
-                enabled: !isUpdate,
-            }
-        )
+    queryClient.invalidateQueries(
+      trpc.consolidations.statistics.queryOptions()
     );
-
-    const onSuccess = () => {
-        queryClient.invalidateQueries(
-            trpc.consolidations.list.queryOptions({ transactionId })
-        );
-        queryClient.invalidateQueries(
-            trpc.consolidations.statistics.queryOptions()
-        );
-        queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
-        queryClient.invalidateQueries(
-            trpc.consolidations.getDefault.queryOptions({ transactionId })
-        );
-        if (isUpdate) {
-            queryClient.invalidateQueries(
-                trpc.consolidations.get.queryOptions({
-                    id: itemId,
-                })
-            );
-        }
-
-        form.reset();
-        onOpenChange(false);
-        toast.success(tc("savedSuccessfully"));
-    };
-
-    const onError = (error: { message: string }) => {
-        toast.error(error.message);
-    };
-
-    const createMutation = useMutation(
-        trpc.consolidations.create.mutationOptions({ onSuccess, onError })
+    queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
+    queryClient.invalidateQueries(
+      trpc.consolidations.getDefault.queryOptions({ transactionId })
     );
-    const updateMutation = useMutation(
-        trpc.consolidations.update.mutationOptions({ onSuccess, onError })
-    );
+    if (isUpdate) {
+      queryClient.invalidateQueries(
+        trpc.consolidations.get.queryOptions({
+          id: itemId,
+        })
+      );
+    }
 
-    const handleSubmit = (data: SchemaType) => {
-        if (isUpdate && itemId) {
-            updateMutation.mutate({ id: itemId, ...data });
-        } else {
-            createMutation.mutate({ transactionId, ...data });
-        }
-    };
+    form.reset();
+    onOpenChange(false);
+    toast.success(tc("savedSuccessfully"));
+  };
 
-    useEffect(() => {
-        if (!open) return;
+  const onError = (error: { message: string }) => {
+    toast.error(error.message);
+  };
 
-        if (defaults && !isUpdate) {
-            fillForm(form, {
-                ...defaults,
-                isGst: true,
-                amount: defaults.remainingAmount / 100,
-            });
-            form.setFocus("consolidationGroup");
-        } else if (data && isUpdate) {
-            fillForm(form, {
-                ...data,
-                amount: data.amount / 100,
-                isGst: data.isGst ?? true,
-                projectId: data.project?.id,
-            });
-        }
-    }, [open, data, defaults, form, isUpdate]);
+  const createMutation = useMutation(
+    trpc.consolidations.create.mutationOptions({ onSuccess, onError })
+  );
+  const updateMutation = useMutation(
+    trpc.consolidations.update.mutationOptions({ onSuccess, onError })
+  );
 
-    const isPending =
-        createMutation.isPending ||
-        updateMutation.isPending ||
-        (!data && !defaults);
+  const handleSubmit = (data: SchemaType) => {
+    if (isUpdate && itemId) {
+      updateMutation.mutate({ id: itemId, ...data });
+    } else {
+      createMutation.mutate({ transactionId, ...data });
+    }
+  };
 
-    return {
-        form,
-        handleSubmit,
-        isPending,
-        isUpdate,
-    };
+  useEffect(() => {
+    if (!open) return;
+
+    if (defaults && !isUpdate) {
+      fillForm(form, {
+        ...defaults,
+        isGst: true,
+        amount: defaults.remainingAmount / 100,
+      });
+      form.setFocus("consolidationGroup");
+    } else if (data && isUpdate) {
+      fillForm(form, {
+        ...data,
+        amount: data.amount / 100,
+        isGst: data.isGst ?? true,
+        projectId: data.project?.id,
+      });
+    }
+  }, [open, data, defaults, form, isUpdate]);
+
+  const isPending =
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    (!data && !defaults);
+
+  return {
+    form,
+    handleSubmit,
+    isPending,
+    isUpdate,
+  };
 };

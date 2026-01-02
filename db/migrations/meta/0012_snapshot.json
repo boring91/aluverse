@@ -94,12 +94,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -170,12 +166,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -185,9 +177,7 @@
         "sessions_token_unique": {
           "name": "sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -251,9 +241,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -418,12 +406,8 @@
           "name": "consolidations_transaction_id_transactions_id_fk",
           "tableFrom": "consolidations",
           "tableTo": "transactions",
-          "columnsFrom": [
-            "transaction_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["transaction_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -431,12 +415,8 @@
           "name": "consolidations_project_id_projects_id_fk",
           "tableFrom": "consolidations",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -444,12 +424,8 @@
           "name": "consolidations_loan_id_loans_id_fk",
           "tableFrom": "consolidations",
           "tableTo": "loans",
-          "columnsFrom": [
-            "loan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["loan_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -457,12 +433,8 @@
           "name": "consolidations_loan_payoff_id_loan_payoffs_id_fk",
           "tableFrom": "consolidations",
           "tableTo": "loan_payoffs",
-          "columnsFrom": [
-            "loan_payoff_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["loan_payoff_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -584,12 +556,8 @@
           "name": "loan_payoffs_loan_id_loans_id_fk",
           "tableFrom": "loan_payoffs",
           "tableTo": "loans",
-          "columnsFrom": [
-            "loan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["loan_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -597,12 +565,8 @@
           "name": "loan_payoffs_consolidation_id_consolidations_id_fk",
           "tableFrom": "loan_payoffs",
           "tableTo": "consolidations",
-          "columnsFrom": [
-            "consolidation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["consolidation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -688,12 +652,8 @@
           "name": "loans_consolidation_id_consolidations_id_fk",
           "tableFrom": "loans",
           "tableTo": "consolidations",
-          "columnsFrom": [
-            "consolidation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["consolidation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -766,12 +726,8 @@
           "name": "project_labors_project_id_projects_id_fk",
           "tableFrom": "project_labors",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -779,12 +735,8 @@
           "name": "project_labors_consolidation_id_consolidations_id_fk",
           "tableFrom": "project_labors",
           "tableTo": "consolidations",
-          "columnsFrom": [
-            "consolidation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["consolidation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -851,12 +803,8 @@
           "name": "project_misc_project_id_projects_id_fk",
           "tableFrom": "project_misc",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -864,12 +812,8 @@
           "name": "project_misc_consolidation_id_consolidations_id_fk",
           "tableFrom": "project_misc",
           "tableTo": "consolidations",
-          "columnsFrom": [
-            "consolidation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["consolidation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -936,12 +880,8 @@
           "name": "project_payments_project_id_projects_id_fk",
           "tableFrom": "project_payments",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -949,12 +889,8 @@
           "name": "project_payments_consolidation_id_consolidations_id_fk",
           "tableFrom": "project_payments",
           "tableTo": "consolidations",
-          "columnsFrom": [
-            "consolidation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["consolidation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1027,12 +963,8 @@
           "name": "project_supplies_project_id_projects_id_fk",
           "tableFrom": "project_supplies",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1040,12 +972,8 @@
           "name": "project_supplies_consolidation_id_consolidations_id_fk",
           "tableFrom": "project_supplies",
           "tableTo": "consolidations",
-          "columnsFrom": [
-            "consolidation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["consolidation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1207,12 +1135,8 @@
           "name": "transactions_account_id_financial_accounts_id_fk",
           "tableFrom": "transactions",
           "tableTo": "financial_accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1228,12 +1152,7 @@
     "public.consolidation_project_stream": {
       "name": "consolidation_project_stream",
       "schema": "public",
-      "values": [
-        "supplies",
-        "labors",
-        "misc",
-        "payments"
-      ]
+      "values": ["supplies", "labors", "misc", "payments"]
     },
     "public.consolidation_budget_category": {
       "name": "consolidation_budget_category",
@@ -1251,28 +1170,17 @@
     "public.consolidation_group": {
       "name": "consolidation_group",
       "schema": "public",
-      "values": [
-        "budget",
-        "project",
-        "loan",
-        "unclassified"
-      ]
+      "values": ["budget", "project", "loan", "unclassified"]
     },
     "public.loan_type": {
       "name": "loan_type",
       "schema": "public",
-      "values": [
-        "lent",
-        "borrowed"
-      ]
+      "values": ["lent", "borrowed"]
     },
     "public.transaction_type": {
       "name": "transaction_type",
       "schema": "public",
-      "values": [
-        "income",
-        "expense"
-      ]
+      "values": ["income", "expense"]
     }
   },
   "schemas": {},

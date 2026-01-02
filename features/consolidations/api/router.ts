@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import {
-    createConsolidationWithTransactionIdSchema,
-    listConsolidationSchema,
-    updateConsolidationSchema,
+  createConsolidationWithTransactionIdSchema,
+  listConsolidationSchema,
+  updateConsolidationSchema,
 } from "../schemas/consolidations.schema";
 import { listConsolidations } from "../queries/list-consolidations";
 import { getConsolidationById } from "../queries/get-consolidation-by-id";
@@ -15,59 +15,59 @@ import { getConsolidationStatistics } from "../queries/get-consolidation-statist
 import { TRPCError } from "@trpc/server";
 
 export const consolidationsRouter = createTRPCRouter({
-    list: protectedProcedure
-        .input(listConsolidationSchema)
-        .query(async ({ input }) => {
-            return await listConsolidations(input);
-        }),
-
-    get: protectedProcedure
-        .input(z.object({ id: z.uuid() }))
-        .query(async ({ input }) => {
-            const item = await getConsolidationById(input.id);
-            if (!item) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                });
-            }
-            return item;
-        }),
-
-    create: protectedProcedure
-        .input(
-            createConsolidationWithTransactionIdSchema.transform(v => ({
-                ...v,
-                amount: v.amount * 100, // Convert dollars to cents
-            }))
-        )
-        .mutation(async ({ input }) => {
-            return await createConsolidation(input);
-        }),
-
-    update: protectedProcedure
-        .input(
-            updateConsolidationSchema.transform(v => ({
-                ...v,
-                amount: v.amount * 100, // Convert dollars to cents
-            }))
-        )
-        .mutation(async ({ input }) => {
-            return await updateConsolidation(input);
-        }),
-
-    delete: protectedProcedure
-        .input(z.object({ id: z.uuid() }))
-        .mutation(async ({ input }) => {
-            return await deleteConsolidation(input.id);
-        }),
-
-    getDefault: protectedProcedure
-        .input(z.object({ transactionId: z.uuid() }))
-        .query(async ({ input }) => {
-            return await getConsolidationDefaults(input.transactionId);
-        }),
-
-    statistics: protectedProcedure.query(async () => {
-        return await getConsolidationStatistics();
+  list: protectedProcedure
+    .input(listConsolidationSchema)
+    .query(async ({ input }) => {
+      return await listConsolidations(input);
     }),
+
+  get: protectedProcedure
+    .input(z.object({ id: z.uuid() }))
+    .query(async ({ input }) => {
+      const item = await getConsolidationById(input.id);
+      if (!item) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+        });
+      }
+      return item;
+    }),
+
+  create: protectedProcedure
+    .input(
+      createConsolidationWithTransactionIdSchema.transform((v) => ({
+        ...v,
+        amount: v.amount * 100, // Convert dollars to cents
+      }))
+    )
+    .mutation(async ({ input }) => {
+      return await createConsolidation(input);
+    }),
+
+  update: protectedProcedure
+    .input(
+      updateConsolidationSchema.transform((v) => ({
+        ...v,
+        amount: v.amount * 100, // Convert dollars to cents
+      }))
+    )
+    .mutation(async ({ input }) => {
+      return await updateConsolidation(input);
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.uuid() }))
+    .mutation(async ({ input }) => {
+      return await deleteConsolidation(input.id);
+    }),
+
+  getDefault: protectedProcedure
+    .input(z.object({ transactionId: z.uuid() }))
+    .query(async ({ input }) => {
+      return await getConsolidationDefaults(input.transactionId);
+    }),
+
+  statistics: protectedProcedure.query(async () => {
+    return await getConsolidationStatistics();
+  }),
 });

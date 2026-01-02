@@ -5,19 +5,35 @@
 
 import type { ColumnType } from "kysely";
 
-export type ConsolidationBudgetCategory = "consumable" | "food" | "fuel" | "salary" | "subscription" | "toll" | "tool";
+export type ConsolidationBudgetCategory =
+  | "consumable"
+  | "food"
+  | "fuel"
+  | "salary"
+  | "subscription"
+  | "toll"
+  | "tool";
 
 export type ConsolidationGroup = "budget" | "loan" | "project" | "unclassified";
 
-export type ConsolidationProjectStream = "labors" | "misc" | "payments" | "supplies";
+export type ConsolidationProjectStream =
+  | "labors"
+  | "misc"
+  | "payments"
+  | "supplies";
 
 export type FinancialAccountBankSyncers = "westpac";
 
-export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
-  ? ColumnType<S, I | undefined, U>
-  : ColumnType<T, T | undefined, T>;
+export type Generated<T> =
+  T extends ColumnType<infer S, infer I, infer U>
+    ? ColumnType<S, I | undefined, U>
+    : ColumnType<T, T | undefined, T>;
 
-export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
+export type Int8 = ColumnType<
+  string,
+  bigint | number | string,
+  bigint | number | string
+>;
 
 export type LoanType = "borrowed" | "lent";
 
