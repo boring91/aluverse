@@ -70,7 +70,7 @@ export const CreateLoanPayoff = ({
         )
     );
 
-    const onSuccess = (data: { id: string }[]) => {
+    const onSuccess = (data: { id: string }) => {
         queryClient.invalidateQueries(
             trpc.loanPayoffs.list.queryOptions({ loanId })
         );
@@ -83,7 +83,7 @@ export const CreateLoanPayoff = ({
                 trpc.loanPayoffs.get.queryOptions({ id: itemId })
             );
         } else {
-            const createdItem = data[0];
+            const createdItem = data;
             if (createdItem && onItemCreated) {
                 onItemCreated(createdItem.id);
             }

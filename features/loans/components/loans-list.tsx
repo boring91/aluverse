@@ -53,9 +53,8 @@ export const LoansList = () => {
         pageSize: 100,
     });
 
-    const { filter, reset, isActive, raw } = useDataTableFilters(
-        loanFiltersSchema
-    );
+    const { filter, reset, isActive, raw } =
+        useDataTableFilters(loanFiltersSchema);
 
     const queryClient = useQueryClient();
     const trpc = useTRPC();
@@ -76,7 +75,7 @@ export const LoansList = () => {
     const deleteMutation = useMutation(
         trpc.loans.delete.mutationOptions({
             onSuccess: data => {
-                const id = data[0].id;
+                const id = data.id;
                 queryClient.invalidateQueries(
                     trpc.loans.list.queryOptions({
                         pagination: dataTable.pagination,
@@ -122,7 +121,10 @@ export const LoansList = () => {
                 data={data}
                 {...dataTable}
                 filtersSlot={
-                    <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
+                    <DataTableFilters
+                        onReset={reset}
+                        hasActiveFilters={isActive}
+                    >
                         <StringFilter
                             label={tc("keyword")}
                             control={filter.keyword}
@@ -156,4 +158,3 @@ export const LoansList = () => {
         </>
     );
 };
-

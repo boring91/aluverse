@@ -146,7 +146,7 @@ export const PayoffsList = ({ loanId }: Props) => {
     const deleteMutation = useMutation(
         trpc.loanPayoffs.delete.mutationOptions({
             onSuccess: data => {
-                const id = data[0].id;
+                const id = data.id;
                 queryClient.invalidateQueries(
                     trpc.loanPayoffs.list.queryOptions({
                         loanId,
@@ -157,9 +157,7 @@ export const PayoffsList = ({ loanId }: Props) => {
                 queryClient.invalidateQueries(
                     trpc.loans.get.queryOptions({ id: loanId })
                 );
-                queryClient.invalidateQueries(
-                    trpc.loans.list.queryOptions({})
-                );
+                queryClient.invalidateQueries(trpc.loans.list.queryOptions({}));
                 setCurrentlyProcessing(set => {
                     set.delete(id);
                     return new Set(set);
@@ -195,4 +193,3 @@ export const PayoffsList = ({ loanId }: Props) => {
         </>
     );
 };
-

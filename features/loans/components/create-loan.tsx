@@ -81,15 +81,15 @@ export const CreateLoan = ({
         )
     );
 
-    const onSuccess = (data?: { id: string }[]) => {
+    const onSuccess = (data?: { id: string }) => {
         queryClient.invalidateQueries(trpc.loans.list.queryOptions({}));
         if (isUpdate) {
             queryClient.invalidateQueries(
                 trpc.loans.get.queryOptions({ id: itemId })
             );
         }
-        if (!isUpdate && data?.[0]?.id) {
-            onCreated?.(data[0].id);
+        if (!isUpdate && data?.id) {
+            onCreated?.(data.id);
         }
         form.reset();
         onOpenChange(false);
@@ -196,7 +196,9 @@ export const CreateLoan = ({
                             render={({ field, fieldState }) => {
                                 return (
                                     <Field>
-                                        <FieldLabel>{t("partyName")}</FieldLabel>
+                                        <FieldLabel>
+                                            {t("partyName")}
+                                        </FieldLabel>
                                         <Input {...field} />
                                         {fieldState.invalid && (
                                             <FieldError
@@ -290,7 +292,9 @@ export const CreateLoan = ({
                             render={({ field, fieldState }) => {
                                 return (
                                     <Field>
-                                        <FieldLabel>{tc("description")}</FieldLabel>
+                                        <FieldLabel>
+                                            {tc("description")}
+                                        </FieldLabel>
                                         <Textarea
                                             {...field}
                                             value={field.value ?? undefined}
@@ -324,4 +328,3 @@ export const CreateLoan = ({
         </Dialog>
     );
 };
-
