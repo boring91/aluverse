@@ -1,11 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  FieldGroup,
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FieldGroup } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -21,10 +15,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { createProjectMiscSchema } from "../schemas/project-items.schema";
+import { TextInput } from "@/components/form/text-input";
+import { NumberInput } from "@/components/form/number-input";
 
 type SchemaType = z.infer<typeof createProjectMiscSchema>;
 
@@ -50,10 +46,6 @@ export const CreateMisc = ({
 
   const form = useForm({
     resolver: zodResolver(createProjectMiscSchema),
-    defaultValues: {
-      name: "",
-      amount: 0,
-    },
   });
 
   const queryClient = useQueryClient();
@@ -144,45 +136,13 @@ export const CreateMisc = ({
         >
           <FieldGroup>
             {/* Name */}
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("name")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <TextInput name="name" label={tc("name")} control={form.control} />
 
             {/* Amount */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="amount"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("amount")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("amount")}
+              control={form.control}
             />
           </FieldGroup>
         </form>

@@ -28,6 +28,9 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { TextInput } from "@/components/form/text-input";
+import { NumberInput } from "@/components/form/number-input";
+import { DateInput } from "@/components/form/date-input";
 
 type SchemaType = z.infer<typeof createProjectSchema>;
 
@@ -51,13 +54,6 @@ export const CreateProject = ({
 
   const form = useForm<SchemaType>({
     resolver: zodResolver(createProjectSchema),
-    defaultValues: {
-      client: "",
-      title: "",
-      address: "",
-      meters: 0,
-      price: 0,
-    },
   });
 
   const queryClient = useQueryClient();
@@ -82,7 +78,6 @@ export const CreateProject = ({
     if (!isUpdate && data?.id) {
       onCreated?.(data.id);
     }
-    form.reset();
     onOpenChange(false);
     toast.success(tc("savedSuccessfully"));
   };
@@ -108,10 +103,14 @@ export const CreateProject = ({
   };
 
   useEffect(() => {
+    if (!open) {
+      form.reset();
+      return;
+    }
     if (!data || !isUpdate) return;
 
     fillForm(form, { ...data, price: data.price / 100 });
-  }, [data, form, isUpdate]);
+  }, [data, form, isUpdate, open]);
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
@@ -120,9 +119,6 @@ export const CreateProject = ({
       open={open}
       onOpenChange={(value) => {
         if (isPending) return;
-        if (!value) {
-          form.reset();
-        }
         onOpenChange(value);
       }}
     >
@@ -141,165 +137,55 @@ export const CreateProject = ({
         >
           <FieldGroup className="contents">
             {/* Client */}
-            <Controller
-              control={form.control}
+            <TextInput
               name="client"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("client")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("client")}
+              control={form.control}
             />
 
             {/* Title */}
-            <Controller
-              control={form.control}
-              name="title"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("title")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <TextInput name="title" label={t("title")} control={form.control} />
 
             {/* Address */}
-            <Controller
-              control={form.control}
+            <TextInput
               name="address"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("address")}</FieldLabel>
-                    <Input {...field} value={field.value ?? undefined} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("address")}
+              control={form.control}
             />
 
             {/* Meters */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="meters"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("meters")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      value={field.value ?? undefined}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("meters")}
+              control={form.control}
             />
 
             {/* Price */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="price"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("price")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("price")}
+              control={form.control}
             />
 
             {/* Visit Date */}
-            <Controller
-              control={form.control}
+            <DateInput
               name="visitDate"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("visitDate")}</FieldLabel>
-                    <DatePickerInput
-                      value={field.value ?? undefined}
-                      onChange={field.onChange}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("visitDate")}
+              control={form.control}
             />
 
             {/* Start Date */}
-            <Controller
-              control={form.control}
+            <DateInput
               name="startDate"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("startDate")}</FieldLabel>
-                    <DatePickerInput
-                      value={field.value ?? undefined}
-                      onChange={field.onChange}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("startDate")}
+              control={form.control}
             />
 
             {/* End Date */}
-            <Controller
-              control={form.control}
+            <DateInput
               name="endDate"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("endDate")}</FieldLabel>
-                    <DatePickerInput
-                      value={field.value ?? undefined}
-                      onChange={field.onChange}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("endDate")}
+              control={form.control}
             />
           </FieldGroup>
         </form>

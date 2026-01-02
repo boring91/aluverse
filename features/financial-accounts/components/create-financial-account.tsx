@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FieldGroup } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -24,18 +18,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { banks } from "../lib/bank-syncer/constants";
+import { SelectInput } from "@/components/form/select-input";
+import { TextInput } from "@/components/form/text-input";
+import { useForm } from "react-hook-form";
 
 type SchemaType = z.infer<typeof createFinancialAccountSchema>;
 
@@ -79,7 +67,6 @@ export const CreateFinancialAccount = ({
         trpc.financialAccounts.get.queryOptions({ id: itemId })
       );
     }
-    form.reset();
     onOpenChange(false);
     toast.success(tc("savedSuccessfully"));
   };
@@ -105,17 +92,21 @@ export const CreateFinancialAccount = ({
   };
 
   useEffect(() => {
+    if (!open) {
+      form.reset();
+      return;
+    }
+
     if (!isUpdate || !data) return;
 
     fillForm(form, data);
-  }, [isUpdate, data, form]);
+  }, [isUpdate, data, form, open]);
 
   return (
     <Dialog
       open={open}
       onOpenChange={(value) => {
         if (isPending) return;
-        if (!value) form.reset();
         onOpenChange(value);
       }}
     >
@@ -138,53 +129,14 @@ export const CreateFinancialAccount = ({
         >
           <FieldGroup>
             {/* Name */}
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("name")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <TextInput name="name" label={tc("name")} control={form.control} />
 
             {/* Sync with bank */}
-            <Controller
-              control={form.control}
+            <SelectInput
               name="syncWithBank"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("syncWithBank")}</FieldLabel>
-                    <Select
-                      value={field.value ?? ""}
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {banks.map((bank) => (
-                            <SelectItem key={bank} value={bank}>
-                              {t(bank)}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("syncWithBank")}
+              control={form.control}
+              items={banks.map((bank) => ({ value: bank, label: t(bank) }))}
             />
           </FieldGroup>
         </form>

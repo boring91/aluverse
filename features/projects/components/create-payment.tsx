@@ -1,12 +1,5 @@
-import { DatePickerInput } from "@/components/date-picker-input";
 import { Button } from "@/components/ui/button";
-import {
-  FieldGroup,
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FieldGroup } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -23,9 +16,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { DateInput } from "@/components/form/date-input";
+import { NumberInput } from "@/components/form/number-input";
 
 type SchemaType = z.infer<typeof createProjectPaymentSchema>;
 
@@ -51,9 +46,6 @@ export const CreatePayment = ({
 
   const form = useForm({
     resolver: zodResolver(createProjectPaymentSchema),
-    defaultValues: {
-      amount: 0,
-    },
   });
 
   const queryClient = useQueryClient();
@@ -144,45 +136,13 @@ export const CreatePayment = ({
         >
           <FieldGroup>
             {/* Date */}
-            <Controller
-              control={form.control}
-              name="date"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("date")}</FieldLabel>
-                    <DatePickerInput {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <DateInput name="date" label={tc("date")} control={form.control} />
 
             {/* Amount */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="amount"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("amount")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("amount")}
+              control={form.control}
             />
           </FieldGroup>
         </form>

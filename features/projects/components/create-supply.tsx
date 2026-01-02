@@ -1,11 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  FieldGroup,
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FieldGroup } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -22,9 +16,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { NumberInput } from "@/components/form/number-input";
+import { TextInput } from "@/components/form/text-input";
 
 type SchemaType = z.infer<typeof createProjectSupplySchema>;
 
@@ -50,11 +46,6 @@ export const CreateSupply = ({
 
   const form = useForm({
     resolver: zodResolver(createProjectSupplySchema),
-    defaultValues: {
-      name: "",
-      quantity: 0,
-      unitPrice: 0,
-    },
   });
 
   const queryClient = useQueryClient();
@@ -145,70 +136,20 @@ export const CreateSupply = ({
         >
           <FieldGroup>
             {/* Name */}
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("name")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <TextInput name="name" label={tc("name")} control={form.control} />
 
             {/* Quantity */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="quantity"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("quantity")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("quantity")}
+              control={form.control}
             />
 
             {/* Unit Price */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="unitPrice"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("unitPrice")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("unitPrice")}
+              control={form.control}
             />
           </FieldGroup>
         </form>

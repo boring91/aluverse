@@ -50,3 +50,4 @@ scratch.*
 # Migration files (auto-generated names)
 db/migrations/*.sql
 
+

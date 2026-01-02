@@ -25,6 +25,8 @@ import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { createProjectLaborSchema } from "../schemas/project-items.schema";
+import { NumberInput } from "@/components/form/number-input";
+import { TextInput } from "@/components/form/text-input";
 
 type SchemaType = z.infer<typeof createProjectLaborSchema>;
 
@@ -50,11 +52,6 @@ export const CreateLabor = ({
 
   const form = useForm({
     resolver: zodResolver(createProjectLaborSchema),
-    defaultValues: {
-      name: "",
-      hours: 0,
-      rate: 0,
-    },
   });
 
   const queryClient = useQueryClient();
@@ -145,71 +142,17 @@ export const CreateLabor = ({
         >
           <FieldGroup>
             {/* Name */}
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("name")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <TextInput name="name" label={tc("name")} control={form.control} />
 
             {/* Hours */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="hours"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("hours")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("hours")}
+              control={form.control}
             />
 
             {/* Rate */}
-            <Controller
-              control={form.control}
-              name="rate"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("rate")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <NumberInput name="rate" label={t("rate")} control={form.control} />
           </FieldGroup>
         </form>
 

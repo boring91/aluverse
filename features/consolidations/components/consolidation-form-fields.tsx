@@ -1,31 +1,9 @@
-import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  SearchableSelect,
-  SearchableSelectContent,
-  SearchableSelectEmpty,
-  SearchableSelectGroup,
-  SearchableSelectItem,
-  SearchableSelectSeparator,
-  SearchableSelectTrigger,
-  SearchableSelectValue,
-} from "@/components/ui/searchable-select";
 import {
   projectStreams,
   transactionBudgetCategories,
   transactionConsolidationGroups,
 } from "@/lib/constants";
-import { Controller, UseFormReturn } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
 import { createConsolidationSchema } from "../schemas/consolidations.schema";
 import { z } from "zod";
 import {
@@ -49,6 +27,10 @@ import { CreateLoan } from "@/features/loans/components/create-loan";
 import { CreateLoanPayoff, CreateLoanPayoffHandle } from "./create-loan-payoff";
 import { useLoanPayoffs } from "../hooks/use-loan-payoffs";
 import { formatCurrency } from "@/lib/utils";
+import { TextInput } from "@/components/form/text-input";
+import { NumberInput } from "@/components/form/number-input";
+import { SelectInput } from "@/components/form/select-input";
+import { CheckboxInput } from "@/components/form/checkbox-input";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;
 
@@ -62,19 +44,7 @@ export const DescriptionField = ({ control }: DescriptionFieldProps) => {
   const tc = useTranslations("Common");
 
   return (
-    <Controller
-      control={control}
-      name="description"
-      render={({ field, fieldState }) => {
-        return (
-          <Field>
-            <FieldLabel>{tc("description")}</FieldLabel>
-            <Input {...field} />
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        );
-      }}
-    />
+    <TextInput name="description" label={tc("description")} control={control} />
   );
 };
 
@@ -83,27 +53,7 @@ type AmountFieldProps = FieldProps;
 export const AmountField = ({ control }: AmountFieldProps) => {
   const t = useTranslations("FinancialAccounts");
 
-  return (
-    <Controller
-      control={control}
-      name="amount"
-      render={({ field, fieldState }) => {
-        return (
-          <Field>
-            <FieldLabel>{t("amount")}</FieldLabel>
-            <Input
-              type="number"
-              {...field}
-              onChange={(v) =>
-                field.onChange(v.target.value ? parseFloat(v.target.value) : "")
-              }
-            />
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        );
-      }}
-    />
-  );
+  return <NumberInput name="amount" label={t("amount")} control={control} />;
 };
 
 type ConsolidationGroupFieldProps = FieldProps;
@@ -115,54 +65,28 @@ export const ConsolidationGroupField = ({
   const t = useTranslations("FinancialAccounts");
 
   return (
-    <Controller
-      control={control}
+    <SelectInput
       name="consolidationGroup"
-      render={({ field, fieldState }) => {
-        return (
-          <Field>
-            <FieldLabel>{t("consolidationGroup")}</FieldLabel>
+      label={t("consolidationGroup")}
+      control={control}
+      items={transactionConsolidationGroups.map((group) => ({
+        value: group,
+        label: t(group),
+      }))}
+      onChange={(value) => {
+        if (value !== "budget") form.setValue("budgetCategory", undefined);
 
-            <Select
-              value={field.value ?? ""}
-              onValueChange={(value) => {
-                field.onChange(value);
+        if (value !== "project") {
+          form.setValue("projectId", undefined);
+          form.setValue("projectStream", undefined);
+          form.setValue("projectItemId", undefined);
+        }
 
-                if (value !== "budget")
-                  form.setValue("budgetCategory", undefined);
-
-                if (value !== "project") {
-                  form.setValue("projectId", undefined);
-                  form.setValue("projectStream", undefined);
-                  form.setValue("projectItemId", undefined);
-                }
-
-                if (value !== "loan") {
-                  form.setValue("loanId", undefined);
-                  form.setValue("isPayoff", undefined);
-                  form.setValue("loanPayoffId", undefined);
-                }
-              }}
-            >
-              <SelectTrigger ref={field.ref}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {transactionConsolidationGroups.map((group) => {
-                    return (
-                      <SelectItem key={group} value={group}>
-                        {t(group)}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        );
+        if (value !== "loan") {
+          form.setValue("loanId", undefined);
+          form.setValue("isPayoff", undefined);
+          form.setValue("loanPayoffId", undefined);
+        }
       }}
     />
   );
@@ -174,35 +98,14 @@ export const BudgetCategoryField = ({ control }: BudgetCategoryFieldProps) => {
   const t = useTranslations("FinancialAccounts");
 
   return (
-    <Controller
-      control={control}
+    <SelectInput
       name="budgetCategory"
-      render={({ field, fieldState }) => {
-        return (
-          <Field>
-            <FieldLabel>{t("budgetCategory")}</FieldLabel>
-
-            <Select value={field.value ?? ""} onValueChange={field.onChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {transactionBudgetCategories.map((category) => {
-                    return (
-                      <SelectItem key={category} value={category}>
-                        {t(category)}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        );
-      }}
+      label={t("budgetCategory")}
+      control={control}
+      items={transactionBudgetCategories.map((category) => ({
+        value: category,
+        label: t(category),
+      }))}
     />
   );
 };
@@ -256,6 +159,7 @@ export const ProjectFields = forwardRef<
       },
       [form]
     ),
+    resetDependencies: [projectStream],
   });
 
   useImperativeHandle(ref, () => {
@@ -269,147 +173,49 @@ export const ProjectFields = forwardRef<
 
   return (
     <>
-      <Controller
-        control={control}
+      <SelectInput
         name="projectId"
-        render={({ field, fieldState }) => {
-          return (
-            <Field>
-              <FieldLabel>{t("project")}</FieldLabel>
-
-              <SearchableSelect
-                value={field.value ?? ""}
-                onValueChange={(value) => {
-                  if (value === "__create_new_project__") {
-                    setIsCreateProjectOpen(true);
-                    field.onChange("");
-                    form.setValue("projectStream", undefined);
-                    form.setValue("projectItemId", undefined);
-                    return;
-                  }
-
-                  field.onChange(value);
-                  form.setValue("projectStream", undefined);
-                  form.setValue("projectItemId", undefined);
-                }}
-              >
-                <SearchableSelectTrigger className="w-full">
-                  <SearchableSelectValue placeholder={t("selectProject")} />
-                </SearchableSelectTrigger>
-                <SearchableSelectContent searchPlaceholder={t("searchProject")}>
-                  <SearchableSelectGroup>
-                    <SearchableSelectEmpty>
-                      {t("noProjectsFound")}
-                    </SearchableSelectEmpty>
-                    {projects?.items.map((project) => {
-                      return (
-                        <SearchableSelectItem
-                          key={project.id}
-                          value={project.id}
-                        >
-                          {`${project.humanId} - ${project.title}`}
-                        </SearchableSelectItem>
-                      );
-                    })}
-                    {projects && projects.items.length > 0 && (
-                      <SearchableSelectSeparator />
-                    )}
-                    <SearchableSelectItem value="__create_new_project__">
-                      {tc("createNew")}
-                    </SearchableSelectItem>
-                  </SearchableSelectGroup>
-                </SearchableSelectContent>
-              </SearchableSelect>
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          );
+        label={t("project")}
+        control={control}
+        items={
+          projects?.items.map((project) => ({
+            value: project.id,
+            label: `${project.humanId} - ${project.title}`,
+          })) ?? []
+        }
+        isSearchable
+        onCreate={() => {
+          setIsCreateProjectOpen(true);
+          form.setValue("projectStream", undefined);
+          form.setValue("projectItemId", undefined);
+        }}
+        onChange={() => {
+          form.setValue("projectStream", undefined);
+          form.setValue("projectItemId", undefined);
         }}
       />
 
-      <Controller
-        control={control}
+      <SelectInput
         name="projectStream"
-        render={({ field, fieldState }) => {
-          return (
-            <Field>
-              <FieldLabel>{t("projectStream")}</FieldLabel>
-
-              <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {projectStreams.map((stream) => {
-                      return (
-                        <SelectItem key={stream} value={stream}>
-                          {t(stream)}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          );
-        }}
+        label={t("projectStream")}
+        control={control}
+        items={projectStreams.map((stream) => ({
+          value: stream,
+          label: t(stream),
+        }))}
       />
 
-      <Controller
-        control={control}
+      <SelectInput
         name="projectItemId"
-        render={({ field, fieldState }) => {
-          const handleValueChange = (value: string) => {
-            if (value === "__create_new__") {
-              createProjectItemRef.current?.open();
-              // Reset the select value
-              field.onChange("");
-            } else {
-              field.onChange(value);
-            }
-          };
-
-          return (
-            <Field>
-              <FieldLabel>{t("projectItem")}</FieldLabel>
-
-              <Select
-                value={field.value ?? ""}
-                onValueChange={handleValueChange}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {projectItems?.map((item) => {
-                      return (
-                        <SelectItem key={item.id} value={item.id}>
-                          {"name" in item
-                            ? item.name
-                            : item.date.toDateString()}
-                        </SelectItem>
-                      );
-                    })}
-                    {projectItems && projectItems.length > 0 && (
-                      <SelectSeparator />
-                    )}
-                    {projectStream && (
-                      <SelectItem value="__create_new__">
-                        {tc("createNew")}
-                      </SelectItem>
-                    )}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          );
-        }}
+        label={t("projectItem")}
+        control={control}
+        items={
+          projectItems?.map((item) => ({
+            value: item.id,
+            label: "name" in item ? item.name : item.date.toDateString(),
+          })) ?? []
+        }
+        onCreate={() => createProjectItemRef.current?.open()}
       />
 
       {/* Nested create modal handler */}
@@ -485,143 +291,54 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
 
     return (
       <>
-        <Controller
-          control={control}
+        <SelectInput
           name="loanId"
-          render={({ field, fieldState }) => {
-            return (
-              <Field>
-                <FieldLabel>{t("loan")}</FieldLabel>
-
-                <SearchableSelect
-                  value={field.value ?? ""}
-                  onValueChange={(value) => {
-                    if (value === "__create_new_loan__") {
-                      setIsCreateLoanOpen(true);
-                      field.onChange("");
-                      form.setValue("isPayoff", undefined);
-                      form.setValue("loanPayoffId", undefined);
-                      return;
-                    }
-
-                    field.onChange(value);
-                    form.setValue("isPayoff", undefined);
-                    form.setValue("loanPayoffId", undefined);
-                  }}
-                >
-                  <SearchableSelectTrigger className="w-full">
-                    <SearchableSelectValue placeholder={t("selectLoan")} />
-                  </SearchableSelectTrigger>
-                  <SearchableSelectContent searchPlaceholder={t("searchLoan")}>
-                    <SearchableSelectGroup>
-                      <SearchableSelectEmpty>
-                        {t("noLoansFound")}
-                      </SearchableSelectEmpty>
-                      {loans?.items.map((loan) => {
-                        return (
-                          <SearchableSelectItem key={loan.id} value={loan.id}>
-                            {`${loan.partyName} - ${tLoans(loan.type)}`}
-                          </SearchableSelectItem>
-                        );
-                      })}
-                      {loans && loans.items.length > 0 && (
-                        <SearchableSelectSeparator />
-                      )}
-                      <SearchableSelectItem value="__create_new_loan__">
-                        {tc("createNew")}
-                      </SearchableSelectItem>
-                    </SearchableSelectGroup>
-                  </SearchableSelectContent>
-                </SearchableSelect>
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            );
+          label={t("loan")}
+          control={control}
+          items={
+            loans?.items.map((loan) => ({
+              value: loan.id,
+              label: `${loan.partyName} - ${tLoans(loan.type)}`,
+            })) ?? []
+          }
+          isSearchable
+          onCreate={() => {
+            setIsCreateLoanOpen(true);
+            form.setValue("isPayoff", undefined);
+            form.setValue("loanPayoffId", undefined);
+          }}
+          onChange={() => {
+            form.setValue("isPayoff", undefined);
+            form.setValue("loanPayoffId", undefined);
           }}
         />
 
-        <Controller
-          control={control}
+        <CheckboxInput
           name="isPayoff"
-          render={({ field, fieldState }) => {
-            return (
-              <Field orientation="horizontal">
-                <Checkbox
-                  id="is-payoff-checkbox"
-                  checked={field.value ?? false}
-                  onCheckedChange={(checked) => {
-                    field.onChange(checked);
-                    if (!checked) {
-                      form.setValue("loanPayoffId", undefined);
-                    }
-                  }}
-                />
-                <FieldLabel htmlFor="is-payoff-checkbox">
-                  {t("isPayoff")}
-                </FieldLabel>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            );
+          label={t("isPayoff")}
+          control={control}
+          onChange={(checked) => {
+            if (!checked) {
+              form.setValue("loanPayoffId", undefined);
+            }
           }}
         />
 
         {isPayoff && (
-          <Controller
-            control={control}
+          <SelectInput
             name="loanPayoffId"
-            render={({ field, fieldState }) => {
-              const handleValueChange = (value: string) => {
-                if (value === "__create_new__") {
-                  createLoanPayoffRef.current?.open();
-                  field.onChange("");
-                } else {
-                  field.onChange(value);
-                }
-              };
-
-              return (
-                <Field>
-                  <FieldLabel>{t("loanPayoff")}</FieldLabel>
-
-                  <Select
-                    value={field.value ?? ""}
-                    onValueChange={handleValueChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {loanPayoffs?.map((payoff) => {
-                          return (
-                            <SelectItem key={payoff.id} value={payoff.id}>
-                              {payoff.date.toDateString()} -{" "}
-                              {formatCurrency(payoff.amount)}
-                            </SelectItem>
-                          );
-                        })}
-                        {loanPayoffs && loanPayoffs.length > 0 && (
-                          <SelectSeparator />
-                        )}
-                        {loanId && (
-                          <SelectItem value="__create_new__">
-                            {tc("createNew")}
-                          </SelectItem>
-                        )}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              );
-            }}
+            label={t("loanPayoff")}
+            control={control}
+            items={
+              loanPayoffs?.map((payoff) => ({
+                value: payoff.id,
+                label: `${payoff.date.toDateString()} - ${formatCurrency(
+                  payoff.amount
+                )}`,
+              })) ?? []
+            }
+            isSearchable
+            onCreate={() => createLoanPayoffRef.current?.open()}
           />
         )}
 
@@ -650,25 +367,5 @@ type IsGstFieldProps = FieldProps;
 export const IsGstField = ({ control }: IsGstFieldProps) => {
   const t = useTranslations("FinancialAccounts");
 
-  return (
-    <Controller
-      control={control}
-      name="isGst"
-      render={({ field, fieldState }) => {
-        return (
-          <Field orientation="horizontal">
-            <Checkbox
-              id="gst-checkbox"
-              checked={field.value ?? false}
-              onCheckedChange={field.onChange}
-            />
-
-            <FieldLabel htmlFor="gst-checkbox">{t("isGst")}</FieldLabel>
-
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        );
-      }}
-    />
-  );
+  return <CheckboxInput name="isGst" label={t("isGst")} control={control} />;
 };

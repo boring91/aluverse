@@ -37,6 +37,10 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { DatePickerInput } from "@/components/date-picker-input";
+import { DateInput } from "@/components/form/date-input";
+import { SelectInput } from "@/components/form/select-input";
+import { NumberInput } from "@/components/form/number-input";
+import { TextInput } from "@/components/form/text-input";
 
 type SchemaType = z.input<typeof createTransactionSchema>;
 
@@ -60,11 +64,6 @@ export const CreateTransaction = ({
 
   const form = useForm<SchemaType>({
     resolver: zodResolver(createTransactionSchema),
-    defaultValues: {
-      description: "",
-      amount: 0.0,
-      type: "expense",
-    },
   });
 
   const queryClient = useQueryClient();
@@ -166,97 +165,32 @@ export const CreateTransaction = ({
         >
           <FieldGroup>
             {/* Date */}
-            <Controller
-              control={form.control}
-              name="date"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("date")}</FieldLabel>
-
-                    <DatePickerInput {...field} />
-
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            ></Controller>
+            <DateInput name="date" label={tc("date")} control={form.control} />
 
             {/* Type */}
-            <Controller
-              control={form.control}
+            <SelectInput
               name="type"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("transactionType")}</FieldLabel>
-                    <Select {...field} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue></SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {transactionTypes.map((type) => {
-                            return (
-                              <SelectItem key={type} value={type}>
-                                {t(type)}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            ></Controller>
+              label={t("transactionType")}
+              control={form.control}
+              items={transactionTypes.map((type) => ({
+                value: type,
+                label: t(type),
+              }))}
+            />
 
             {/* Amount */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="amount"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("amount")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            ></Controller>
+              label={t("amount")}
+              control={form.control}
+            />
 
             {/* Description */}
-            <Controller
-              control={form.control}
+            <TextInput
               name="description"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("description")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            ></Controller>
+              label={tc("description")}
+              control={form.control}
+            />
           </FieldGroup>
         </form>
 

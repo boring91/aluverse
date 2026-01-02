@@ -1,22 +1,8 @@
 "use client";
 
-import { DatePickerInput } from "@/components/date-picker-input";
 import { Button } from "@/components/ui/button";
-import {
-  FieldGroup,
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FieldGroup } from "@/components/ui/field";
+
 import {
   Dialog,
   DialogContent,
@@ -25,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { fillForm } from "@/lib/client-utils";
 import { createLoanSchema } from "../schemas/loan.schemas";
 import { useTRPC } from "@/trpc/client";
@@ -34,10 +19,15 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { loanTypes } from "@/lib/constants";
+import { TextInput } from "@/components/form/text-input";
+import { NumberInput } from "@/components/form/number-input";
+import { DateInput } from "@/components/form/date-input";
+import { TextareaInput } from "@/components/form/textarea-input";
+import { SelectInput } from "@/components/form/select-input";
 
 type SchemaType = z.infer<typeof createLoanSchema>;
 
@@ -63,9 +53,6 @@ export const CreateLoan = ({
     resolver: zodResolver(createLoanSchema),
     defaultValues: {
       type: "lent",
-      partyName: "",
-      amount: 0,
-      notes: "",
     },
   });
 
@@ -91,7 +78,6 @@ export const CreateLoan = ({
     if (!isUpdate && data?.id) {
       onCreated?.(data.id);
     }
-    form.reset();
     onOpenChange(false);
     toast.success(tc("savedSuccessfully"));
   };
@@ -117,10 +103,15 @@ export const CreateLoan = ({
   };
 
   useEffect(() => {
+    if (!open) {
+      form.reset();
+      return;
+    }
     if (!data || !isUpdate) return;
 
+    console.log("filling form");
     fillForm(form, { ...data, amount: data.amount / 100 });
-  }, [data, form, isUpdate]);
+  }, [data, form, isUpdate, open]);
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
@@ -129,9 +120,6 @@ export const CreateLoan = ({
       open={open}
       onOpenChange={(value) => {
         if (isPending) return;
-        if (!value) {
-          form.reset();
-        }
         onOpenChange(value);
       }}
     >
@@ -150,132 +138,42 @@ export const CreateLoan = ({
         >
           <FieldGroup className="contents">
             {/* Type */}
-            <Controller
-              control={form.control}
+            <SelectInput
               name="type"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("type")}</FieldLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {loanTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {t(type)}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("type")}
+              control={form.control}
+              items={loanTypes.map((type) => ({ value: type, label: t(type) }))}
             />
 
             {/* Party Name */}
-            <Controller
-              control={form.control}
+            <TextInput
               name="partyName"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("partyName")}</FieldLabel>
-                    <Input {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("partyName")}
+              control={form.control}
             />
 
             {/* Amount */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="amount"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("amount")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("amount")}
+              control={form.control}
             />
 
             {/* Date */}
-            <Controller
-              control={form.control}
-              name="date"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("date")}</FieldLabel>
-                    <DatePickerInput
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <DateInput name="date" label={tc("date")} control={form.control} />
 
             {/* Due Date */}
-            <Controller
-              control={form.control}
+            <DateInput
               name="dueDate"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("dueDate")}</FieldLabel>
-                    <DatePickerInput
-                      value={field.value ?? undefined}
-                      onChange={field.onChange}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("dueDate")}
+              control={form.control}
             />
 
             {/* Notes */}
-            <Controller
-              control={form.control}
+            <TextareaInput
               name="notes"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("description")}</FieldLabel>
-                    <Textarea {...field} value={field.value ?? undefined} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={tc("description")}
+              control={form.control}
             />
           </FieldGroup>
         </form>

@@ -51,7 +51,8 @@
     "fromDate": "From date",
     "toDate": "To date",
     "totalCountItems": "Total {count} items",
-    "filteredFilteredCountOutOfCountItems": "Filtered {filteredCount} out of {count} items"
+    "filteredFilteredCountOutOfCountItems": "Filtered {filteredCount} out of {count} items",
+    "search": "Search"
   },
   "Login": {
     "pageTitle": "Login",

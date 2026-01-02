@@ -1,12 +1,5 @@
-import { DatePickerInput } from "@/components/date-picker-input";
 import { Button } from "@/components/ui/button";
-import {
-  FieldGroup,
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FieldGroup } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +8,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { fillForm } from "@/lib/client-utils";
 import { createLoanPayoffSchema } from "../schemas/loan-payoffs.schema";
 import { useTRPC } from "@/trpc/client";
@@ -24,9 +16,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { NumberInput } from "@/components/form/number-input";
+import { DateInput } from "@/components/form/date-input";
+import { TextareaInput } from "@/components/form/textarea-input";
 
 type SchemaType = z.infer<typeof createLoanPayoffSchema>;
 
@@ -143,62 +138,20 @@ export const CreateLoanPayoff = ({
         >
           <FieldGroup>
             {/* Date */}
-            <Controller
-              control={form.control}
-              name="date"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("date")}</FieldLabel>
-                    <DatePickerInput {...field} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <DateInput name="date" label={tc("date")} control={form.control} />
 
             {/* Amount */}
-            <Controller
-              control={form.control}
+            <NumberInput
               name="amount"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{t("amount")}</FieldLabel>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(v) =>
-                        field.onChange(
-                          v.target.value ? parseFloat(v.target.value) : ""
-                        )
-                      }
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={t("amount")}
+              control={form.control}
             />
 
             {/* Notes */}
-            <Controller
-              control={form.control}
+            <TextareaInput
               name="notes"
-              render={({ field, fieldState }) => {
-                return (
-                  <Field>
-                    <FieldLabel>{tc("description")}</FieldLabel>
-                    <Textarea {...field} value={field.value ?? undefined} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                );
-              }}
+              label={tc("description")}
+              control={form.control}
             />
           </FieldGroup>
         </form>

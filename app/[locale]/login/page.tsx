@@ -5,22 +5,17 @@ import { useTitle } from "@/hooks/use-title";
 import { useRouter } from "@/i18n/navigation";
 import { signIn, useSession } from "@/lib/auth-client";
 import { useTranslations } from "next-intl";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { TextInput } from "@/components/form/text-input";
 
 const formSchema = z.object({
   email: z.email(),
@@ -47,10 +42,6 @@ const Login = () => {
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
   });
 
   const signInMutation = useMutation({
@@ -92,40 +83,20 @@ const Login = () => {
             className="flex flex-col gap-8"
           >
             <FieldGroup>
-              <Controller
+              <TextInput
                 name="email"
+                label={t("email")}
                 control={form.control}
-                render={({ field, fieldState }) => {
-                  return (
-                    <Field>
-                      <FieldLabel>{t("email")}</FieldLabel>
-                      <Input
-                        {...field}
-                        placeholder="john.doe@aluverse.com.au"
-                        autoComplete="off"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  );
-                }}
+                placeholder="john.doe@aluverse.com.au"
+                isAutoComplete={false}
               />
 
-              <Controller
-                control={form.control}
+              <TextInput
                 name="password"
-                render={({ field, fieldState }) => {
-                  return (
-                    <Field>
-                      <FieldLabel>{t("password")}</FieldLabel>
-                      <Input {...field} autoComplete="off" type="password" />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  );
-                }}
+                label={t("password")}
+                control={form.control}
+                type="password"
+                isAutoComplete={false}
               />
             </FieldGroup>
 
