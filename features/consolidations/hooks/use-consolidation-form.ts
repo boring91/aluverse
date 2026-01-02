@@ -39,6 +39,9 @@ export const useConsolidationForm = ({
       projectStream: undefined,
       projectItemId: undefined,
       isGst: true,
+      loanId: undefined,
+      isPayoff: false,
+      loanPayoffId: undefined,
     },
   });
 
@@ -116,7 +119,6 @@ export const useConsolidationForm = ({
     if (defaults && !isUpdate) {
       fillForm(form, {
         ...defaults,
-        isGst: true,
         amount: defaults.remainingAmount / 100,
       });
       form.setFocus("consolidationGroup");
@@ -126,6 +128,9 @@ export const useConsolidationForm = ({
         amount: data.amount / 100,
         isGst: data.isGst ?? true,
         projectId: data.project?.id,
+        loanId: data.loan?.id,
+        loanPayoffId: data.loanPayoff?.id,
+        isPayoff: data.isPayoff ?? false,
       });
     }
   }, [open, data, defaults, form, isUpdate]);

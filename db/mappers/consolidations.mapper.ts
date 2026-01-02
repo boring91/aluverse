@@ -15,6 +15,7 @@ export const consolidationMapper = (
     "budgetCategory",
     "projectStream",
     "projectItemId",
+    "isPayoff",
 
     jsonObjectFrom(
       eb
@@ -22,6 +23,20 @@ export const consolidationMapper = (
         .whereRef("projects.id", "=", "consolidations.projectId")
         .select(["id", "humanId", "title"])
     ).as("project"),
+
+    jsonObjectFrom(
+      eb
+        .selectFrom("loans")
+        .whereRef("loans.id", "=", "consolidations.loanId")
+        .select(["id", "partyName", "amount", "date", "dueDate"])
+    ).as("loan"),
+
+    jsonObjectFrom(
+      eb
+        .selectFrom("loanPayoffs")
+        .whereRef("loanPayoffs.id", "=", "consolidations.loanPayoffId")
+        .select(["id", "amount", "date"])
+    ).as("loanPayoff"),
 
     jsonObjectFrom(
       eb

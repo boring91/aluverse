@@ -37,6 +37,14 @@ export const useConsolidationsColumns = (
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title={tc("description")} />
         ),
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <p className="wrap-break-word whitespace-normal">
+              {item.transaction.description}
+            </p>
+          );
+        },
       },
 
       {

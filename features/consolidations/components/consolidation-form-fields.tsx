@@ -123,7 +123,6 @@ export const ProjectFields = forwardRef<
   ProjectFieldsProps
 >(({ control, form }, ref) => {
   const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
 
   const projectId = form.watch("projectId");
   const projectStream = form.watch("projectStream");
@@ -250,7 +249,6 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
   ({ control, form }, ref) => {
     const t = useTranslations("FinancialAccounts");
     const tLoans = useTranslations("Loans");
-    const tc = useTranslations("Common");
 
     const loanId = form.watch("loanId");
     const isPayoff = form.watch("isPayoff");
