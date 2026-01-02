@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "../lib/dummy-data";
 import { cn } from "@/lib/client-utils";
+import { formatCurrency } from "@/lib/utils";
 
 type OverviewCardProps = {
   title: string;
@@ -28,7 +28,7 @@ export const OverviewCard = ({
       <CardContent>
         <div
           className={cn(
-            "text-2xl font-bold",
+            "text-2xl font-bold font-mono",
             isNegative && "text-destructive",
             isPositive && "text-primary"
           )}

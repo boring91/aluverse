@@ -3,6 +3,7 @@
 import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/page-container";
+import { PageLoader } from "@/components/page-loader";
 import { DatePickerInput } from "@/components/date-picker-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverviewCard } from "../components/overview-card";
@@ -26,6 +27,8 @@ import {
   formatPercent,
 } from "../lib/dummy-data";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 export const DashboardView = () => {
   const t = useTranslations("Common");
@@ -39,6 +42,19 @@ export const DashboardView = () => {
   const [toDate, setToDate] = useState<Date | undefined>(
     dashboardData.dateRange.to
   );
+
+  const trpc = useTRPC();
+
+  const { data: generalOverview, isLoading } = useQuery(
+    trpc.dashboard.generalOverview.queryOptions({
+      from: fromDate,
+      to: toDate,
+    })
+  );
+
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <PageContainer>
@@ -74,23 +90,23 @@ export const DashboardView = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <OverviewCard
             title={tDashboard("revenue")}
-            value={dashboardData.overview.revenue}
+            value={generalOverview?.revenue ?? 0}
           />
           <OverviewCard
             title={tDashboard("cost")}
-            value={dashboardData.overview.cost}
+            value={generalOverview?.cost ?? 0}
           />
           <OverviewCard
             title={tDashboard("operatingProfit")}
-            value={dashboardData.overview.operatingProfit}
+            value={generalOverview?.operatingProfit ?? 0}
           />
           <OverviewCard
             title={tDashboard("taxesTaxRefund")}
-            value={dashboardData.overview.taxesRefund}
+            value={generalOverview?.taxesRefund ?? 0}
           />
           <OverviewCard
             title={tDashboard("netProfit")}
-            value={dashboardData.overview.netProfit}
+            value={generalOverview?.netProfit ?? 0}
           />
         </div>
       </div>
