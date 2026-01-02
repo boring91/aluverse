@@ -13,6 +13,7 @@ export async function listProjects(input: z.infer<typeof listProjectSchema>) {
   if (filters?.keyword) {
     query = query.where((eb) =>
       eb.or([
+        eb("humanId", "ilike", `%${filters.keyword}%`),
         eb("client", "ilike", `%${filters.keyword}%`),
         eb("title", "ilike", `%${filters.keyword}%`),
       ])

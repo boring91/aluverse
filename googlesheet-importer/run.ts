@@ -1,6 +1,3 @@
-import { getProjects } from "./projects";
-import { getTransactions } from "./transactions";
+import { importProjects } from "./import-projects";
 
-const { bankTransactions, cashTransactions } = await getTransactions();
-
-const projects = await getProjects();
+await importProjects();
