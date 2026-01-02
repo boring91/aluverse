@@ -43,5 +43,3 @@ bun.lock
 # Database
 *.db
 *.sqlite
-
-scratch.*
