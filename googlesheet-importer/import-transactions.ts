@@ -23,14 +23,6 @@ function parseDate(dateStr: string): Date | null {
   return date;
 }
 
-// Normalize date for comparison
-function normalizeDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr.trim().toLowerCase();
-  return date.toISOString().split("T")[0];
-}
-
 // Determine consolidation group from category
 function getConsolidationGroup(category: string): string {
   const cat = category.toLowerCase().trim();
