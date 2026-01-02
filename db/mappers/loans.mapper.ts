@@ -1,5 +1,11 @@
 import { ExpressionBuilder, SelectExpression } from "kysely";
-import { loanPaid, loanRemaining } from "../expressions";
+import {
+  isLoanConsolidated,
+  isLoanPayoffConsolidated,
+  loanPaid,
+  loanRemaining,
+  unconsolidatedPayoffsCount as unconsolidatedPayoffCount,
+} from "../expressions";
 import { DB } from "../types";
 
 export const loanMapper = (eb: ExpressionBuilder<DB, "loans">) =>
@@ -13,10 +19,15 @@ export const loanMapper = (eb: ExpressionBuilder<DB, "loans">) =>
     "notes",
     loanPaid(eb).as("paid"),
     loanRemaining(eb).as("remaining"),
+    isLoanConsolidated(eb).as("isConsolidated"),
+    unconsolidatedPayoffCount(eb).as("unconsolidatedPayoffCount"),
   ] satisfies SelectExpression<DB, "loans">[];
 
-export const loanPayoffMapper = () =>
-  ["id", "date", "amount", "notes"] satisfies SelectExpression<
-    DB,
-    "loanPayoffs"
-  >[];
+export const loanPayoffMapper = (eb: ExpressionBuilder<DB, "loanPayoffs">) =>
+  [
+    "id",
+    "date",
+    "amount",
+    "notes",
+    isLoanPayoffConsolidated(eb).as("isConsolidated"),
+  ] satisfies SelectExpression<DB, "loanPayoffs">[];

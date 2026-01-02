@@ -37,7 +37,7 @@ export const consolidationsRouter = createTRPCRouter({
     .input(
       createConsolidationWithTransactionIdSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -48,7 +48,7 @@ export const consolidationsRouter = createTRPCRouter({
     .input(
       updateConsolidationSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {

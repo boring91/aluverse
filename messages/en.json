@@ -195,6 +195,8 @@
     "financialSummary": "Financial Summary",
     "selectLoan": "Select a loan...",
     "searchLoan": "Search loans...",
-    "noLoansFound": "No loans found."
+    "noLoansFound": "No loans found.",
+    "isConsolidated": "Is consolidated",
+    "unconsolidatedPayoffs": "Unconsolidated payoffs"
   }
 }

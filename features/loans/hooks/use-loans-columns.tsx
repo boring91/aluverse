@@ -9,6 +9,7 @@ import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
+import { CheckIcon, XIcon } from "lucide-react";
 
 type Loan = inferRouterOutputs<AppRouter>["loans"]["list"]["items"][number];
 
@@ -91,6 +92,48 @@ export const useLoansColumns = (
         cell: ({ row }) => {
           const loan = row.original;
           return <p className="font-mono">{formatCurrency(loan.remaining)}</p>;
+        },
+      },
+
+      {
+        id: "isConsolidated",
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t("isConsolidated")}
+            className="text-center"
+          />
+        ),
+        cell: ({ row }) => {
+          const loan = row.original;
+          return (
+            <div className="flex items-center justify-center">
+              {loan.isConsolidated ? (
+                <CheckIcon className="text-emerald-500" />
+              ) : (
+                <XIcon className="text-rose-500" />
+              )}
+            </div>
+          );
+        },
+      },
+
+      {
+        id: "unconsolidatedPayoffCount",
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t("unconsolidatedPayoffs")}
+            className="text-center"
+          />
+        ),
+        cell: ({ row }) => {
+          const loan = row.original;
+          return (
+            <p className="text-muted-foreground text-xs text-center">
+              {loan.unconsolidatedPayoffCount}
+            </p>
+          );
         },
       },
 

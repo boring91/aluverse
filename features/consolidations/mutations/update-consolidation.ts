@@ -47,7 +47,7 @@ export async function updateConsolidation(
         .execute();
     }
 
-    if (oldLoanId && oldLoanId !== data.loanId) {
+    if (oldLoanId && (oldLoanId !== data.loanId || data.loanPayoffId)) {
       await tx
         .updateTable("loans")
         .set({ consolidationId: null })

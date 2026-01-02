@@ -298,7 +298,9 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
           items={
             loans?.items.map((loan) => ({
               value: loan.id,
-              label: `${loan.partyName} - ${tLoans(loan.type)}`,
+              label: `${loan.partyName} - ${tLoans(loan.type)} (${formatCurrency(
+                loan.amount
+              )})`,
             })) ?? []
           }
           isSearchable
