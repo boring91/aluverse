@@ -267,6 +267,7 @@
     "costPerProject": "Cost per Project",
     "avgProjectValue": "Avg. Project Value",
     "completionRate": "Completion Rate",
-    "projectsCompleted": "Projects Completed"
+    "projectsCompleted": "Projects Completed",
+    "previous": "Previous"
   }
 }

@@ -4,17 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/client-utils";
 import { formatCurrency } from "@/lib/utils";
 
-type OverviewCardProps = {
+type Props = {
   title: string;
   value: number;
   className?: string;
 };
 
-export const OverviewCard = ({
-  title,
-  value,
-  className,
-}: OverviewCardProps) => {
+export const OverviewCard = ({ title, value, className }: Props) => {
   const isNegative = value < 0;
   const isPositive = value > 0;
 

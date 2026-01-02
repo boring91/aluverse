@@ -25,6 +25,10 @@ export const formatCurrency = (amountInCents: number): string => {
   return `$ ${parts}`;
 };
 
+export const formatPercent = (value: number): string => {
+  return `${value >= 0 ? "" : ""}${value.toFixed(2)}%`;
+};
+
 export const getProjectStatus = (
   project: Pick<
     inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number],

@@ -45,14 +45,21 @@ export const DashboardView = () => {
 
   const trpc = useTRPC();
 
-  const { data: generalOverview, isLoading } = useQuery(
+  const { data: generalOverview, isLoading: isLoadingOverview } = useQuery(
     trpc.dashboard.generalOverview.queryOptions({
       from: fromDate,
       to: toDate,
     })
   );
 
-  if (isLoading) {
+  const { data: periodComparison, isLoading: isLoadingComparison } = useQuery(
+    trpc.dashboard.periodComparison.queryOptions({
+      from: fromDate,
+      to: toDate,
+    })
+  );
+
+  if (isLoadingOverview || isLoadingComparison) {
     return <PageLoader />;
   }
 
@@ -112,9 +119,11 @@ export const DashboardView = () => {
       </div>
 
       {/* Period Comparison */}
-      <div className="mb-6">
-        <PeriodComparison data={dashboardData.periodComparison} />
-      </div>
+      {periodComparison && (
+        <div className="mb-6">
+          <PeriodComparison data={periodComparison} />
+        </div>
+      )}
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">

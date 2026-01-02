@@ -1,12 +1,12 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatPercent } from "../lib/dummy-data";
 import { cn } from "@/lib/client-utils";
+import { formatCurrency, formatPercent } from "@/lib/utils";
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type PeriodComparisonProps = {
+type Props = {
   data: {
     revenue: { current: number; previous: number; change: number };
     cost: { current: number; previous: number; change: number };
@@ -15,7 +15,7 @@ type PeriodComparisonProps = {
   };
 };
 
-export const PeriodComparison = ({ data }: PeriodComparisonProps) => {
+export const PeriodComparison = ({ data }: Props) => {
   const t = useTranslations("Dashboard");
 
   const metrics = [
@@ -70,11 +70,14 @@ export const PeriodComparison = ({ data }: PeriodComparisonProps) => {
               </div>
               <div className="flex justify-between items-baseline">
                 <div>
-                  <div className="text-lg font-semibold">
+                  <div className="text-lg font-semibold font-mono">
                     {formatCurrency(metric.current)}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Previous: {formatCurrency(metric.previous)}
+                  <div className="text-xs text-muted-foreground flex items-center gap-2">
+                    <span>{t("previous")}:</span>{" "}
+                    <span className="font-mono">
+                      {formatCurrency(metric.previous)}
+                    </span>
                   </div>
                 </div>
               </div>
