@@ -40,7 +40,13 @@ export async function importProjects() {
 
   if (projects.length === 0) {
     console.log("No projects found to import.");
-    return;
+    return {
+      total: 0,
+      success: 0,
+      errors: 0,
+      errorDetails: [],
+      projectMapping: new Map<string, string>(), // old job ID -> new project UUID
+    };
   }
 
   console.log(`\n=== IMPORTING ${projects.length} PROJECTS ===\n`);
@@ -48,6 +54,8 @@ export async function importProjects() {
   let successCount = 0;
   let errorCount = 0;
   const errors: Array<{ projectId: string; title: string; error: string }> = [];
+  // Map old job ID to new project UUID
+  const projectMapping = new Map<string, string>();
 
   for (const project of projects) {
     try {
@@ -77,6 +85,8 @@ export async function importProjects() {
       } as Parameters<typeof createProject>[0]);
 
       const projectId = createdProject.id;
+      // Store mapping from old job ID to new project UUID
+      projectMapping.set(project.id, projectId);
       console.log(`  ✓ Project created: ${projectId}`);
 
       // Import supplies
@@ -172,5 +182,6 @@ export async function importProjects() {
     success: successCount,
     errors: errorCount,
     errorDetails: errors,
+    projectMapping, // Return mapping for use in transactions import
   };
 }

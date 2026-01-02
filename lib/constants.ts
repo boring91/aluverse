@@ -4,6 +4,9 @@ export const transactionConsolidationGroups = [
   "budget",
   "project",
   "loan",
+  "tax",
+  "refund",
+  "refunded",
   "unclassified",
 ] as const;
 
