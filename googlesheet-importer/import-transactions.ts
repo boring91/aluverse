@@ -1,6 +1,7 @@
 import { getTransactions } from "./transactions";
 import { createTransaction } from "@/features/financial-accounts/mutations/create-transaction";
 import { createConsolidation } from "@/features/consolidations/mutations/create-consolidation";
+import { createProjectMisc } from "@/features/projects/mutations/create-project-misc";
 import { db } from "@/db";
 import {
   transactionConsolidationGroups,
@@ -44,8 +45,13 @@ function getConsolidationGroup(category: string): string {
 
 // Get budget category from tags
 function getBudgetCategory(
+  originalCategory: string,
   tags: string
 ): (typeof transactionBudgetCategories)[number] | undefined {
+  if (originalCategory === "asset") return "tool";
+  if ((originalCategory === "contingency" && !tags) || tags === "gst")
+    return "consumable";
+
   if (!tags) return undefined;
   const tagLower = tags.toLowerCase();
   if (tagLower.includes("toll")) return "toll";
@@ -229,8 +235,11 @@ export async function importTransactions(projectMapping: Map<string, string>) {
           let consolidationGroup = getConsolidationGroup(
             consolidation.category
           );
-          const budgetCategory = getBudgetCategory(consolidation.tags);
-          const isGstValue = isGst(consolidation.category);
+          const budgetCategory = getBudgetCategory(
+            consolidation.category,
+            consolidation.tags
+          );
+          const isGstValue = isGst(consolidation.tags);
 
           // Validate consolidation group
           if (
@@ -265,11 +274,32 @@ export async function importTransactions(projectMapping: Map<string, string>) {
                 projectStream = match.stream;
                 projectItemId = match.itemId;
               } else {
-                warnings.push({
-                  type: "consolidation",
-                  description: consolidation.description,
-                  warning: `Project ${consolidation.project} found but no matching item found for amount ${consolidation.amount}`,
-                });
+                // No matching item found - create a new misc expense
+                const miscName =
+                  consolidation.description || "Imported expense";
+                const miscAmount = Math.round(
+                  Math.abs(consolidation.amount) * 100
+                );
+                try {
+                  const createdMisc = await createProjectMisc({
+                    projectId,
+                    name: miscName,
+                    amount: miscAmount,
+                  });
+                  projectStream = "misc";
+                  projectItemId = createdMisc.id;
+                  console.log(
+                    `  ✓ Created misc expense for project ${consolidation.project}: ${miscName} (${miscAmount} cents)`
+                  );
+                } catch (error) {
+                  const errorMessage =
+                    error instanceof Error ? error.message : String(error);
+                  warnings.push({
+                    type: "consolidation",
+                    description: consolidation.description,
+                    warning: `Project ${consolidation.project} found but failed to create misc item: ${errorMessage}`,
+                  });
+                }
               }
             } else {
               warnings.push({
@@ -380,8 +410,11 @@ export async function importTransactions(projectMapping: Map<string, string>) {
           Math.abs(consolidation.amount) * 100
         );
         let consolidationGroup = getConsolidationGroup(consolidation.category);
-        const budgetCategory = getBudgetCategory(consolidation.tags);
-        const isGstValue = isGst(consolidation.category);
+        const budgetCategory = getBudgetCategory(
+          consolidation.category,
+          consolidation.tags
+        );
+        const isGstValue = isGst(consolidation.tags);
 
         // Validate consolidation group
         if (
@@ -416,11 +449,31 @@ export async function importTransactions(projectMapping: Map<string, string>) {
               projectStream = match.stream;
               projectItemId = match.itemId;
             } else {
-              warnings.push({
-                type: "consolidation",
-                description: consolidation.description,
-                warning: `Project ${consolidation.project} found but no matching item found for amount ${consolidation.amount}`,
-              });
+              // No matching item found - create a new misc expense
+              const miscName = consolidation.description || "Imported expense";
+              const miscAmount = Math.round(
+                Math.abs(consolidation.amount) * 100
+              );
+              try {
+                const createdMisc = await createProjectMisc({
+                  projectId,
+                  name: miscName,
+                  amount: miscAmount,
+                });
+                projectStream = "misc";
+                projectItemId = createdMisc.id;
+                console.log(
+                  `  ✓ Created misc expense for project ${consolidation.project}: ${miscName} (${miscAmount} cents)`
+                );
+              } catch (error) {
+                const errorMessage =
+                  error instanceof Error ? error.message : String(error);
+                warnings.push({
+                  type: "consolidation",
+                  description: consolidation.description,
+                  warning: `Project ${consolidation.project} found but failed to create misc item: ${errorMessage}`,
+                });
+              }
             }
           } else {
             warnings.push({
