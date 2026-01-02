@@ -39,7 +39,7 @@ export const loansRouter = createTRPCRouter({
     .input(
       createLoanSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -50,7 +50,7 @@ export const loansRouter = createTRPCRouter({
     .input(
       updateLoanSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -87,7 +87,7 @@ export const loanPayoffsRouter = createTRPCRouter({
     .input(
       createLoanPayoffWithLoanIdSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -98,7 +98,7 @@ export const loanPayoffsRouter = createTRPCRouter({
     .input(
       updateLoanPayoffSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {

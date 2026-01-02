@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { transactionTypes } from "@/lib/constants";
+import {
+  transactionBudgetCategories,
+  transactionConsolidationGroups,
+  transactionTypes,
+} from "@/lib/constants";
 import {
   listSchema,
   booleanFilterSchema,
@@ -12,6 +16,9 @@ export const transactionFiltersSchema = z.object({
   fromAmount: z.number().optional(),
   toAmount: z.number().optional(),
   isConsolidated: booleanFilterSchema.optional(),
+  hasGst: booleanFilterSchema.optional(),
+  consolidationGroup: z.enum(transactionConsolidationGroups).optional(),
+  budgetCategory: z.enum(transactionBudgetCategories).optional(),
 });
 
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;

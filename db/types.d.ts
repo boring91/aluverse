@@ -14,7 +14,14 @@ export type ConsolidationBudgetCategory =
   | "toll"
   | "tool";
 
-export type ConsolidationGroup = "budget" | "loan" | "project" | "unclassified";
+export type ConsolidationGroup =
+  | "budget"
+  | "loan"
+  | "project"
+  | "refund"
+  | "refunded"
+  | "tax"
+  | "unclassified";
 
 export type ConsolidationProjectStream =
   | "labors"

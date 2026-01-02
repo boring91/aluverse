@@ -29,9 +29,9 @@ function getConsolidationGroup(category: string): string {
   if (cat === "project") return "project";
   if (cat === "unspecified") return "unclassified";
   if (cat === "asset" || cat === "contingency") return "budget";
-  // Note: "tax", "refund", "refunded" are not in the enum, will handle as unclassified
-  if (cat === "tax" || cat === "refund" || cat === "refunded")
-    return "unclassified";
+  if (cat === "tax") return "tax";
+  if (cat === "refund") return "refund";
+  if (cat === "refunded") return "refunded";
   return "unclassified";
 }
 

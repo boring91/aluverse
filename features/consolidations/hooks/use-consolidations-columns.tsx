@@ -9,6 +9,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
+import { ConsolidationGroupBadge } from "../components/consolidation-group-badge";
 
 type Consolidation =
   inferRouterOutputs<AppRouter>["consolidations"]["list"]["items"][number];
@@ -74,20 +75,7 @@ export const useConsolidationsColumns = (
             item.consolidationGroup && (
               <div className="flex flex-col gap-1 items-center">
                 {/* Group */}
-                <div
-                  className={cn(
-                    "rounded-xl inline-flex px-2 py-0.5 items-center justify-center text-white text-xs font-bold",
-                    {
-                      "bg-sky-400": item.consolidationGroup === "budget",
-                      "bg-rose-400": item.consolidationGroup === "unclassified",
-                      "bg-emerald-400": item.consolidationGroup === "project",
-                      "bg-amber-400 dark:bg-amber-600":
-                        item.consolidationGroup === "loan",
-                    }
-                  )}
-                >
-                  {t(item.consolidationGroup)}
-                </div>
+                <ConsolidationGroupBadge group={item.consolidationGroup} />
 
                 {/* Extra details */}
                 <div className="text-xs text-muted-foreground flex gap-2">

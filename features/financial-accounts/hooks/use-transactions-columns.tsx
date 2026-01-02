@@ -3,6 +3,7 @@ import {
   DataTableActions,
 } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
+import { ConsolidationGroupBadge } from "@/features/consolidations/components/consolidation-group-badge";
 import { cn } from "@/lib/client-utils";
 import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";
@@ -116,24 +117,9 @@ export const useTransactionsColumns = (
           return item.consolidations.length === 1 ? (
             <div className="flex flex-col gap-1 items-center">
               {/* Group */}
-              <div
-                className={cn(
-                  "rounded-xl inline-flex px-2 py-0.5 items-center justify-center text-white text-xs font-bold",
-                  {
-                    "bg-sky-400":
-                      item.consolidations[0].consolidationGroup === "budget",
-                    "bg-rose-400":
-                      item.consolidations[0].consolidationGroup ===
-                      "unclassified",
-                    "bg-emerald-400":
-                      item.consolidations[0].consolidationGroup === "project",
-                    "bg-amber-400 dark:bg-amber-600":
-                      item.consolidations[0].consolidationGroup === "loan",
-                  }
-                )}
-              >
-                {t(item.consolidations[0].consolidationGroup)}
-              </div>
+              <ConsolidationGroupBadge
+                group={item.consolidations[0].consolidationGroup}
+              />
 
               {/* Extra details */}
               <div className="text-xs text-muted-foreground flex gap-2">

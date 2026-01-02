@@ -79,6 +79,9 @@
     "consolidationGroup": "Consolidation group",
     "budget": "Budget",
     "project": "Project",
+    "tax": "Tax",
+    "refund": "Refund",
+    "refunded": "Refunded",
     "unclassified": "Unclassified",
     "consolidateTransaction": "Consolidate transaction",
     "consolidateTransactionDetails": "Assign this transaction to a consolidation group and categorize it accordingly.",
@@ -118,7 +121,9 @@
     "toAmount": "To amount",
     "syncWithBank": "Sync with bank",
     "westpac": "Westpac",
-    "successfullySyncedCountTransactions": "Successfully synced {count} transactions"
+    "successfullySyncedCountTransactions": "Successfully synced {count} transactions",
+    "hasGst": "Has GST",
+    "withoutGst": "Without GST"
   },
   "Projects": {
     "humanId": "Human ID",

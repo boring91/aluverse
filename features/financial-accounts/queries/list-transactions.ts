@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { db } from "@/db";
 import { listTransactionSchema } from "@/features/financial-accounts";
-import { isTransactionConsolidated, signedAmount } from "@/db/expressions";
+import {
+  hasBudgetCategory,
+  hasConsolidationGroup,
+  hasGst,
+  isTransactionConsolidated,
+  signedAmount,
+} from "@/db/expressions";
 import { transactionMapper } from "@/db/mappers";
 
 export async function listTransactions(
@@ -37,12 +43,26 @@ export async function listTransactions(
     query = query.where((eb) => eb(signedAmount(eb), "<", filters.toAmount!));
   }
 
-  if (filters?.isConsolidated !== undefined && filters.isConsolidated) {
-    query = query.where((eb) => isTransactionConsolidated(eb));
+  if (filters?.isConsolidated !== undefined) {
+    query = query.where((eb) =>
+      eb(isTransactionConsolidated(eb), "=", filters.isConsolidated!)
+    );
   }
 
-  if (filters?.isConsolidated !== undefined && !filters.isConsolidated) {
-    query = query.where((eb) => eb(isTransactionConsolidated(eb), "=", false));
+  if (filters?.hasGst !== undefined) {
+    query = query.where((eb) => eb(hasGst(eb), "=", filters.hasGst!));
+  }
+
+  if (filters?.consolidationGroup) {
+    query = query.where((eb) =>
+      eb(hasConsolidationGroup(eb, filters.consolidationGroup!), "=", true)
+    );
+  }
+
+  if (filters?.budgetCategory) {
+    query = query.where((eb) =>
+      eb(hasBudgetCategory(eb, filters.budgetCategory!), "=", true)
+    );
   }
 
   const [count, filteredCount] = await Promise.all([

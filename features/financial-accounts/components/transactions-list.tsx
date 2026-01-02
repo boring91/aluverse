@@ -17,6 +17,7 @@ import {
   useDataTableFilters,
   StringFilter,
   DateFilter,
+  EnumFilter,
 } from "@/components/data-table";
 import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
@@ -24,6 +25,10 @@ import { useTransactionsColumns } from "../hooks/use-transactions-columns";
 import { ConsolidationsList } from "@/features/consolidations/components/consolidations-list";
 import { transactionFiltersSchema } from "../schemas/transactions.schema";
 import { NumberFilter } from "@/components/data-table/filters/number-filter";
+import {
+  transactionBudgetCategories,
+  transactionConsolidationGroups,
+} from "@/lib/constants";
 
 type Props = {
   mode: "account" | "consolidation";
@@ -175,12 +180,39 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
             <NumberFilter label={t("toAmount")} control={filter.toAmount} />
 
             {mode === "consolidation" && (
-              <BooleanFilter
-                label={tc("consolidated")}
-                control={filter.isConsolidated}
-                trueLabel={tc("consolidated")}
-                falseLabel={tc("notConsolidated")}
-              />
+              <>
+                <BooleanFilter
+                  label={tc("consolidated")}
+                  control={filter.isConsolidated}
+                  trueLabel={tc("consolidated")}
+                  falseLabel={tc("notConsolidated")}
+                />
+
+                <BooleanFilter
+                  label={t("hasGst")}
+                  control={filter.hasGst}
+                  trueLabel={t("withGst")}
+                  falseLabel={t("withoutGst")}
+                />
+
+                <EnumFilter
+                  label={t("consolidationGroup")}
+                  control={filter.consolidationGroup}
+                  options={transactionConsolidationGroups.map((group) => ({
+                    value: group,
+                    label: t(group),
+                  }))}
+                />
+
+                <EnumFilter
+                  label={t("budgetCategory")}
+                  control={filter.budgetCategory}
+                  options={transactionBudgetCategories.map((category) => ({
+                    value: category,
+                    label: t(category),
+                  }))}
+                />
+              </>
             )}
           </DataTableFilters>
         }
