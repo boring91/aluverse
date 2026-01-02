@@ -7,10 +7,11 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
-import { formatCurrency } from "../lib/dummy-data";
+import { formatCurrency } from "@/lib/utils";
 
-type ProjectsChartProps = {
-  data: { name: string; value: number }[];
+type Props = {
+  in: number;
+  out: number;
 };
 
 const chartConfig = {
@@ -30,16 +31,12 @@ const chartConfig = {
   },
 } as const;
 
-export const ProjectsChart = ({ data }: ProjectsChartProps) => {
-  // Transform data for grouped bar chart
-  const projectsIn = data.find((item) => item.name === "Projects (in)");
-  const projectsOut = data.find((item) => item.name === "Projects (out)");
-
+export const ProjectsInOutStatsChart = (data: Props) => {
   const chartData = [
     {
       name: "Projects",
-      "Projects (in)": projectsIn ? projectsIn.value / 100 : 0,
-      "Projects (out)": projectsOut ? projectsOut.value / 100 : 0,
+      "Projects (in)": data.in / 100,
+      "Projects (out)": data.out / 100,
     },
   ];
 

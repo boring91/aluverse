@@ -6,9 +6,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useTranslations } from "next-intl";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
-type JobsProfitChartProps = {
+type Props = {
   data: { name: string; profit: number }[];
 };
 
@@ -22,16 +23,23 @@ const chartConfig = {
   },
 } as const;
 
-export const JobsProfitChart = ({ data }: JobsProfitChartProps) => {
+export const ProjectsProfitChart = ({ data }: Props) => {
+  const t = useTranslations("Dashboard");
+
+  const chartData = data.map((item) => ({
+    name: item.name,
+    profit: Math.round(item.profit * 100),
+  }));
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Jobs profit%</CardTitle>
+        <CardTitle>{t("projectsProfitPercentage")}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <BarChart
-            data={data}
+            data={chartData}
             layout="vertical"
             margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
           >

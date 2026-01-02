@@ -5,9 +5,9 @@ import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/page-container";
 import { DatePickerInput } from "@/components/date-picker-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProjectsChart } from "../components/projects-chart";
-import { ExpensesChart } from "../components/expenses-chart";
-import { JobsProfitChart } from "../components/jobs-profit-chart";
+import { ProjectsInOutStatsChartSection } from "../components/projects-in-out-stats-chart-section";
+import { ExpensesChartSection } from "../components/expenses-chart-section";
+import { ProjectProfitChartSection } from "../components/project-profit-chart-section";
 import { BudgetTable } from "../components/budget-table";
 import { CashFlowChart } from "../components/cash-flow-chart";
 import { ReceivablesCard } from "../components/receivables-card";
@@ -75,10 +75,10 @@ export const DashboardView = () => {
       <PeriodComparisonSection dateRange={dateRange} />
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <ProjectsChart data={dashboardData.projectsChartData} />
-        <ExpensesChart data={dashboardData.expensesChartData} />
-        <JobsProfitChart data={dashboardData.jobsProfitData} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch">
+        <ProjectsInOutStatsChartSection dateRange={dateRange} />
+        <ExpensesChartSection dateRange={dateRange} />
+        <ProjectProfitChartSection dateRange={dateRange} />
       </div>
 
       {/* Cash Flow and Revenue Trends */}

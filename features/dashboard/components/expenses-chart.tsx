@@ -7,9 +7,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Pie, PieChart, Cell } from "recharts";
-import { formatCurrency } from "../lib/dummy-data";
+import { formatCurrency } from "@/lib/utils";
 
-type ExpensesChartProps = {
+type Props = {
   data: { name: string; value: number; percent: number }[];
 };
 
@@ -30,7 +30,7 @@ const chartConfig = {
   },
 } as const;
 
-export const ExpensesChart = ({ data }: ExpensesChartProps) => {
+export const ExpensesChart = ({ data }: Props) => {
   // Transform data for the chart
   const chartData = data.map((item) => ({
     name: item.name,
