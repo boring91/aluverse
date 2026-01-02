@@ -39,12 +39,15 @@ export const ExpensesChart = ({ data }: Props) => {
   }));
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>Expenses</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+      <CardContent className="flex-1">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto! h-[280px] w-full"
+        >
           <PieChart>
             <Pie
               data={chartData}

@@ -41,12 +41,15 @@ export const ProjectsInOutStatsChart = (data: Props) => {
   ];
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>Projects (in) Projects (out)</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+      <CardContent className="flex-1">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto! h-[280px] w-full"
+        >
           <BarChart data={chartData}>
             <XAxis
               dataKey="name"

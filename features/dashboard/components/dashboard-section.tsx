@@ -25,5 +25,5 @@ export const DashboardSection = ({
     );
   }
 
-  return <div className={cn(className)}>{children}</div>;
+  return <div className={cn("h-full", className)}>{children}</div>;
 };
