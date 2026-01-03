@@ -75,7 +75,12 @@ export const RevenueTrendsChart = ({ dateRange }: Props) => {
               config={chartConfig}
               className="aspect-auto! h-[280px] w-full"
             >
-              <AreaChart data={data.revenueTrends}>
+              <AreaChart
+                data={data.revenueTrends.map((item) => ({
+                  month: item.month,
+                  revenue: item.revenue / 100,
+                }))}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="month"
