@@ -13,7 +13,7 @@ type Props = {
   dateRange: DashboardDateRange;
 };
 
-export const GeneralOverviewSection = ({ dateRange }: Props) => {
+export const GeneralOverview = ({ dateRange }: Props) => {
   const tDashboard = useTranslations("Dashboard");
   const trpc = useTRPC();
 

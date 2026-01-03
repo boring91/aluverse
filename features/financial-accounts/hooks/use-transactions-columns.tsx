@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ConsolidationGroupBadge } from "@/features/consolidations/components/consolidation-group-badge";
 import { cn } from "@/lib/client-utils";
 import { formatCurrency } from "@/lib/utils";
-import { AppRouter } from "@/trpc/routers/_app";
+import type { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { ChartPie, CheckIcon, XIcon } from "lucide-react";

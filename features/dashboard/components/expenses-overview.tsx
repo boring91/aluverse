@@ -1,15 +1,63 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { DashboardSection } from "./dashboard-section";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardDateRange } from "../schemas/dashboard.schema";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Pie, PieChart, Cell } from "recharts";
 import { formatCurrency } from "@/lib/utils";
+import { Pie, Cell, PieChart } from "recharts";
 
 type Props = {
+  dateRange: DashboardDateRange;
+};
+
+export const ExpensesOverview = ({ dateRange }: Props) => {
+  const trpc = useTRPC();
+
+  const { data, isLoading } = useQuery(
+    trpc.dashboard.expensesStats.queryOptions(dateRange)
+  );
+
+  const skeleton = (
+    <Card>
+      <div className="p-6">
+        <Skeleton className="h-6 w-32 mb-4" />
+        <Skeleton className="h-64 w-full rounded-full" />
+      </div>
+    </Card>
+  );
+
+  if (!data && !isLoading) {
+    return null;
+  }
+
+  // Process data for chart: calculate total and percentages
+  const totalExpenses = (data || []).reduce((sum, item) => sum + item.total, 0);
+
+  const chartData = (data || []).map((item) => {
+    const percent = totalExpenses > 0 ? (item.total / totalExpenses) * 100 : 0;
+    return {
+      name: item.consolidationGroup,
+      value: item.total,
+      percent,
+    };
+  });
+
+  return (
+    <DashboardSection isLoading={isLoading} skeleton={skeleton}>
+      <ExpensesOverviewChart data={chartData} />
+    </DashboardSection>
+  );
+};
+
+type ExpensesOverviewChartProps = {
   data: { name: string; value: number; percent: number }[];
 };
 
@@ -30,7 +78,7 @@ const chartConfig = {
   },
 } as const;
 
-export const ExpensesChart = ({ data }: Props) => {
+export const ExpensesOverviewChart = ({ data }: ExpensesOverviewChartProps) => {
   // Transform data for the chart
   const chartData = data.map((item) => ({
     name: item.name,

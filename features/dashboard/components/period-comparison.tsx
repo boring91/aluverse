@@ -1,21 +1,63 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { DashboardSection } from "./dashboard-section";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardDateRange } from "../schemas/dashboard.schema";
 import { cn } from "@/lib/client-utils";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatPercent, formatCurrency } from "@/lib/utils";
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "@/trpc/routers/_app";
 
 type Props = {
-  data: {
-    revenue: { current: number; previous: number; change: number };
-    cost: { current: number; previous: number; change: number };
-    operatingProfit: { current: number; previous: number; change: number };
-    netProfit: { current: number; previous: number; change: number };
-  };
+  dateRange: DashboardDateRange;
 };
 
-export const PeriodComparison = ({ data }: Props) => {
+export const PeriodComparisonSection = ({ dateRange }: Props) => {
+  const trpc = useTRPC();
+
+  const { data, isLoading } = useQuery(
+    trpc.dashboard.periodComparison.queryOptions(dateRange)
+  );
+
+  const skeleton = (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-48" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-6 w-24" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+
+  if (!data && !isLoading) {
+    return null;
+  }
+
+  return (
+    <DashboardSection isLoading={isLoading} skeleton={skeleton}>
+      <div className="mb-6">
+        <PeriodComparisonChart data={data!} />
+      </div>
+    </DashboardSection>
+  );
+};
+
+type PeriodComparisonChartProps = {
+  data: inferRouterOutputs<AppRouter>["dashboard"]["periodComparison"];
+};
+
+const PeriodComparisonChart = ({ data }: PeriodComparisonChartProps) => {
   const t = useTranslations("Dashboard");
 
   const metrics = [

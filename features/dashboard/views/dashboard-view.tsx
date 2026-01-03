@@ -5,9 +5,9 @@ import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/page-container";
 import { DatePickerInput } from "@/components/date-picker-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProjectsInOutStatsChartSection } from "../components/projects-in-out-stats-chart-section";
-import { ExpensesChartSection } from "../components/expenses-chart-section";
-import { ProjectProfitChartSection } from "../components/project-profit-chart-section";
+import { ProjectsInOutStats } from "../components/projects-in-out-stats";
+import { ExpensesOverview } from "../components/expenses-overview";
+import { ProjectProfitOverview } from "../components/project-profit-overview";
 import { BudgetTable } from "../components/budget-table";
 import { CashFlowChart } from "../components/cash-flow-chart";
 import { ReceivablesCard } from "../components/receivables-card";
@@ -18,8 +18,8 @@ import { RevenueTrendsChart } from "../components/revenue-trends-chart";
 import { PaymentStatus } from "../components/payment-status";
 import { ProjectPipeline } from "../components/project-pipeline";
 import { EfficiencyMetrics } from "../components/efficiency-metrics";
-import { GeneralOverviewSection } from "../components/general-overview-section";
-import { PeriodComparisonSection } from "../components/period-comparison-section";
+import { GeneralOverview } from "../components/general-overview";
+import { PeriodComparisonSection } from "../components/period-comparison";
 import {
   dashboardData,
   formatCurrency,
@@ -69,16 +69,16 @@ export const DashboardView = () => {
       </div>
 
       {/* General Overview */}
-      <GeneralOverviewSection dateRange={dateRange} />
+      <GeneralOverview dateRange={dateRange} />
 
       {/* Period Comparison */}
       <PeriodComparisonSection dateRange={dateRange} />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch">
-        <ProjectsInOutStatsChartSection dateRange={dateRange} />
-        <ExpensesChartSection dateRange={dateRange} />
-        <ProjectProfitChartSection dateRange={dateRange} />
+        <ProjectsInOutStats dateRange={dateRange} />
+        <ExpensesOverview dateRange={dateRange} />
+        <ProjectProfitOverview dateRange={dateRange} />
       </div>
 
       {/* Cash Flow and Revenue Trends */}

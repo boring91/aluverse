@@ -1,15 +1,51 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { DashboardSection } from "./dashboard-section";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardDateRange } from "../schemas/dashboard.schema";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useTranslations } from "next-intl";
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { XAxis, YAxis, Bar, BarChart } from "recharts";
 
 type Props = {
+  dateRange: DashboardDateRange;
+};
+
+export const ProjectProfitOverview = ({ dateRange }: Props) => {
+  const trpc = useTRPC();
+
+  const { data, isLoading } = useQuery(
+    trpc.dashboard.projectProfitStats.queryOptions(dateRange)
+  );
+
+  const skeleton = (
+    <Card>
+      <div className="p-6">
+        <Skeleton className="h-6 w-40 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    </Card>
+  );
+
+  if (!data && !isLoading) {
+    return null;
+  }
+
+  return (
+    <DashboardSection isLoading={isLoading} skeleton={skeleton}>
+      <ProjectProfitOverviewChart data={data || []} />
+    </DashboardSection>
+  );
+};
+
+type ProjectProfitOverviewChartProps = {
   data: { name: string; profit: number }[];
 };
 
@@ -23,7 +59,9 @@ const chartConfig = {
   },
 } as const;
 
-export const ProjectsProfitChart = ({ data }: Props) => {
+export const ProjectProfitOverviewChart = ({
+  data,
+}: ProjectProfitOverviewChartProps) => {
   const t = useTranslations("Dashboard");
 
   const chartData = data.map((item) => ({
