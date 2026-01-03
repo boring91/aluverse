@@ -1,6 +1,12 @@
 import { listProjectSchema } from "@/features/projects";
 import { db } from "@/db";
-import { projectPaid, unconsolidatedItemsCount } from "@/db/expressions";
+import {
+  projectAwaitingPayment,
+  projectCompleted,
+  projectInPlanning,
+  projectInProgress,
+  unconsolidatedItemsCount,
+} from "@/db/expressions";
 import { projectMapper } from "@/db/mappers";
 import { z } from "zod";
 
@@ -38,21 +44,16 @@ export async function listProjects(input: z.infer<typeof listProjectSchema>) {
 
   switch (filters?.status) {
     case "planning":
-      query = query.where("startDate", "is", null);
+      query = query.where(projectInPlanning);
       break;
     case "inProgress":
-      query = query.where("startDate", "is not", null);
-      query = query.where("endDate", "is", null);
+      query = query.where(projectInProgress);
       break;
     case "awaitingPayment":
-      query = query.where("startDate", "is not", null);
-      query = query.where("endDate", "is not", null);
-      query = query.where(projectPaid, "!=", (x) => x.ref("price"));
+      query = query.where(projectAwaitingPayment);
       break;
     case "completed":
-      query = query.where("startDate", "is not", null);
-      query = query.where("endDate", "is not", null);
-      query = query.where(projectPaid, "=", (x) => x.ref("price"));
+      query = query.where(projectCompleted);
   }
 
   const [count, filteredCount] = await Promise.all([

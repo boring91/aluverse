@@ -7,6 +7,7 @@ import { getExpensesStats } from "../queries/get-expenses-stats";
 import { getProjectProfitStats } from "../queries/get-project-profit-stats";
 import { getCashFlow } from "../queries/get-cashflow";
 import { getRevenueStats } from "../queries/get-revenue-stats";
+import { getOutstandingProjects } from "../queries/get-outstanding-projects";
 
 export const dashboardRouter = createTRPCRouter({
   generalStats: protectedProcedure
@@ -48,4 +49,8 @@ export const dashboardRouter = createTRPCRouter({
     .query(async ({ input }) => {
       return await getRevenueStats(input);
     }),
+
+  outstandingProjects: protectedProcedure.query(async () => {
+    return await getOutstandingProjects();
+  }),
 });

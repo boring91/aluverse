@@ -48,8 +48,6 @@ export const RevenueTrendsChart = ({ dateRange }: Props) => {
     </Card>
   );
 
-  console.log({ data });
-
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
       {data && (

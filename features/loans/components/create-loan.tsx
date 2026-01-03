@@ -109,7 +109,6 @@ export const CreateLoan = ({
     }
     if (!data || !isUpdate) return;
 
-    console.log("filling form");
     fillForm(form, { ...data, amount: data.amount / 100 });
   }, [data, form, isUpdate, open]);
 

@@ -39,7 +39,7 @@ export const createProjectMiscWithProjectIdSchema =
 
 export const createProjectPaymentSchema = z.object({
   date: z.date(),
-  amount: z.number().min(1),
+  amount: z.number(),
 });
 
 export const createProjectPaymentWithProjectIdSchema =

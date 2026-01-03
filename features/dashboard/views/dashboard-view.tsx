@@ -10,7 +10,7 @@ import { ExpensesOverview } from "../components/expenses-overview";
 import { ProjectProfitOverview } from "../components/project-profit-overview";
 import { BudgetTable } from "../components/budget-table";
 import { CashFlowChart } from "../components/cash-flow-chart";
-import { ReceivablesCard } from "../components/receivables-card";
+import { OutstandingProjects } from "../components/outstanding-projects";
 import { ProjectAlerts } from "../components/project-alerts";
 import { TopPerformers } from "../components/top-performers";
 import { BudgetBurnRate } from "../components/budget-burn-rate";
@@ -89,7 +89,7 @@ export const DashboardView = () => {
 
       {/* Actionable Insights: Receivables and Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <ReceivablesCard data={dashboardData.receivables} />
+        <OutstandingProjects />
         <ProjectAlerts alerts={dashboardData.projectAlerts} />
       </div>
 

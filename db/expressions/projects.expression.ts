@@ -1,5 +1,6 @@
 import { ExpressionBuilder } from "kysely";
 import { DB } from "../types";
+import { getCurrentTime } from "@/lib/utils";
 
 export const projectPaid = (
   eb: ExpressionBuilder<DB, "projects">,
@@ -107,6 +108,9 @@ export const miscCost = (
     .$asScalar();
 };
 
+export const projectOutstanding = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb("price", "-", projectPaid);
+
 export const cost = (
   eb: ExpressionBuilder<DB, "projects">,
   from?: Date,
@@ -174,3 +178,37 @@ export const unconsolidatedItemsCount = (
     "+",
     unconsolidatedPaymentsCount
   ).$notNull();
+
+export const projectInPlanning = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb("startDate", "is", null);
+
+export const projectInProgress = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb.and([eb("startDate", "is not", null), eb("endDate", "is", null)]);
+
+export const projectAwaitingPayment = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb.and([
+    eb("startDate", "is not", null),
+    eb(projectPaid, "!=", eb.ref("price")),
+  ]);
+
+export const projectCompleted = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb.and([
+    eb("startDate", "is not", null),
+    eb("endDate", "is not", null),
+    eb(projectAwaitingPayment, "=", false),
+  ]);
+
+export const projectDaysOverdue = (eb: ExpressionBuilder<DB, "projects">) => {
+  const now = getCurrentTime();
+
+  return eb(
+    eb
+      .case()
+      .when(projectAwaitingPayment, "=", true)
+      .then(eb("endDate", "-", now).$castTo<number>())
+      .else(eb.lit(null))
+      .end(),
+    "*",
+    eb.lit(-1)
+  );
+};
