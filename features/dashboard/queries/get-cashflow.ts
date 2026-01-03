@@ -21,16 +21,18 @@ export async function getCashFlow() {
             .end()
         )
         .as("income"),
-      eb.fn
-        .sum<number>(
+      eb(
+        eb.fn.sum<number>(
           eb
             .case("type")
             .when("expense")
             .then(eb.ref("amount"))
             .else(eb.lit(0))
             .end()
-        )
-        .as("expense"),
+        ),
+        "*",
+        eb.lit(-1)
+      ).as("expense"),
       getMonth(eb.ref("date")).as("month"),
       getYear(eb.ref("date")).as("year"),
     ])

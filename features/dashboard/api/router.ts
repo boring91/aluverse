@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { dashboardDateRangeSchema } from "../schemas/dashboard.schema";
-import { getGeneralOverview } from "../queries/get-general-overview";
+import { getGeneralStats } from "../queries/get-general-stats";
 import { getPeriodComparison } from "../queries/get-period-comparison";
 import { getProjectsInOutStats } from "../queries/get-projects-chart";
 import { getExpensesStats } from "../queries/get-expenses-stats";
@@ -8,10 +8,10 @@ import { getProjectProfitStats } from "../queries/get-project-profit-stats";
 import { getCashFlow } from "../queries/get-cashflow";
 
 export const dashboardRouter = createTRPCRouter({
-  generalOverview: protectedProcedure
+  generalStats: protectedProcedure
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
-      return await getGeneralOverview(input);
+      return await getGeneralStats(input);
     }),
 
   periodComparison: protectedProcedure

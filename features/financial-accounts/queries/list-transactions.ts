@@ -6,7 +6,7 @@ import {
   hasConsolidationGroup,
   hasGst,
   isTransactionConsolidated,
-  signedAmount,
+  transactionSignedAmount,
 } from "@/db/expressions";
 import { transactionMapper } from "@/db/mappers";
 
@@ -35,12 +35,14 @@ export async function listTransactions(
 
   if (filters?.fromAmount !== undefined) {
     query = query.where((eb) =>
-      eb(signedAmount(eb), ">=", filters.fromAmount!)
+      eb(transactionSignedAmount(eb), ">=", filters.fromAmount!)
     );
   }
 
   if (filters?.toAmount !== undefined) {
-    query = query.where((eb) => eb(signedAmount(eb), "<", filters.toAmount!));
+    query = query.where((eb) =>
+      eb(transactionSignedAmount(eb), "<", filters.toAmount!)
+    );
   }
 
   if (filters?.isConsolidated !== undefined) {
@@ -86,7 +88,7 @@ export async function listTransactions(
         query = query.orderBy("description", dir);
         break;
       case "amount":
-        query = query.orderBy((eb) => signedAmount(eb), dir);
+        query = query.orderBy((eb) => transactionSignedAmount(eb), dir);
         break;
     }
   });

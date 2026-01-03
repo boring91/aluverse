@@ -1,5 +1,5 @@
 import { DashboardDateRange } from "../schemas/dashboard.schema";
-import { getGeneralOverview } from "./get-general-overview";
+import { getGeneralStats } from "./get-general-stats";
 
 export async function getPeriodComparison(input: DashboardDateRange) {
   const { from, to } = input;
@@ -15,7 +15,7 @@ export async function getPeriodComparison(input: DashboardDateRange) {
   }
 
   // Calculate current period metrics
-  const current = await getGeneralOverview({ from, to });
+  const current = await getGeneralStats({ from, to });
 
   // Calculate previous period dates
   // Get the duration of the current period
@@ -31,7 +31,7 @@ export async function getPeriodComparison(input: DashboardDateRange) {
   previousFrom.setDate(previousFrom.getDate() - periodDurationDays + 1);
 
   // Calculate previous period metrics
-  const previous = await getGeneralOverview({
+  const previous = await getGeneralStats({
     from: previousFrom,
     to: previousTo,
   });

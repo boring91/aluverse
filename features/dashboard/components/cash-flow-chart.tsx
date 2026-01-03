@@ -48,12 +48,15 @@ export const CashFlowChart = () => {
 
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle>{t("cashFlowTimeline")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig}>
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto! h-[280px] w-full"
+          >
             <LineChart
               data={data?.map((item) => ({
                 month: item.month,

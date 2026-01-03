@@ -41,7 +41,9 @@ export const isTransactionConsolidated = (
     .$asScalar();
 };
 
-export const signedAmount = (eb: ExpressionBuilder<DB, "transactions">) => {
+export const transactionSignedAmount = (
+  eb: ExpressionBuilder<DB, "transactions">
+) => {
   return eb
     .case("type")
     .when("income")

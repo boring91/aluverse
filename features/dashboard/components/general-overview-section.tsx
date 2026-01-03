@@ -18,7 +18,7 @@ export const GeneralOverviewSection = ({ dateRange }: Props) => {
   const trpc = useTRPC();
 
   const { data, isLoading } = useQuery(
-    trpc.dashboard.generalOverview.queryOptions(dateRange)
+    trpc.dashboard.generalStats.queryOptions(dateRange)
   );
 
   const skeleton = (
@@ -50,7 +50,7 @@ export const GeneralOverviewSection = ({ dateRange }: Props) => {
           />
           <OverviewCard
             title={tDashboard("taxesTaxRefund")}
-            value={data?.taxesRefund ?? 0}
+            value={data?.taxes ?? 0}
           />
           <OverviewCard
             title={tDashboard("netProfit")}
