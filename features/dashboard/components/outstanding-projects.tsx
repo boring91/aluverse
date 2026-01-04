@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSection } from "./dashboard-section";
 import { formatCurrency } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
 
 export const OutstandingProjects = () => {
   const t = useTranslations("Dashboard");
@@ -84,7 +85,9 @@ export const OutstandingProjects = () => {
                     className="flex justify-between items-center text-sm"
                   >
                     <div className="flex-1">
-                      <div className="font-medium">{item.humanId}</div>
+                      <Link href={`/projects/${item.id}`}>
+                        <div className="font-medium">{item.humanId}</div>
+                      </Link>
                       <div className="text-xs text-muted-foreground">
                         {item.client}
                       </div>

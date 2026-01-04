@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Link } from "@/i18n/navigation";
 
 type Project =
   inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
@@ -38,10 +39,12 @@ export const useProjectsColumns = (
           const project = row.original;
           return (
             <div className="flex flex-col gap-1">
-              <p>
-                <span className="font-mono">{project.humanId}</span>
-                <span> - {project.title}</span>
-              </p>
+              <Link href={`/projects/${project.id}`}>
+                <p>
+                  <span className="font-mono">{project.humanId}</span>
+                  <span> - {project.title}</span>
+                </p>
+              </Link>
               <p className="text-muted-foreground text-xs">{project.client}</p>
             </div>
           );
