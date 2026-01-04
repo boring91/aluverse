@@ -13,6 +13,7 @@ export const createProjectSchema = z.object({
   address: z.string().nullable().optional(),
   meters: z.number().nullable().optional(),
   price: z.number().min(1),
+  margin: z.number().min(0).max(1),
 });
 
 export const updateProjectSchema = createProjectSchema.safeExtend({

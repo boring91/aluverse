@@ -169,6 +169,7 @@ export interface Projects {
   endDate: Timestamp | null;
   humanId: string;
   id: Generated<string>;
+  margin: number;
   meters: number | null;
   price: number;
   startDate: Timestamp | null;

@@ -172,7 +172,9 @@
     "miscDescription": "Track miscellaneous expenses and items for this project",
     "paymentsDescription": "View and manage all payments received for this project",
     "totalPendingConsolidationItems": "Total pending consolidation items",
-    "isConsolidated": "Is consolidated"
+    "isConsolidated": "Is consolidated",
+    "margin": "Margin",
+    "priceAndMargin": "Price & margin"
   },
   "Loans": {
     "loans": "Loans",

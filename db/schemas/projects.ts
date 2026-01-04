@@ -22,6 +22,7 @@ export const projects = pgTable("projects", {
   address: text(),
   meters: doublePrecision(),
   price: integer().notNull(),
+  margin: doublePrecision().notNull(),
   createdAt: timestamp().notNull().defaultNow(),
   updatedAt: timestamp()
     .notNull()

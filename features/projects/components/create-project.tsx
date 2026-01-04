@@ -1,14 +1,7 @@
 "use client";
 
-import { DatePickerInput } from "@/components/date-picker-input";
 import { Button } from "@/components/ui/button";
-import {
-  FieldGroup,
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FieldGroup } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +18,7 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { TextInput } from "@/components/form/text-input";
@@ -185,6 +178,13 @@ export const CreateProject = ({
             <DateInput
               name="endDate"
               label={t("endDate")}
+              control={form.control}
+            />
+
+            {/* Margin */}
+            <NumberInput
+              name="margin"
+              label={t("margin")}
               control={form.control}
             />
           </FieldGroup>

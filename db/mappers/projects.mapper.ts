@@ -14,6 +14,7 @@ export const projectMapper = (eb: ExpressionBuilder<DB, "projects">) =>
     "address",
     "meters",
     "price",
+    "margin",
     cost(eb).as("cost"),
     projectPaid(eb).as("paid"),
     unconsolidatedItemsCount(eb).as("unconsolidatedItemsCount"),
