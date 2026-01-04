@@ -20,6 +20,31 @@ export async function updateConsolidation(
     loanPayoffId: oldLoanPayoffId,
   } = oldConsolidation;
 
+  // Reset fields that are not related to the selected group using spread operator
+  if (data.consolidationGroup === "project") {
+    data = {
+      ...data,
+      loanId: undefined,
+      loanPayoffId: undefined,
+      budgetCategory: undefined,
+    };
+  } else if (data.consolidationGroup === "loan") {
+    data = {
+      ...data,
+      projectStream: undefined,
+      projectItemId: undefined,
+      budgetCategory: undefined,
+    };
+  } else if (data.consolidationGroup === "budget") {
+    data = {
+      ...data,
+      projectStream: undefined,
+      projectItemId: undefined,
+      loanId: undefined,
+      loanPayoffId: undefined,
+    };
+  }
+
   return await db.transaction().execute(async (tx) => {
     const consolidation = await tx
       .updateTable("consolidations")

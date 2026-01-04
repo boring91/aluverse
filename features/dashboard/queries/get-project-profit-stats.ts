@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
-import { cost } from "@/db/expressions/projects.expression";
+import { projectCost } from "@/db/expressions/projects.expression";
 
 export async function getProjectProfitStats(input: DashboardDateRange) {
   const { from, to } = input;
@@ -35,14 +35,14 @@ export async function getProjectProfitStats(input: DashboardDateRange) {
       "humanId",
       "title",
       "price",
-      cost(eb).as("projectCost"),
+      projectCost(eb).as("projectCost"),
       // Calculate profit margin in the database: ((price - cost) / price) * 100
       eb
         .case()
         .when("price", ">", eb.lit(0))
         .then(
           eb(
-            eb.parens(eb("price", "-", cost(eb))),
+            eb.parens(eb("price", "-", projectCost(eb))),
             "/",
             eb.cast<number>(eb.ref("price"), "double precision")
           )

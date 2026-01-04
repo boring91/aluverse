@@ -59,14 +59,14 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
         </CardHeader>
         <CardContent
           className={cn("text-xl font-semibold text-emerald-500", {
-            "text-rose-500": project.price - project.cost < 0,
+            "text-rose-500": (project.effectiveMargin ?? 0) < 0,
           })}
         >
           <div className="flex flex-col gap-2">
             <p>
-              {(((project.price - project.cost) / project.price) * 100).toFixed(
-                2
-              )}
+              {project.effectiveMargin === null
+                ? "-"
+                : (project.effectiveMargin * 100).toFixed(2)}
               %
             </p>
             <p

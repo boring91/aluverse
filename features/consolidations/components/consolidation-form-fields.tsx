@@ -211,7 +211,13 @@ export const ProjectFields = forwardRef<
         items={
           projectItems?.map((item) => ({
             value: item.id,
-            label: "name" in item ? item.name : item.date.toDateString(),
+            label:
+              ("name" in item
+                ? `${item.name} - ${formatCurrency("amount" in item ? item.amount : "quantity" in item ? item.quantity * item.unitPrice : item.hours * item.rate)}`
+                : `${item.date.toDateString()} - (${formatCurrency(
+                    item.amount
+                  )})`) +
+              ` - ${item.isConsolidated ? "consolidated" : "not consolidated"}`,
           })) ?? []
         }
         onCreate={() => createProjectItemRef.current?.open()}

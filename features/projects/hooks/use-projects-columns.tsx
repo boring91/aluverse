@@ -120,9 +120,9 @@ export const useProjectsColumns = (
                   })}
                 >
                   (
-                  {Math.round(
-                    ((project.price - project.cost) / project.price) * 100
-                  )}
+                  {project.effectiveMargin === null
+                    ? "-"
+                    : Math.round(project.effectiveMargin * 100)}
                   %)
                 </span>
               </p>

@@ -125,6 +125,8 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
     currentlyProcessing
   );
 
+  const { data: projects } = useQuery(trpc.projects.list.queryOptions({}));
+
   return (
     <>
       {accountId && mode === "account" && (
@@ -211,6 +213,17 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                     value: category,
                     label: t(category),
                   }))}
+                />
+
+                <EnumFilter
+                  label={t("project")}
+                  control={filter.projectId}
+                  options={
+                    projects?.items.map((project) => ({
+                      value: project.id,
+                      label: project.humanId,
+                    })) ?? []
+                  }
                 />
               </>
             )}

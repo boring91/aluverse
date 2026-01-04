@@ -5,6 +5,7 @@ import {
   hasBudgetCategory,
   hasConsolidationGroup,
   hasGst,
+  hasProject,
   isTransactionConsolidated,
   transactionSignedAmount,
 } from "@/db/expressions";
@@ -64,6 +65,12 @@ export async function listTransactions(
   if (filters?.budgetCategory) {
     query = query.where((eb) =>
       eb(hasBudgetCategory(eb, filters.budgetCategory!), "=", true)
+    );
+  }
+
+  if (filters?.projectId) {
+    query = query.where((eb) =>
+      eb(hasProject(eb, filters.projectId!), "=", true)
     );
   }
 

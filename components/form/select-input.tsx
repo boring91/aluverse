@@ -14,8 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { projects } from "@/db/schemas/projects";
-import form from "next/form";
 import {
   SearchableSelect,
   SearchableSelectTrigger,

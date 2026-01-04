@@ -40,6 +40,14 @@ const useColumns = (
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title={tc("name")} />
         ),
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <div className="whitespace-pre-wrap wrap-break-word max-w-xs">
+              {item.name}
+            </div>
+          );
+        },
       },
 
       {

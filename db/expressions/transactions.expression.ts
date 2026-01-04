@@ -84,3 +84,15 @@ export const hasBudgetCategory = (
     .select((sub) => eb(sub.fn.count("id"), ">", eb.lit(0)).as("hasCategory"))
     .$asScalar();
 };
+
+export const hasProject = (
+  eb: ExpressionBuilder<DB, "transactions">,
+  projectId: string
+) => {
+  return eb
+    .selectFrom("consolidations")
+    .whereRef("transactionId", "=", "transactions.id")
+    .where("projectId", "=", projectId)
+    .select((sub) => eb(sub.fn.count("id"), ">", eb.lit(0)).as("hasProject"))
+    .$asScalar();
+};

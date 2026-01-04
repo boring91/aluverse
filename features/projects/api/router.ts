@@ -64,7 +64,7 @@ export const projectsRouter = createTRPCRouter({
     .input(
       createProjectSchema.transform((v) => ({
         ...v,
-        price: v.price * 100, // Convert dollars to cents
+        price: Math.round(v.price * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -75,7 +75,7 @@ export const projectsRouter = createTRPCRouter({
     .input(
       updateProjectSchema.transform((v) => ({
         ...v,
-        price: v.price * 100, // Convert dollars to cents
+        price: Math.round(v.price * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -112,7 +112,7 @@ export const projectSuppliesRouter = createTRPCRouter({
     .input(
       createProjectSupplyWithProjectIdSchema.transform((v) => ({
         ...v,
-        unitPrice: v.unitPrice * 100, // Convert dollars to cents
+        unitPrice: Math.round(v.unitPrice * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -123,7 +123,7 @@ export const projectSuppliesRouter = createTRPCRouter({
     .input(
       updateProjectSupplySchema.transform((v) => ({
         ...v,
-        unitPrice: v.unitPrice * 100, // Convert dollars to cents
+        unitPrice: Math.round(v.unitPrice * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -160,7 +160,7 @@ export const projectLaborsRouter = createTRPCRouter({
     .input(
       createProjectLaborWithProjectIdSchema.transform((v) => ({
         ...v,
-        rate: v.rate * 100, // Convert dollars to cents
+        rate: Math.round(v.rate * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -171,7 +171,7 @@ export const projectLaborsRouter = createTRPCRouter({
     .input(
       updateProjectLaborSchema.transform((v) => ({
         ...v,
-        rate: v.rate * 100, // Convert dollars to cents
+        rate: Math.round(v.rate * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -208,7 +208,7 @@ export const projectMiscRouter = createTRPCRouter({
     .input(
       createProjectMiscWithProjectIdSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -219,7 +219,7 @@ export const projectMiscRouter = createTRPCRouter({
     .input(
       updateProjectMiscSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -256,7 +256,7 @@ export const projectPaymentsRouter = createTRPCRouter({
     .input(
       createProjectPaymentWithProjectIdSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {
@@ -267,7 +267,7 @@ export const projectPaymentsRouter = createTRPCRouter({
     .input(
       updateProjectPaymentSchema.transform((v) => ({
         ...v,
-        amount: v.amount * 100, // Convert dollars to cents
+        amount: Math.round(v.amount * 100), // Convert dollars to cents
       }))
     )
     .mutation(async ({ input }) => {

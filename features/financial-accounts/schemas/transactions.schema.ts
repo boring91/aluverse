@@ -19,6 +19,7 @@ export const transactionFiltersSchema = z.object({
   hasGst: booleanFilterSchema.optional(),
   consolidationGroup: z.enum(transactionConsolidationGroups).optional(),
   budgetCategory: z.enum(transactionBudgetCategories).optional(),
+  projectId: z.string().optional(),
 });
 
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;

@@ -71,25 +71,25 @@ export async function listProjects(input: z.infer<typeof listProjectSchema>) {
     const dir = sort.desc ? "desc" : "asc";
     switch (sort.id) {
       case "humanId":
-        query = query.orderBy(`humanId ${dir}`);
+        query = query.orderBy("humanId", dir);
         break;
       case "price":
-        query = query.orderBy(`price ${dir}`);
+        query = query.orderBy("price", dir);
         break;
       case "visitDate":
-        query = query.orderBy(`visitDate ${dir}`);
+        query = query.orderBy("visitDate", dir);
         break;
       case "startDate":
-        query = query.orderBy(`startDate ${dir}`);
+        query = query.orderBy("startDate", dir);
         break;
       case "endDate":
-        query = query.orderBy(`endDate ${dir}`);
+        query = query.orderBy("endDate", dir);
         break;
     }
   });
 
   if (!sorting?.length) {
-    query = query.orderBy("startDate desc");
+    query = query.orderBy("humanId", "asc");
   }
 
   query =

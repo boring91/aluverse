@@ -111,16 +111,49 @@ export const miscCost = (
 export const projectOutstanding = (eb: ExpressionBuilder<DB, "projects">) =>
   eb("price", "-", projectPaid);
 
-export const cost = (
+export const projectCost = (
   eb: ExpressionBuilder<DB, "projects">,
   from?: Date,
   to?: Date
 ) =>
-  eb(
-    eb(suppliesCost(eb, from, to), "+", laborCost(eb, from, to)),
-    "+",
-    miscCost(eb, from, to)
-  ).$notNull();
+  eb
+    .parens(
+      eb(
+        eb(suppliesCost(eb, from, to), "+", laborCost(eb, from, to)),
+        "+",
+        miscCost(eb, from, to)
+      )
+    )
+    .$notNull();
+
+export const projectMarkup = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb
+    .case()
+    .when(projectCost, ">", 0)
+    .then(
+      eb(
+        eb.parens(eb("price", "-", projectCost(eb))),
+        "/",
+        eb.cast<number>(projectCost(eb), "double precision")
+      )
+    )
+    .else(null)
+    .end();
+
+export const projectMargin = (eb: ExpressionBuilder<DB, "projects">) =>
+  // eb.lit(0);
+  eb
+    .case()
+    .when("price", ">", 0)
+    .then(
+      eb(
+        eb.parens(eb("price", "-", projectCost(eb))),
+        "/",
+        eb.cast<number>(eb.ref("price"), "double precision")
+      )
+    )
+    .else(null)
+    .end();
 
 export const unconsolidatedSuppliesCount = (
   eb: ExpressionBuilder<DB, "projects">

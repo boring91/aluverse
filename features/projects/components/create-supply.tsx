@@ -46,6 +46,9 @@ export const CreateSupply = ({
 
   const form = useForm({
     resolver: zodResolver(createProjectSupplySchema),
+    defaultValues: {
+      quantity: 1,
+    },
   });
 
   const queryClient = useQueryClient();
