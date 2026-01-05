@@ -14,7 +14,7 @@ export async function createConsolidation(
       .returning(consolidationMapper)
       .executeTakeFirstOrThrow();
 
-    await updateConsolidationWithRelatedItem(tx, consolidation.id, data);
+    await updateConsolidationWithRelatedItem(tx, consolidation);
 
     return consolidation;
   });

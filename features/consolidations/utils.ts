@@ -1,14 +1,13 @@
 import { ExpressionBuilder, Transaction } from "kysely";
-import { createConsolidationSchema } from "./schemas/consolidations.schema";
 import { DB } from "@/db/types";
-import { z } from "zod";
+import { InferMapper } from "@/lib/type";
+import { consolidationMapper } from "@/db/mappers";
 
 export async function updateConsolidationWithRelatedItem(
   tx: Transaction<DB>,
-  consolidationId: string,
-  data: z.infer<typeof createConsolidationSchema>
+  consolidation: InferMapper<typeof consolidationMapper>
 ) {
-  const { projectStream, projectItemId } = data;
+  const { projectStream, projectItemId } = consolidation;
 
   if (projectStream && projectItemId) {
     const tableMap = {
@@ -36,7 +35,13 @@ export async function updateConsolidationWithRelatedItem(
       .select(amountExpression[projectStream])
       .executeTakeFirstOrThrow();
 
-    if (amount !== data.amount) {
+    const sign = projectStream === "payments" ? 1 : -1;
+    const amountType = Math.sign(sign * amount) > 0 ? "income" : "expense";
+
+    if (
+      Math.abs(amount) !== consolidation.amount ||
+      consolidation.transaction.type !== amountType
+    ) {
       throw new Error(
         "Consolidation amount does not match item amount. Please update the item amount to match the consolidation amount."
       );
@@ -44,21 +49,21 @@ export async function updateConsolidationWithRelatedItem(
 
     await tx
       .updateTable(tableMap[projectStream])
-      .set({ consolidationId })
+      .set({ consolidationId: consolidation.id })
       .where("id", "=", projectItemId)
       .execute();
   }
 
-  if (data.consolidationGroup === "loan") {
-    if (data.isPayoff && data.loanPayoffId) {
+  if (consolidation.consolidationGroup === "loan") {
+    if (consolidation.isPayoff && consolidation.loanPayoff?.id) {
       // Ensure that the consolidated payoff amount matches the consolidation amount
       const { amount } = await tx
         .selectFrom("loanPayoffs")
-        .where("id", "=", data.loanPayoffId)
+        .where("id", "=", consolidation.loanPayoff?.id)
         .select("amount")
         .executeTakeFirstOrThrow();
 
-      if (amount !== data.amount) {
+      if (amount !== consolidation.amount) {
         throw new Error(
           "Consolidation amount does not match payoff amount. Please update the payoff amount to match the consolidation amount."
         );
@@ -66,18 +71,18 @@ export async function updateConsolidationWithRelatedItem(
 
       await tx
         .updateTable("loanPayoffs")
-        .set({ consolidationId })
-        .where("id", "=", data.loanPayoffId)
+        .set({ consolidationId: consolidation.id })
+        .where("id", "=", consolidation.loanPayoff.id)
         .execute();
-    } else if (data.loanId) {
+    } else if (consolidation.loan?.id) {
       // Ensure that the consolidated loan amount matches the consolidation amount
       const { amount } = await tx
         .selectFrom("loans")
-        .where("id", "=", data.loanId)
+        .where("id", "=", consolidation.loan?.id)
         .select("amount")
         .executeTakeFirstOrThrow();
 
-      if (amount !== data.amount) {
+      if (amount !== consolidation.amount) {
         throw new Error(
           "Consolidation amount does not match loan amount. Please update the loan amount to match the consolidation amount."
         );
@@ -85,9 +90,35 @@ export async function updateConsolidationWithRelatedItem(
 
       await tx
         .updateTable("loans")
-        .set({ consolidationId })
-        .where("id", "=", data.loanId)
+        .set({ consolidationId: consolidation.id })
+        .where("id", "=", consolidation.loan.id)
         .execute();
     }
+  }
+
+  // Unlink other consolidations that reference the same project item, if any
+  if (consolidation.projectItemId && consolidation.projectStream) {
+    await tx
+      .deleteFrom("consolidations")
+      .where("projectItemId", "=", consolidation.projectItemId)
+      .where("id", "<>", consolidation.id)
+      .execute();
+  }
+
+  // For loans: Only reset the loanId if there is no payoffId, otherwise only reset loanPayoffId
+  if (consolidation.loanPayoff?.id) {
+    // Reset other consolidations that reference the same loan payoff id
+    await tx
+      .deleteFrom("consolidations")
+      .where("loanPayoffId", "=", consolidation.loanPayoff.id)
+      .where("id", "<>", consolidation.id)
+      .execute();
+  } else if (consolidation.loan?.id) {
+    // Reset other consolidations that reference the same loan id
+    await tx
+      .deleteFrom("consolidations")
+      .where("loanId", "=", consolidation.loan?.id)
+      .where("id", "<>", consolidation.id)
+      .execute();
   }
 }

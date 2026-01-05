@@ -88,7 +88,7 @@ export async function updateConsolidation(
         .execute();
     }
 
-    await updateConsolidationWithRelatedItem(tx, consolidation.id, data);
+    await updateConsolidationWithRelatedItem(tx, consolidation);
 
     return consolidation;
   });

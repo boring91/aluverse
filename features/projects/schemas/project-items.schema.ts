@@ -8,7 +8,7 @@ export const listProjectItemSchema = listSchema.safeExtend({
 export const createProjectSupplySchema = z.object({
   name: z.string().min(1),
   quantity: z.number().min(1),
-  unitPrice: z.number().min(1),
+  unitPrice: z.number(),
 });
 
 export const createProjectSupplyWithProjectIdSchema =
@@ -29,7 +29,7 @@ export const createProjectLaborWithProjectIdSchema =
 
 export const createProjectMiscSchema = z.object({
   name: z.string().min(1),
-  amount: z.number().min(1),
+  amount: z.number(),
 });
 
 export const createProjectMiscWithProjectIdSchema =
