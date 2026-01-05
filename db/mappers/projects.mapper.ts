@@ -1,8 +1,10 @@
 import { ExpressionBuilder, SelectExpression } from "kysely";
 import { DB } from "../types";
 import {
-  projectBudget,
+  projectAllocation,
+  projectAllocationOverrun,
   projectCost,
+  projectDaysOverdue,
   projectMargin,
   projectMarkup,
   projectPaid,
@@ -24,11 +26,13 @@ export const projectMapper = (eb: ExpressionBuilder<DB, "projects">) =>
     "margin",
     "budgetUnits",
     "budgetUnitValue",
+    projectDaysOverdue(eb).as("daysOverdue"),
     projectCost(eb).as("cost"),
     projectPaid(eb).as("paid"),
     projectMarkup(eb).as("effectiveMarkup"),
     projectMargin(eb).as("effectiveMargin"),
-    projectBudget(eb).as("budget"),
+    projectAllocation(eb).as("allocation"),
+    projectAllocationOverrun(eb).as("allocationOverrun"),
     unconsolidatedItemsCount(eb).as("unconsolidatedItemsCount"),
   ] satisfies SelectExpression<DB, "projects">[];
 

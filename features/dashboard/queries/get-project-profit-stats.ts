@@ -1,6 +1,9 @@
 import { db } from "@/db";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
-import { projectCost } from "@/db/expressions/projects.expression";
+import {
+  isProjectWithinRange,
+  projectCost,
+} from "@/db/expressions/projects.expression";
 
 export async function getProjectProfitStats(input: DashboardDateRange) {
   const { from, to } = input;
@@ -11,22 +14,7 @@ export async function getProjectProfitStats(input: DashboardDateRange) {
   // Filter by date range - projects that started or ended in the range
   if (from && to) {
     projectsQuery = projectsQuery.where((eb) =>
-      eb.or([
-        eb.and([
-          eb("startDate", "is not", null),
-          eb("startDate", ">=", from),
-          eb("startDate", "<=", to),
-        ]),
-        eb.and([
-          eb("endDate", "is not", null),
-          eb("endDate", ">=", from),
-          eb("endDate", "<=", to),
-        ]),
-        eb.and([
-          eb("startDate", "<=", to),
-          eb.or([eb("endDate", "is", null), eb("endDate", ">=", from)]),
-        ]),
-      ])
+      isProjectWithinRange(eb, from, to)
     );
   }
 

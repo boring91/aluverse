@@ -3,7 +3,6 @@
 import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/page-container";
-import { DatePickerInput } from "@/components/date-picker-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectsInOutStats } from "../components/projects-in-out-stats";
 import { ExpensesOverview } from "../components/expenses-overview";
@@ -78,7 +77,7 @@ export const DashboardView = () => {
       {/* Actionable Insights: Receivables and Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <OutstandingProjects />
-        <ProjectAlerts alerts={dashboardData.projectAlerts} />
+        <ProjectAlerts dateRange={dateRange} />
       </div>
 
       {/* Top/Bottom Performers */}

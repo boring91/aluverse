@@ -250,5 +250,43 @@ export const projectDaysOverdue = (eb: ExpressionBuilder<DB, "projects">) => {
   );
 };
 
-export const projectBudget = (eb: ExpressionBuilder<DB, "projects">) =>
-  eb(eb.parens(eb.val(1), "-", eb.ref("margin")), "*", eb.ref("price"));
+export const projectAllocation = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb.parens(eb.parens(eb.val(1), "-", eb.ref("margin")), "*", eb.ref("price"));
+
+export const projectAllocationOverrun = (
+  eb: ExpressionBuilder<DB, "projects">
+) =>
+  eb
+    .case()
+    .when(
+      eb.and([eb(projectCost, ">", projectAllocation), eb("price", ">", 0)])
+    )
+    .then(
+      eb(eb.parens(projectCost, "-", projectAllocation), "/", projectAllocation)
+    )
+    .else(null)
+    .end();
+
+export const isProjectWithinRange = (
+  eb: ExpressionBuilder<DB, "projects">,
+  from?: Date,
+  to?: Date
+) => {
+  if (!from && !to) {
+    return eb.lit(true);
+  }
+
+  if (from && to) {
+    return eb.and([eb("startDate", ">=", from), eb("startDate", "<=", to)]);
+  }
+
+  if (from) {
+    return eb("startDate", ">=", from);
+  }
+
+  if (to) {
+    return eb("startDate", "<=", to);
+  }
+
+  return eb.lit(false);
+};

@@ -283,6 +283,14 @@
     "completionRate": "Completion rate",
     "projectsCompleted": "Projects completed",
     "previous": "Previous",
-    "projectsProfitPercentage": "Projects profit percentage"
+    "projectsProfitPercentage": "Projects profit percentage",
+    "negativeProfitAlertType": "Negative profit",
+    "overduePaymentAlertType": "Overdue payment",
+    "budgetOverrunAlertType": "Budget overrun",
+    "noneAlertType": "None",
+    "negativeProfitAlertMessage": "This project is currently running at a negative profit of {amount}.",
+    "overduePaymentAlertMessage": "Payment is overdue by {days} days.",
+    "budgetOverrunAlertMessage": "Budget is overrun by {percent}%.",
+    "noAlertMessage": "No alerts for this project."
   }
 }

@@ -4,21 +4,66 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/client-utils";
 import { AlertTriangleIcon, InfoIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+import { DashboardSection } from "./dashboard-section";
+import { inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "@/trpc/routers/_app";
+import { useTranslations } from "next-intl";
+import { formatCurrency } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
+import { DashboardDateRange } from "../schemas/dashboard.schema";
 
-type ProjectAlert = {
-  type: "negativeProfit" | "overduePayment" | "delayed" | "budgetOverrun";
-  severity: "high" | "medium" | "low";
-  project: string;
-  client: string;
-  message: string;
+type Props = {
+  dateRange: DashboardDateRange;
 };
 
-type ProjectAlertsProps = {
-  alerts: ProjectAlert[];
+export const ProjectAlerts = ({ dateRange }: Props) => {
+  const trpc = useTRPC();
+  const { data: projects, isLoading } = useQuery(
+    trpc.dashboard.projectsWithAlerts.queryOptions(dateRange)
+  );
+
+  const skeleton = (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-48" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-6 w-24" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <DashboardSection isLoading={isLoading} skeleton={skeleton}>
+      <ProjectAlertsList projects={projects || []} />
+    </DashboardSection>
+  );
 };
 
-export const ProjectAlerts = ({ alerts }: ProjectAlertsProps) => {
-  const getSeverityVariant = (severity: string) => {
+const ProjectAlertsList = ({
+  projects,
+}: {
+  projects: inferRouterOutputs<AppRouter>["dashboard"]["projectsWithAlerts"];
+}) => {
+  const t = useTranslations("Dashboard");
+
+  const getProjectSeverity = (project: (typeof projects)[number]) => {
+    if (project.price - project.cost < 0) return "high";
+    if (project.daysOverdue) return "high";
+    if (project.allocationOverrun) return "medium";
+    return "low";
+  };
+
+  const getSeverityVariant = (project: (typeof projects)[number]) => {
+    const severity = getProjectSeverity(project);
     switch (severity) {
       case "high":
         return "destructive";
@@ -29,22 +74,33 @@ export const ProjectAlerts = ({ alerts }: ProjectAlertsProps) => {
     }
   };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "negativeProfit":
-        return "Negative Profit";
-      case "overduePayment":
-        return "Overdue Payment";
-      case "delayed":
-        return "Delayed";
-      case "budgetOverrun":
-        return "Budget Overrun";
-      default:
-        return type;
+  const getType = (project: (typeof projects)[number]) => {
+    return project.price - project.cost < 0
+      ? "negativeProfit"
+      : !!project.daysOverdue
+        ? "overduePayment"
+        : !!project.allocationOverrun
+          ? "budgetOverrun"
+          : "none";
+  };
+
+  const getProjectMessage = (project: (typeof projects)[number]) => {
+    if (project.price - project.cost < 0) {
+      return t("negativeProfitAlertMessage", {
+        amount: formatCurrency((project.price - project.cost) / 100),
+      });
+    } else if (!!project.daysOverdue) {
+      return t("overduePaymentAlertMessage", { days: project.daysOverdue });
+    } else if (!!project.allocationOverrun) {
+      return t("budgetOverrunAlertMessage", {
+        percent: (project.allocationOverrun * 100).toFixed(2),
+      });
+    } else {
+      return t("noAlertMessage");
     }
   };
 
-  if (alerts.length === 0) {
+  if (projects.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -66,40 +122,44 @@ export const ProjectAlerts = ({ alerts }: ProjectAlertsProps) => {
           Project Health Alerts
           <Badge variant="destructive" className="gap-1">
             <AlertTriangleIcon className="h-3 w-3" />
-            {alerts.length}
+            {projects.length}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {alerts.map((alert, index) => (
+        {projects.map((project, index) => (
           <div
             key={index}
             className={cn(
               "p-3 rounded-lg border",
-              alert.severity === "high" &&
+              getProjectSeverity(project) === "high" &&
                 "border-destructive/50 bg-destructive/5",
-              alert.severity === "medium" &&
+              getProjectSeverity(project) === "medium" &&
                 "border-yellow-500/50 bg-yellow-500/5"
             )}
           >
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
-                <Badge variant={getSeverityVariant(alert.severity)}>
-                  {getTypeLabel(alert.type)}
+                <Badge variant={getSeverityVariant(project)}>
+                  {t(`${getType(project)}AlertType`)}
                 </Badge>
-                <span className="text-sm font-medium">{alert.project}</span>
+                <span className="text-sm font-medium">
+                  <Link href={`/projects/${project.id}`}>
+                    {project.humanId}
+                  </Link>
+                </span>
               </div>
-              {alert.severity === "high" && (
+              {getProjectSeverity(project) === "high" && (
                 <AlertTriangleIcon className="h-4 w-4 text-destructive shrink-0" />
               )}
-              {alert.severity === "medium" && (
+              {getProjectSeverity(project) === "medium" && (
                 <InfoIcon className="h-4 w-4 text-yellow-500 shrink-0" />
               )}
             </div>
             <div className="text-xs text-muted-foreground mb-1">
-              {alert.client}
+              {project.client}
             </div>
-            <div className="text-sm">{alert.message}</div>
+            <div className="text-sm">{getProjectMessage(project)}</div>
           </div>
         ))}
       </CardContent>
