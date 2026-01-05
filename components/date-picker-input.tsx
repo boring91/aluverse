@@ -45,6 +45,7 @@ export const DatePickerInput = ({ value, onChange, placeholder }: Props) => {
         <Calendar
           mode="single"
           selected={value}
+          defaultMonth={value}
           onSelect={(value) => {
             setOpen(false);
             onChange(value);

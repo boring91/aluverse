@@ -26,6 +26,7 @@ import {
   formatPercent,
 } from "../lib/dummy-data";
 import { useState } from "react";
+import { DateRange } from "@/components/date-range";
 
 export const DashboardView = () => {
   const t = useTranslations("Common");
@@ -44,28 +45,15 @@ export const DashboardView = () => {
 
   return (
     <PageContainer>
-      {/* Date Range Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            {t("fromDate")}:
-          </label>
-          <DatePickerInput
-            value={fromDate}
-            onChange={setFromDate}
-            placeholder="Select from date"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            {t("toDate")}:
-          </label>
-          <DatePickerInput
-            value={toDate}
-            onChange={setToDate}
-            placeholder="Select to date"
-          />
-        </div>
+      <div className="flex items-center justify-end">
+        <DateRange
+          initialDateFrom={dashboardData.dateRange.from}
+          initialDateTo={dashboardData.dateRange.to}
+          onUpdate={({ range }) => {
+            setFromDate(range.from);
+            setToDate(range.to);
+          }}
+        />
       </div>
 
       {/* General Overview */}

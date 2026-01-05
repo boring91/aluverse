@@ -29,8 +29,6 @@ export const OutstandingProjects = () => {
     </Card>
   );
 
-  console.log({ data });
-
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
       {data && (
@@ -69,7 +67,7 @@ export const OutstandingProjects = () => {
                   {t("avgDaysOutstanding")}
                 </span>
                 <span className="text-sm font-medium">
-                  {data.overdue.daysOverdueAverage} days
+                  {Math.round(data.overdue.daysOverdueAverage)} days
                 </span>
               </div>
             </div>
@@ -105,7 +103,7 @@ export const OutstandingProjects = () => {
                       </div>
                       {item.daysOverdue && item.daysOverdue > 0 && (
                         <div className="text-xs text-destructive">
-                          {item.daysOverdue} {t("daysOverdue")}
+                          {Math.round(item.daysOverdue)} {t("daysOverdue")}
                         </div>
                       )}
                     </div>

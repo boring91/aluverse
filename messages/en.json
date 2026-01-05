@@ -52,7 +52,16 @@
     "toDate": "To date",
     "totalCountItems": "Total {count} items",
     "filteredFilteredCountOutOfCountItems": "Filtered {filteredCount} out of {count} items",
-    "search": "Search"
+    "search": "Search",
+    "todayDateRangePreset": "Today",
+    "yesterdayDateRangePreset": "Yesterday",
+    "last7DateRangePreset": "Last 7 days",
+    "last14DateRangePreset": "Last 14 days",
+    "last30DateRangePreset": "Last 30 days",
+    "thisWeekDateRangePreset": "This week",
+    "lastWeekDateRangePreset": "Last week",
+    "thisMonthDateRangePreset": "This month",
+    "lastMonthDateRangePreset": "Last month"
   },
   "Login": {
     "pageTitle": "Login",
