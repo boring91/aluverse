@@ -249,3 +249,6 @@ export const projectDaysOverdue = (eb: ExpressionBuilder<DB, "projects">) => {
     eb.lit(-1)
   );
 };
+
+export const projectBudget = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb(eb.parens(eb.val(1), "-", eb.ref("margin")), "*", eb.ref("price"));
