@@ -1,0 +1,1 @@
+ALTER TABLE "projects" RENAME COLUMN "budget_unit" TO "budget_units";

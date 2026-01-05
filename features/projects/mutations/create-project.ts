@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { projectMapper } from "@/db/mappers";
 import { createProjectSchema } from "../schemas/projects.schema";
+import { budgetUnitValue } from "@/data/budget";
 
 export async function createProject(data: z.infer<typeof createProjectSchema>) {
   // Compute a new human id in this format PXXXX:
@@ -14,7 +15,7 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
 
   return await db
     .insertInto("projects")
-    .values({ ...data, humanId })
+    .values({ ...data, budgetUnitValue, humanId })
     .returning(projectMapper)
     .executeTakeFirstOrThrow();
 }

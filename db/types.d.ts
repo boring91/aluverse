@@ -164,6 +164,8 @@ export interface ProjectPayments {
 
 export interface Projects {
   address: string | null;
+  budgetUnits: number;
+  budgetUnitValue: number;
   client: string;
   createdAt: Generated<Timestamp>;
   endDate: Timestamp | null;

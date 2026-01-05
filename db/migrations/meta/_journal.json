@@ -127,6 +127,27 @@
       "when": 1767499270884,
       "tag": "0017_redundant_tana_nile",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1767594782263,
+      "tag": "0018_chubby_random",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1767594858995,
+      "tag": "0019_greedy_scalphunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1767594917933,
+      "tag": "0020_far_marrow",
+      "breakpoints": true
     }
   ]
 }

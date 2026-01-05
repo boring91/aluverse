@@ -119,9 +119,13 @@ export const projectCost = (
   eb
     .parens(
       eb(
-        eb(suppliesCost(eb, from, to), "+", laborCost(eb, from, to)),
+        eb(
+          eb(suppliesCost(eb, from, to), "+", laborCost(eb, from, to)),
+          "+",
+          miscCost(eb, from, to)
+        ),
         "+",
-        miscCost(eb, from, to)
+        eb("budgetUnits", "*", eb.ref("budgetUnitValue"))
       )
     )
     .$notNull();

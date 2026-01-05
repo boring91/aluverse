@@ -183,7 +183,10 @@
     "totalPendingConsolidationItems": "Total pending consolidation items",
     "isConsolidated": "Is consolidated",
     "margin": "Margin",
-    "priceAndMargin": "Price & margin"
+    "priceAndMargin": "Price & margin",
+    "budgetUnits": "Budget units",
+    "overdue": "Overdue",
+    "budgetAllocation": "Budget allocation"
   },
   "Loans": {
     "loans": "Loans",

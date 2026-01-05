@@ -14,3 +14,9 @@ export const dailyBudgetAllocation = Object.fromEntries(
     Math.round((value * 12) / 365.25),
   ])
 ) as Record<keyof typeof monthlyBudgetAllocation, number>;
+
+const budgetUnitsPerMonth = 10.0;
+export const budgetUnitValue = Math.ceil(
+  Object.values(monthlyBudgetAllocation).reduce((sum, val) => sum + val, 0) /
+    budgetUnitsPerMonth
+);

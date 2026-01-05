@@ -14,6 +14,7 @@ export const createProjectSchema = z.object({
   meters: z.number().nullable().optional(),
   price: z.number().min(1),
   margin: z.number().min(0).max(1),
+  budgetUnits: z.number().min(0),
 });
 
 export const updateProjectSchema = createProjectSchema.safeExtend({

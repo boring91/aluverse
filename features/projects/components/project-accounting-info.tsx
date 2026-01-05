@@ -18,11 +18,12 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("paid")}
+            {t("budgetAllocation")}
           </CardTitle>
         </CardHeader>
-        <CardContent className="font-mono text-xl font-semibold text-sky-500">
-          {formatCurrency(project.paid)}
+        <CardContent className="font-mono text-xl font-semibold text-sky-500 flex flex-col gap-2">
+          <p>x{project.budgetUnits.toPrecision(2)}</p>
+          <p className="text-sm">{formatCurrency(project.budgetUnitValue)}</p>
         </CardContent>
       </Card>
 
@@ -42,7 +43,7 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("remaining")}
+            {t("overdue")}
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-xl font-semibold text-amber-500">

@@ -187,6 +187,13 @@ export const CreateProject = ({
               label={t("margin")}
               control={form.control}
             />
+
+            {/* Budget Units */}
+            <NumberInput
+              name="budgetUnits"
+              label={t("budgetUnits")}
+              control={form.control}
+            />
           </FieldGroup>
         </form>
 
