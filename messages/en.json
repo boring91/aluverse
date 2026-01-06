@@ -218,6 +218,8 @@
     "revenue": "Revenue",
     "cost": "Cost",
     "expenses": "Expenses",
+    "income": "Income",
+    "expense": "Expense",
     "operatingProfit": "Operating profit",
     "taxesTaxRefund": "Taxes/Tax Refund",
     "netProfit": "Net profit",
