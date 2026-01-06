@@ -7,27 +7,19 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from "recharts";
-import { formatCurrency } from "../lib/dummy-data";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSection } from "./dashboard-section";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { formatCurrency, stringsToNeutralColors } from "@/lib/utils";
 
 type Props = {
   dateRange: DashboardDateRange;
 };
 
-const chartConfig = {
-  revenue: {
-    label: "Revenue",
-    theme: {
-      light: "oklch(0.646 0.222 41.116)",
-      dark: "oklch(0.488 0.243 264.376)",
-    },
-  },
-} as const;
+const color = stringsToNeutralColors([""])[0];
 
 export const RevenueTrendsChart = ({ dateRange }: Props) => {
   const t = useTranslations("Dashboard");
@@ -54,7 +46,7 @@ export const RevenueTrendsChart = ({ dateRange }: Props) => {
         <Card className="h-full flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Revenue Trends
+              {t("revenueTrends")}
               <div className="text-sm font-normal">
                 <span
                   className={
@@ -70,53 +62,45 @@ export const RevenueTrendsChart = ({ dateRange }: Props) => {
           </CardHeader>
           <CardContent>
             <ChartContainer
-              config={chartConfig}
+              config={{
+                revenue: {
+                  color,
+                },
+              }}
               className="aspect-auto! h-[280px] w-full"
             >
-              <AreaChart
-                data={data.revenueTrends.map((item) => ({
-                  month: item.month,
-                  revenue: item.revenue / 100,
-                }))}
-              >
+              <AreaChart data={data.revenueTrends}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => formatCurrency(value * 100)}
+                  tickFormatter={(value) => formatCurrency(value)}
+                  width={90}
                 />
                 <ChartTooltip
-                  content={({ active, payload }) => {
-                    if (active && payload?.[0]) {
-                      const value = payload[0].value as number;
-                      return (
-                        <ChartTooltipContent>
+                  content={
+                    <ChartTooltipContent
+                      formatter={(_, __, payload) => {
+                        return (
                           <div className="flex items-center gap-2">
                             <div
-                              className="h-2.5 w-2.5 rounded-full"
+                              className="w-0 border-[1.5px] border-dashed bg-transparent my-0.5"
                               style={{
-                                backgroundColor: payload[0].color,
+                                borderColor: payload.color,
                               }}
                             />
                             <span className="text-muted-foreground">
-                              Revenue:
+                              {t(payload.name as "income" | "expense")}:
                             </span>
-                            <span className="font-mono font-medium">
-                              {formatCurrency(value * 100)}
+                            <span className="font-mono font-medium tabular-nums">
+                              {`${formatCurrency(payload.value as number)}`}
                             </span>
                           </div>
-                        </ChartTooltipContent>
-                      );
-                    }
-                    return null;
-                  }}
+                        );
+                      }}
+                    />
+                  }
                 />
                 <Area
                   type="monotone"
