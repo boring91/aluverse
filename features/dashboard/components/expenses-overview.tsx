@@ -7,12 +7,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
 import {
+  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { formatCurrency } from "@/lib/utils";
-import { Pie, Cell, PieChart } from "recharts";
+import { stringsToNeutralColors } from "@/lib/utils";
+import { Pie, PieChart } from "recharts";
+import { inferRouterOutputs } from "@trpc/server";
+import { AppRouter } from "@/trpc/routers/_app";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 
 type Props = {
   dateRange: DashboardDateRange;
@@ -38,58 +43,44 @@ export const ExpensesOverview = ({ dateRange }: Props) => {
     return null;
   }
 
-  // Process data for chart: calculate total and percentages
-  const totalExpenses = (data || []).reduce((sum, item) => sum + item.total, 0);
-
-  const chartData = (data || []).map((item) => {
-    const percent = totalExpenses > 0 ? (item.total / totalExpenses) * 100 : 0;
-    return {
-      name: item.consolidationGroup,
-      value: item.total,
-      percent,
-    };
-  });
-
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
-      <ExpensesOverviewChart data={chartData} />
+      {data && <ExpensesOverviewChart data={data} />}
     </DashboardSection>
   );
 };
 
 type ExpensesOverviewChartProps = {
-  data: { name: string; value: number; percent: number }[];
+  data: inferRouterOutputs<AppRouter>["dashboard"]["expensesStats"];
 };
 
-const chartConfig = {
-  Contingencies: {
-    label: "Contingencies",
-    theme: {
-      light: "oklch(0.828 0.189 84.429)",
-      dark: "oklch(0.627 0.265 303.9)",
-    },
-  },
-  Other: {
-    label: "Other",
-    theme: {
-      light: "oklch(0.769 0.188 70.08)",
-      dark: "oklch(0.645 0.246 16.439)",
-    },
-  },
-} as const;
+const chartConfig = {} satisfies ChartConfig;
 
 export const ExpensesOverviewChart = ({ data }: ExpensesOverviewChartProps) => {
-  // Transform data for the chart
-  const chartData = data.map((item) => ({
-    name: item.name,
-    value: item.value / 100, // Convert cents to dollars
-    percent: item.percent,
-  }));
+  const t = useTranslations("Dashboard");
+  const tFinancial = useTranslations("FinancialAccounts");
+
+  // Process data for chart: calculate total and percentages
+  const totalExpenses = (data || []).reduce((sum, item) => sum + item.total, 0);
+
+  const colors = useMemo(() => {
+    return stringsToNeutralColors(data.map((x) => x.consolidationGroup));
+  }, [data]);
+
+  const chartData = (data || []).map((item, index) => {
+    const percent = totalExpenses > 0 ? (item.total / totalExpenses) * 100 : 0;
+    return {
+      name: item.consolidationGroup,
+      value: item.total,
+      percent,
+      fill: colors[index],
+    };
+  });
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle>Expenses</CardTitle>
+        <CardTitle>{t("expenses")}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <ChartContainer
@@ -97,60 +88,21 @@ export const ExpensesOverviewChart = ({ data }: ExpensesOverviewChartProps) => {
           className="aspect-auto! h-[280px] w-full"
         >
           <PieChart>
+            <ChartTooltip content={<ChartTooltipContent />} />
             <Pie
               data={chartData}
+              dataKey="percent"
+              nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={2}
-              dataKey="value"
-              label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
-            >
-              {chartData.map((entry, index) => {
-                const colorKey =
-                  entry.name === "Contingencies" ? "Contingencies" : "Other";
+              outerRadius={80}
+              label={(value) => {
                 return (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={`var(--color-${colorKey})`}
-                  />
+                  tFinancial(value.name) +
+                  " " +
+                  (value.percent as number).toFixed(2) +
+                  "%"
                 );
-              })}
-            </Pie>
-            <ChartTooltip
-              content={({ active, payload }) => {
-                if (active && payload?.[0]) {
-                  const data = payload[0].payload as {
-                    name: string;
-                    value: number;
-                    percent: number;
-                  };
-                  return (
-                    <ChartTooltipContent>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{
-                              backgroundColor: payload[0].color,
-                            }}
-                          />
-                          <span className="text-muted-foreground">
-                            {data.name}:
-                          </span>
-                        </div>
-                        <div className="font-mono font-medium">
-                          {formatCurrency(data.value * 100)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {data.percent.toFixed(1)}%
-                        </div>
-                      </div>
-                    </ChartTooltipContent>
-                  );
-                }
-                return null;
               }}
             />
           </PieChart>
