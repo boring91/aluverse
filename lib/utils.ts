@@ -26,7 +26,7 @@ export const formatCurrency = (amountInCents: number): string => {
 };
 
 export const formatPercent = (value: number): string => {
-  return `${value >= 0 ? "" : ""}${value.toFixed(2)}%`;
+  return `${value >= 0 ? "" : ""}${(value * 100).toFixed(2)}%`;
 };
 
 export const getProjectStatus = (

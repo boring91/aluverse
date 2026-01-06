@@ -82,10 +82,7 @@ export const DashboardView = () => {
 
       {/* Top/Bottom Performers */}
       <div className="mb-6">
-        <TopPerformers
-          top={dashboardData.topPerformers}
-          bottom={dashboardData.bottomPerformers}
-        />
+        <TopPerformers dateRange={dateRange} />
       </div>
 
       {/* Budget, Payment, Pipeline, Efficiency */}

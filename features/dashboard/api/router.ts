@@ -9,6 +9,7 @@ import { getCashFlow } from "../queries/get-cashflow";
 import { getRevenueStats } from "../queries/get-revenue-stats";
 import { getOutstandingProjects } from "../queries/get-outstanding-projects";
 import { getProjectsWithAlerts } from "../queries/get-projects-with-alerts";
+import { getTopAndWorstPerformers } from "../queries/get-top-and-worst-performers";
 
 export const dashboardRouter = createTRPCRouter({
   generalStats: protectedProcedure
@@ -59,5 +60,11 @@ export const dashboardRouter = createTRPCRouter({
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getProjectsWithAlerts(input.from, input.to);
+    }),
+
+  topAndWorstPerformers: protectedProcedure
+    .input(dashboardDateRangeSchema)
+    .query(async ({ input }) => {
+      return await getTopAndWorstPerformers(input.from, input.to);
     }),
 });
