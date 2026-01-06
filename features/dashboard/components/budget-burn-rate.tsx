@@ -2,91 +2,121 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { formatCurrency } from "../lib/dummy-data";
 import { cn } from "@/lib/client-utils";
 import { AlertTriangleIcon, CheckCircleIcon } from "lucide-react";
+import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+import { DashboardSection } from "./dashboard-section";
+import { formatCurrency, formatPercent } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
-type BudgetBurnRateProps = {
-  data: {
-    monthlySpend: number;
-    allocated: number;
-    daysRemaining: number;
-    projectedOverspend: boolean;
-    burnRate: number;
-  };
+type Props = {
+  dateRange: DashboardDateRange;
 };
 
-export const BudgetBurnRate = ({ data }: BudgetBurnRateProps) => {
-  const spentPercent = (Math.abs(data.monthlySpend) / data.allocated) * 100;
-  const remaining = data.allocated - Math.abs(data.monthlySpend);
-  const projectedSpend = data.burnRate * data.daysRemaining;
-  const projectedTotal = Math.abs(data.monthlySpend) + projectedSpend;
+export const BudgetBurnRate = ({ dateRange }: Props) => {
+  const t = useTranslations("Dashboard");
+  const trpc = useTRPC();
 
-  return (
+  const { data, isLoading } = useQuery(
+    trpc.dashboard.budgetBurnRate.queryOptions(dateRange)
+  );
+
+  const skeleton = (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Budget Burn Rate
-          {data.projectedOverspend ? (
-            <AlertTriangleIcon className="h-5 w-5 text-destructive" />
-          ) : (
-            <CheckCircleIcon className="h-5 w-5 text-primary" />
-          )}
-        </CardTitle>
+        <Skeleton className="h-6 w-48" />
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Spent</span>
-            <span className="font-medium">
-              {formatCurrency(data.monthlySpend)} /{" "}
-              {formatCurrency(data.allocated)}
-            </span>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-6 w-24" />
           </div>
-          <Progress value={spentPercent} className="h-2" />
-          <div className="flex justify-between items-center text-xs text-muted-foreground">
-            <span>{spentPercent.toFixed(1)}% used</span>
-            <span>{formatCurrency(remaining)} remaining</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">
-              Daily Burn Rate
-            </div>
-            <div className="text-lg font-semibold">
-              {formatCurrency(data.burnRate)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">
-              Days Remaining
-            </div>
-            <div className="text-lg font-semibold">{data.daysRemaining}</div>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t">
-          <div className="text-xs text-muted-foreground mb-1">
-            Projected Total Spend
-          </div>
-          <div
-            className={cn(
-              "text-lg font-semibold",
-              data.projectedOverspend && "text-destructive"
-            )}
-          >
-            {formatCurrency(projectedTotal)}
-          </div>
-          {data.projectedOverspend && (
-            <div className="text-xs text-destructive mt-1">
-              Projected to exceed budget by{" "}
-              {formatCurrency(projectedTotal - data.allocated)}
-            </div>
-          )}
-        </div>
+        ))}
       </CardContent>
     </Card>
+  );
+
+  return (
+    <DashboardSection isLoading={isLoading} skeleton={skeleton}>
+      {data && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              {t("budgetBurnRate")}
+              {data.projectedSpent > data.spent ? (
+                <AlertTriangleIcon className="h-5 w-5 text-destructive" />
+              ) : (
+                <CheckCircleIcon className="h-5 w-5 text-primary" />
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">{t("spent")}</span>
+                <span className="font-medium">
+                  {formatCurrency(data.spent)} / {formatCurrency(data.budget)}
+                </span>
+              </div>
+              <Progress
+                value={(data.spent / data.budget) * 100}
+                className="h-2"
+              />
+              <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <span>
+                  {formatPercent(data.spent / data.budget)}% {t("used")}
+                </span>
+                <span>
+                  {formatCurrency(data.budget - data.spent)} {t("remaining")}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t("dailyBurnRate")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {formatCurrency(data.dailyBurnRate)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t("daysRemaining")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {data.daysRemaining}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t">
+              <div className="text-xs text-muted-foreground mb-1">
+                {t("projectedTotalSpend")}
+              </div>
+              <div
+                className={cn(
+                  "text-lg font-semibold",
+                  data.projectedSpent > data.budget && "text-destructive"
+                )}
+              >
+                {formatCurrency(data.projectedSpent)}
+              </div>
+              {data.projectedSpent > data.budget && (
+                <div className="text-xs text-destructive mt-1">
+                  {t("projectedToExceedBudgetBy")}{" "}
+                  {formatCurrency(data.projectedSpent - data.budget)}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </DashboardSection>
   );
 };

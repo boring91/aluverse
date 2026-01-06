@@ -4,7 +4,7 @@
 export const dashboardData = {
   dateRange: {
     from: new Date("2025-11-01"),
-    to: new Date("2025-11-30"),
+    to: new Date("2025-12-01"),
   },
   overview: {
     revenue: 2228450, // $22,284.50

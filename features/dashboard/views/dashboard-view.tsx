@@ -87,7 +87,7 @@ export const DashboardView = () => {
 
       {/* Budget, Payment, Pipeline, Efficiency */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-        <BudgetBurnRate data={dashboardData.budgetBurnRate} />
+        <BudgetBurnRate dateRange={dateRange} />
         <PaymentStatus data={dashboardData.paymentStatus} />
         <ProjectPipeline data={dashboardData.projectPipeline} />
         <EfficiencyMetrics data={dashboardData.efficiencyMetrics} />
