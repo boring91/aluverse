@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/chart";
 import { XAxis, YAxis, Bar, BarChart } from "recharts";
 import { useTranslations } from "next-intl";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, stringsToNeutralColors } from "@/lib/utils";
 
 type Props = {
   dateRange: DashboardDateRange;
@@ -52,12 +52,7 @@ type ProjectsInOutStatsChartProps = {
   out: number;
 };
 
-const chartConfig = {
-  stream: {
-    label: "Stream",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig;
+const fill = stringsToNeutralColors([""])[0];
 
 export const ProjectsInOutStatsChart = (data: ProjectsInOutStatsChartProps) => {
   const t = useTranslations("Dashboard");
@@ -68,19 +63,18 @@ export const ProjectsInOutStatsChart = (data: ProjectsInOutStatsChartProps) => {
         <CardTitle>{t("projectsInOutStats")}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto! h-[280px] w-full"
-        >
+        <ChartContainer config={{}} className="aspect-auto! h-[280px] w-full">
           <BarChart
             data={[
               {
                 stream: t("in"),
                 value: data.in,
+                fill,
               },
               {
                 stream: t("out"),
                 value: data.out,
+                fill,
               },
             ]}
           >

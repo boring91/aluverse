@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/chart";
 import { useTranslations } from "next-intl";
 import { XAxis, YAxis, Bar, BarChart } from "recharts";
+import { inferRouterOutputs } from "@trpc/server";
+import { AppRouter } from "@/trpc/routers/_app";
+import { stringsToNeutralColors } from "@/lib/utils";
 
 type Props = {
   dateRange: DashboardDateRange;
@@ -46,18 +49,10 @@ export const ProjectProfitOverview = ({ dateRange }: Props) => {
 };
 
 type ProjectProfitOverviewChartProps = {
-  data: { name: string; profit: number }[];
+  data: inferRouterOutputs<AppRouter>["dashboard"]["projectProfitStats"];
 };
 
-const chartConfig = {
-  profit: {
-    label: "Profit %",
-    theme: {
-      light: "oklch(0.646 0.222 41.116)",
-      dark: "oklch(0.488 0.243 264.376)",
-    },
-  },
-} as const;
+const fill = stringsToNeutralColors([""])[0];
 
 export const ProjectProfitOverviewChart = ({
   data,
@@ -67,6 +62,7 @@ export const ProjectProfitOverviewChart = ({
   const chartData = data.map((item) => ({
     name: item.name,
     profit: Math.round(item.profit * 100),
+    fill,
   }));
 
   return (
@@ -75,21 +71,13 @@ export const ProjectProfitOverviewChart = ({
         <CardTitle>{t("projectsProfitPercentage")}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto! h-[280px] w-full"
-        >
-          <BarChart
-            data={chartData}
-            layout="vertical"
-            margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
-          >
+        <ChartContainer config={{}} className="aspect-auto! h-[280px] w-full">
+          <BarChart data={chartData} layout="vertical">
             <XAxis
               type="number"
-              domain={[-150, 100]}
+              domain={[-100, 100]}
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
               tickFormatter={(value) => `${value}%`}
             />
             <YAxis
@@ -98,37 +86,33 @@ export const ProjectProfitOverviewChart = ({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              width={60}
+              interval={0}
             />
             <ChartTooltip
-              content={({ active, payload }) => {
-                if (active && payload?.[0]) {
-                  const profit = payload[0].value as number;
-                  return (
-                    <ChartTooltipContent>
+              content={
+                <ChartTooltipContent
+                  formatter={(_, __, payload) => {
+                    return (
                       <div className="flex items-center gap-2">
                         <div
-                          className="h-2.5 w-2.5 rounded-full"
+                          className="w-0 border-[1.5px] border-dashed bg-transparent my-0.5"
                           style={{
-                            backgroundColor: payload[0].color,
+                            borderColor: payload.color,
                           }}
                         />
-                        <span className="text-muted-foreground">Profit:</span>
-                        <span className="font-mono font-medium">
-                          {profit.toFixed(2)}%
+                        <span className="text-muted-foreground">
+                          {payload.name}:
+                        </span>
+                        <span className="font-mono font-medium tabular-nums">
+                          {`${payload.value}%`}
                         </span>
                       </div>
-                    </ChartTooltipContent>
-                  );
-                }
-                return null;
-              }}
+                    );
+                  }}
+                />
+              }
             />
-            <Bar
-              dataKey="profit"
-              fill="var(--color-profit)"
-              radius={[0, 4, 4, 0]}
-            />
+            <Bar dataKey="profit" fill="var(--color-profit)" radius={4} />
           </BarChart>
         </ChartContainer>
       </CardContent>
