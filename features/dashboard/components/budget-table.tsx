@@ -9,147 +9,151 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatPercent } from "../lib/dummy-data";
 import { cn } from "@/lib/client-utils";
 import { useTranslations } from "next-intl";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { DashboardSection } from "./dashboard-section";
+import { formatCurrency, formatPercent } from "@/lib/utils";
+import { useMemo } from "react";
 
-type BudgetSpending = {
-  category: string;
-  allocated: number;
-  spent: number;
-  remaining: number;
-  remainingPercent: number;
+type Props = {
+  dateRange: DashboardDateRange;
 };
 
-type BudgetTableProps = {
-  data: BudgetSpending[];
-};
-
-export const BudgetTable = ({ data }: BudgetTableProps) => {
+export const BudgetTable = ({ dateRange }: Props) => {
   const t = useTranslations("FinancialAccounts");
+  const tc = useTranslations("Common");
 
-  // Calculate totals
-  const totals = data.reduce(
-    (acc, item) => ({
-      allocated: acc.allocated + item.allocated,
-      spent: acc.spent + Math.abs(item.spent),
-      remaining: acc.remaining + item.remaining,
-    }),
-    { allocated: 0, spent: 0, remaining: 0 }
+  const trpc = useTRPC();
+  const { data, isLoading } = useQuery(
+    trpc.dashboard.budgetItemsSpending.queryOptions(dateRange)
   );
 
-  const totalRemainingPercent =
-    totals.allocated > 0
-      ? ((totals.remaining / totals.allocated) * 100).toFixed(2)
-      : "0.00";
+  const skeleton = (
+    <Card>
+      <div className="p-6">
+        <Skeleton className="h-6 w-48 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    </Card>
+  );
 
-  const getCategoryLabel = (category: string) => {
-    const categoryMap: Record<string, string> = {
-      subscription: t("subscription"),
-      consumable: t("consumable"),
-      toll: t("toll"),
-      tool: t("tool"),
-      food: t("food"),
-      salary: t("salary"),
-      fuel: t("fuel"),
-    };
-    return categoryMap[category] || category;
-  };
+  const totals = useMemo(() => {
+    return (data || []).reduce(
+      (acc, item) => ({
+        allocated: acc.allocated + item.allocated,
+        spent: acc.spent + item.spent,
+        remaining: acc.remaining + item.remaining,
+      }),
+      { allocated: 0, spent: 0, remaining: 0 }
+    );
+  }, [data]);
+
+  const totalRemainingPercent =
+    totals.allocated > 0 ? totals.remaining / totals.allocated : 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Budget spending</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Allocated</TableHead>
-              <TableHead className="text-right">Spent</TableHead>
-              <TableHead className="text-right">Remaining$</TableHead>
-              <TableHead className="text-right">Remaining%</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((item) => {
-              const isNegative = item.remaining < 0;
-              const progressValue =
-                item.allocated > 0
-                  ? Math.max(
-                      0,
-                      Math.min(
-                        100,
-                        ((item.allocated - Math.abs(item.spent)) /
-                          item.allocated) *
-                          100
-                      )
-                    )
-                  : 0;
-
-              return (
-                <TableRow key={item.category}>
-                  <TableCell className="font-medium">
-                    {getCategoryLabel(item.category)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatCurrency(item.allocated)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatCurrency(item.spent)}
-                  </TableCell>
-                  <TableCell
-                    className={cn(
-                      "text-right font-medium",
-                      isNegative && "text-destructive",
-                      !isNegative && "text-primary"
-                    )}
-                  >
-                    {formatCurrency(item.remaining)}
-                  </TableCell>
-                  <TableCell
-                    className={cn(
-                      "text-right font-medium",
-                      isNegative && "text-destructive",
-                      !isNegative && "text-primary"
-                    )}
-                  >
-                    {formatPercent(item.remainingPercent)}
-                  </TableCell>
+    <DashboardSection isLoading={isLoading} skeleton={skeleton}>
+      {data && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Budget spending</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Allocated</TableHead>
+                  <TableHead className="text-right">Spent</TableHead>
+                  <TableHead className="text-right">Remaining$</TableHead>
+                  <TableHead className="text-right">Remaining%</TableHead>
                 </TableRow>
-              );
-            })}
-            <TableRow className="font-semibold bg-muted/50">
-              <TableCell>Total</TableCell>
-              <TableCell className="text-right">
-                {formatCurrency(totals.allocated)}
-              </TableCell>
-              <TableCell className="text-right">
-                {formatCurrency(-totals.spent)}
-              </TableCell>
-              <TableCell
-                className={cn(
-                  "text-right",
-                  totals.remaining < 0 && "text-destructive",
-                  totals.remaining >= 0 && "text-primary"
+              </TableHeader>
+              <TableBody>
+                {data.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="h-24 text-center text-muted-foreground"
+                    >
+                      {tc("noResults")}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <>
+                    {data.map((item) => {
+                      const isNegative = item.remaining < 0;
+
+                      return (
+                        <TableRow key={item.category}>
+                          <TableCell className="font-medium">
+                            {t(item.category)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(item.allocated)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(-item.spent)}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "text-right font-medium",
+                              isNegative && "text-destructive",
+                              !isNegative && "text-primary"
+                            )}
+                          >
+                            {formatCurrency(item.remaining)}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "text-right font-medium",
+                              isNegative && "text-destructive",
+                              !isNegative && "text-primary"
+                            )}
+                          >
+                            {formatPercent(item.remainingPercent)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    <TableRow className="font-semibold bg-muted/50">
+                      <TableCell>Total</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(totals.allocated)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(-totals.spent)}
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          "text-right",
+                          totals.remaining < 0 && "text-destructive",
+                          totals.remaining >= 0 && "text-primary"
+                        )}
+                      >
+                        {formatCurrency(totals.remaining)}
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          "text-right",
+                          totalRemainingPercent < 0 && "text-destructive",
+                          totalRemainingPercent >= 0 && "text-primary"
+                        )}
+                      >
+                        {formatPercent(totalRemainingPercent)}
+                      </TableCell>
+                    </TableRow>
+                  </>
                 )}
-              >
-                {formatCurrency(totals.remaining)}
-              </TableCell>
-              <TableCell
-                className={cn(
-                  "text-right",
-                  parseFloat(totalRemainingPercent) < 0 && "text-destructive",
-                  parseFloat(totalRemainingPercent) >= 0 && "text-primary"
-                )}
-              >
-                {formatPercent(parseFloat(totalRemainingPercent))}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+    </DashboardSection>
   );
 };

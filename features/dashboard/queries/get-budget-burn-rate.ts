@@ -1,9 +1,10 @@
 import { dailyBudgetAllocation } from "@/data/budget";
 import { db } from "@/db";
+import { getCurrentTime } from "@/lib/utils";
 
 export async function getBudgetBurnRate(from?: Date, to?: Date) {
   // Set from and to to current month if not provided
-  const now = new Date();
+  const now = getCurrentTime();
   const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   from = from ?? currentMonth;

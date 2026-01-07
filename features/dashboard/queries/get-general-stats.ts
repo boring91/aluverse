@@ -28,21 +28,33 @@ export async function getGeneralStats(input: DashboardDateRange) {
   const revenue = (
     await query
       .where(consolidationRevenue)
-      .select((eb) => eb.fn.sum<number>(consolidationSignedAmount).as("total"))
+      .select((eb) =>
+        eb.fn
+          .coalesce(eb.fn.sum<number>(consolidationSignedAmount), eb.lit(0))
+          .as("total")
+      )
       .executeTakeFirstOrThrow()
   ).total;
 
   const cost = (
     await query
       .where(consolidationCost)
-      .select((eb) => eb.fn.sum<number>(consolidationSignedAmount).as("total"))
+      .select((eb) =>
+        eb.fn
+          .coalesce(eb.fn.sum<number>(consolidationSignedAmount), eb.lit(0))
+          .as("total")
+      )
       .executeTakeFirstOrThrow()
   ).total;
 
   const taxes = (
     await query
       .where("consolidationGroup", "=", "tax")
-      .select((eb) => eb.fn.sum<number>(consolidationSignedAmount).as("total"))
+      .select((eb) =>
+        eb.fn
+          .coalesce(eb.fn.sum<number>(consolidationSignedAmount), eb.lit(0))
+          .as("total")
+      )
       .executeTakeFirstOrThrow()
   ).total;
 
