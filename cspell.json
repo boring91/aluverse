@@ -46,7 +46,8 @@
     ".env*",
     "**/*.min.js",
     "**/*.min.css",
-    "db/migrations/**"
+    "db/migrations/**",
+    "aluverse.sql"
   ],
   "flagWords": [],
   "dictionaries": [
