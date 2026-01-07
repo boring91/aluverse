@@ -37,7 +37,7 @@ export const getProjectStatus = (
 ) => {
   if (!project.startDate) return "planning";
   if (!project.endDate) return "inProgress";
-  if (project.paid < project.price) return "awaitingPayment";
+  if (project.paid !== project.price) return "awaitingPayment";
   return "completed";
 };
 

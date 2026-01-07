@@ -225,6 +225,7 @@ export const projectInProgress = (eb: ExpressionBuilder<DB, "projects">) =>
 export const projectAwaitingPayment = (eb: ExpressionBuilder<DB, "projects">) =>
   eb.and([
     eb("startDate", "is not", null),
+    eb("endDate", "is not", null),
     eb(projectPaid, "!=", eb.ref("price")),
   ]);
 

@@ -11,6 +11,9 @@ import { getOutstandingProjects } from "../queries/get-outstanding-projects";
 import { getProjectsWithAlerts } from "../queries/get-projects-with-alerts";
 import { getTopAndWorstPerformers } from "../queries/get-top-and-worst-performers";
 import { getBudgetBurnRate } from "../queries/get-budget-burn-rate";
+import { getProjectPipeline } from "../queries/get-project-pipeline";
+import { getEfficiencyMetrics } from "../queries/get-efficiency-metrics";
+import { getPaymentStatus } from "../queries/get-payment-status";
 
 export const dashboardRouter = createTRPCRouter({
   generalStats: protectedProcedure
@@ -73,5 +76,21 @@ export const dashboardRouter = createTRPCRouter({
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getBudgetBurnRate(input.from, input.to);
+    }),
+
+  projectPipeline: protectedProcedure.query(async () => {
+    return await getProjectPipeline();
+  }),
+
+  efficiencyMetrics: protectedProcedure
+    .input(dashboardDateRangeSchema)
+    .query(async ({ input }) => {
+      return await getEfficiencyMetrics(input.from, input.to);
+    }),
+
+  paymentStatus: protectedProcedure
+    .input(dashboardDateRangeSchema)
+    .query(async ({ input }) => {
+      return await getPaymentStatus(input.from, input.to);
     }),
 });
