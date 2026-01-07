@@ -43,7 +43,7 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
       {data && (
-        <Card>
+        <Card className="h-full">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               {t("budgetBurnRate")}

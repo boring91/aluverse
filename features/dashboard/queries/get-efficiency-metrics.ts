@@ -14,13 +14,10 @@ export async function getEfficiencyMetrics(from?: Date, to?: Date) {
       eb.fn.avg<number>(projectPaid(eb)).as("revenuePerProject"),
       eb.fn.avg<number>(projectCost(eb)).as("costPerProject"),
       eb.fn.avg<number>("price").as("valuePerProject"),
-      eb(
-        eb.fn.sum<number>(
-          eb.case().when(projectCompleted(eb)).then(1).else(0).end()
-        ),
-        "/",
-        eb.cast<number>(eb.fn.count<number>("id"), "double precision")
-      ).as("completionRate"),
+      eb.fn
+        .sum<number>(eb.case().when(projectCompleted(eb)).then(1).else(0).end())
+        .as("completedCount"),
+      eb.fn.count<number>("id").as("projectCount"),
     ])
     .executeTakeFirstOrThrow();
 }

@@ -2,71 +2,102 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { formatCurrency, formatPercent } from "../lib/dummy-data";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { DashboardSection } from "./dashboard-section";
+import { formatCurrency, formatPercent } from "@/lib/utils";
 
-type EfficiencyMetricsProps = {
-  data: {
-    revenuePerProject: number;
-    costPerProject: number;
-    averageProjectValue: number;
-    projectsCompleted: number;
-    totalProjects: number;
-    completionRate: number;
-  };
+type Props = {
+  dateRange: DashboardDateRange;
 };
 
-export const EfficiencyMetrics = ({ data }: EfficiencyMetricsProps) => {
-  return (
+export const EfficiencyMetrics = ({ dateRange }: Props) => {
+  const trpc = useTRPC();
+  const t = useTranslations("Dashboard");
+
+  const { data, isLoading } = useQuery(
+    trpc.dashboard.efficiencyMetrics.queryOptions(dateRange)
+  );
+
+  const skeleton = (
     <Card>
       <CardHeader>
-        <CardTitle>Efficiency Metrics</CardTitle>
+        <Skeleton className="h-6 w-48" />
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">
-              Revenue per Project
-            </div>
-            <div className="text-lg font-semibold">
-              {formatCurrency(data.revenuePerProject)}
-            </div>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-6 w-24" />
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">
-              Cost per Project
-            </div>
-            <div className="text-lg font-semibold">
-              {formatCurrency(data.costPerProject)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">
-              Avg. Project Value
-            </div>
-            <div className="text-lg font-semibold">
-              {formatCurrency(data.averageProjectValue)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">
-              Completion Rate
-            </div>
-            <div className="text-lg font-semibold">
-              {formatPercent(data.completionRate)}
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t space-y-2">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Projects Completed</span>
-            <span className="font-medium">
-              {data.projectsCompleted} / {data.totalProjects}
-            </span>
-          </div>
-          <Progress value={data.completionRate} className="h-2" />
-        </div>
+        ))}
       </CardContent>
     </Card>
+  );
+
+  return (
+    <DashboardSection isLoading={isLoading} skeleton={skeleton}>
+      {data && (
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle>{t("efficiencyMetrics")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t("revenuePerProject")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {formatCurrency(data.revenuePerProject)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t("costPerProject")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {formatCurrency(data.costPerProject)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t("avgProjectValue")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {formatCurrency(data.valuePerProject)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t("completionRate")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {formatPercent(data.completedCount / data.projectCount)}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">
+                  {t("projectsCompleted")}
+                </span>
+                <span className="font-medium">
+                  {data.completedCount} / {data.projectCount}
+                </span>
+              </div>
+              <Progress
+                value={(data.completedCount / data.projectCount) * 100}
+                className="h-2"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </DashboardSection>
   );
 };

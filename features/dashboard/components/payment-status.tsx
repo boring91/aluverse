@@ -38,7 +38,7 @@ export const PaymentStatus = ({ dateRange }: Props) => {
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
       {data && (
-        <Card>
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>{t("paymentStatus")}</CardTitle>
           </CardHeader>
