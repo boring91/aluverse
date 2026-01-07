@@ -11,11 +11,22 @@ export async function getEfficiencyMetrics(from?: Date, to?: Date) {
     .selectFrom("projects")
     .where((eb) => isProjectWithinRange(eb, from, to))
     .select((eb) => [
-      eb.fn.avg<number>(projectPaid(eb)).as("revenuePerProject"),
-      eb.fn.avg<number>(projectCost(eb)).as("costPerProject"),
-      eb.fn.avg<number>("price").as("valuePerProject"),
       eb.fn
-        .sum<number>(eb.case().when(projectCompleted(eb)).then(1).else(0).end())
+        .coalesce(eb.fn.avg<number>(projectPaid(eb)), eb.lit(0))
+        .as("revenuePerProject"),
+      eb.fn
+        .coalesce(eb.fn.avg<number>(projectCost(eb)), eb.lit(0))
+        .as("costPerProject"),
+      eb.fn
+        .coalesce(eb.fn.avg<number>("price"), eb.lit(0))
+        .as("valuePerProject"),
+      eb.fn
+        .coalesce(
+          eb.fn.sum<number>(
+            eb.case().when(projectCompleted(eb)).then(1).else(0).end()
+          ),
+          eb.lit(0)
+        )
         .as("completedCount"),
       eb.fn.count<number>("id").as("projectCount"),
     ])

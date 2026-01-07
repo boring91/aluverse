@@ -81,6 +81,7 @@ const PerformersList = ({
   variant,
 }: PerformersListProps) => {
   const t = useTranslations("Dashboard");
+  const tc = useTranslations("Common");
   const borderBgClass =
     variant === "primary"
       ? "border-primary/20 bg-primary/5"
@@ -97,39 +98,45 @@ const PerformersList = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {items.map((item, index) => (
-          <div
-            key={item.id}
-            className={`flex items-start justify-between p-3 rounded-lg border ${borderBgClass}`}
-          >
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <Link href={`/projects/${item.id}`}>
-                  <span className="text-sm font-medium">{item.humanId}</span>
-                </Link>
-                <span className="text-xs text-muted-foreground">
-                  #{index + 1}
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground mb-2">
-                {item.client}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {t("revenue")}: {formatCurrency(item.paid)}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className={`text-lg font-semibold ${textColorClass}`}>
-                {item.effectiveMargin === null
-                  ? "-"
-                  : formatPercent(item.effectiveMargin)}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {t("profitMargin")}
-              </div>
-            </div>
+        {items.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-8">
+            {tc("noResults")}
           </div>
-        ))}
+        ) : (
+          items.map((item, index) => (
+            <div
+              key={item.id}
+              className={`flex items-start justify-between p-3 rounded-lg border ${borderBgClass}`}
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Link href={`/projects/${item.id}`}>
+                    <span className="text-sm font-medium">{item.humanId}</span>
+                  </Link>
+                  <span className="text-xs text-muted-foreground">
+                    #{index + 1}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  {item.client}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("revenue")}: {formatCurrency(item.paid)}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-lg font-semibold ${textColorClass}`}>
+                  {item.effectiveMargin === null
+                    ? "-"
+                    : formatPercent(item.effectiveMargin)}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("profitMargin")}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </CardContent>
     </Card>
   );

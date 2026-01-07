@@ -73,7 +73,10 @@ export async function getPaymentStatus(from?: Date, to?: Date) {
     .select((eb) => [
       eb.fn.avg<number>("velocity").as("velocity"),
 
-      eb.fn.avg<number>("paidInDays").as("averagePaymentInDays"),
+      eb.fn
+        .coalesce(eb.fn.avg<number>("paidInDays"), eb.lit(0))
+        .as("averagePaymentInDays"),
+
       eb(
         eb.fn.sum<number>(
           eb
@@ -88,35 +91,44 @@ export async function getPaymentStatus(from?: Date, to?: Date) {
       ).as("onTimeRate"),
 
       eb.fn
-        .sum<number>(
-          eb
-            .case()
-            .when(eb("status", "=", "onTime"))
-            .then(1)
-            .else(0)
-            .end()
+        .coalesce(
+          eb.fn.sum<number>(
+            eb
+              .case()
+              .when(eb("status", "=", "onTime"))
+              .then(1)
+              .else(0)
+              .end()
+          ),
+          eb.lit(0)
         )
         .as("onTimeCount"),
 
       eb.fn
-        .sum<number>(
-          eb
-            .case()
-            .when(eb("status", "=", "late"))
-            .then(1)
-            .else(0)
-            .end()
+        .coalesce(
+          eb.fn.sum<number>(
+            eb
+              .case()
+              .when(eb("status", "=", "late"))
+              .then(1)
+              .else(0)
+              .end()
+          ),
+          eb.lit(0)
         )
         .as("lateCount"),
 
       eb.fn
-        .sum<number>(
-          eb
-            .case()
-            .when(eb("status", "=", "overdue"))
-            .then(1)
-            .else(0)
-            .end()
+        .coalesce(
+          eb.fn.sum<number>(
+            eb
+              .case()
+              .when(eb("status", "=", "overdue"))
+              .then(1)
+              .else(0)
+              .end()
+          ),
+          eb.lit(0)
         )
         .as("overdueCount"),
     ])

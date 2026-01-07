@@ -76,7 +76,11 @@ export const EfficiencyMetrics = ({ dateRange }: Props) => {
                   {t("completionRate")}
                 </div>
                 <div className="text-lg font-semibold">
-                  {formatPercent(data.completedCount / data.projectCount)}
+                  {formatPercent(
+                    data.projectCount > 0
+                      ? data.completedCount / data.projectCount
+                      : 0
+                  )}
                 </div>
               </div>
             </div>
