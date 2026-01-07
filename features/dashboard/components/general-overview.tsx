@@ -33,10 +33,8 @@ export const GeneralOverview = ({ dateRange }: Props) => {
   );
 
   return (
-    <div className="mb-6">
-      <h2 className="text-lg font-semibold mb-4">
-        {tDashboard("generalOverview")}
-      </h2>
+    <div className="flex flex-col gap-4">
+      <h2 className="text-lg font-semibold">{tDashboard("generalOverview")}</h2>
       <DashboardSection isLoading={isLoading} skeleton={skeleton}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <OverviewCard

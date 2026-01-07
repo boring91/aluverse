@@ -46,9 +46,7 @@ export const PeriodComparisonSection = ({ dateRange }: Props) => {
 
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
-      <div className="mb-6">
-        <PeriodComparisonChart data={data!} />
-      </div>
+      <PeriodComparisonChart data={data!} />
     </DashboardSection>
   );
 };

@@ -3,7 +3,6 @@
 import { useTitle } from "@/hooks/use-title";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/page-container";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectsInOutStats } from "../components/projects-in-out-stats";
 import { ExpensesOverview } from "../components/expenses-overview";
 import { ProjectProfitOverview } from "../components/project-profit-overview";
@@ -19,17 +18,12 @@ import { ProjectPipeline } from "../components/project-pipeline";
 import { EfficiencyMetrics } from "../components/efficiency-metrics";
 import { GeneralOverview } from "../components/general-overview";
 import { PeriodComparisonSection } from "../components/period-comparison";
-import {
-  dashboardData,
-  formatCurrency,
-  formatPercent,
-} from "../lib/dummy-data";
+import { dashboardData } from "../lib/dummy-data";
 import { useState } from "react";
 import { DateRange } from "@/components/date-range";
 
 export const DashboardView = () => {
   const t = useTranslations("Common");
-  const tDashboard = useTranslations("Dashboard");
 
   useTitle(t("dashboard"));
 
@@ -62,31 +56,29 @@ export const DashboardView = () => {
       <PeriodComparisonSection dateRange={dateRange} />
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         <ProjectsInOutStats dateRange={dateRange} />
         <ExpensesOverview dateRange={dateRange} />
         <ProjectProfitOverview dateRange={dateRange} />
       </div>
 
       {/* Cash Flow and Revenue Trends */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CashFlowChart />
         <RevenueTrendsChart dateRange={dateRange} />
       </div>
 
       {/* Actionable Insights: Receivables and Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <OutstandingProjects />
         <ProjectAlerts dateRange={dateRange} />
       </div>
 
       {/* Top/Bottom Performers */}
-      <div className="mb-6">
-        <TopPerformers dateRange={dateRange} />
-      </div>
+      <TopPerformers dateRange={dateRange} />
 
       {/* Budget, Payment, Efficiency */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         <BudgetBurnRate dateRange={dateRange} />
         <PaymentStatus dateRange={dateRange} />
         <EfficiencyMetrics dateRange={dateRange} />
@@ -96,9 +88,7 @@ export const DashboardView = () => {
       <ProjectPipeline />
 
       {/* Budget Spending Table */}
-      <div className="mb-6">
-        <BudgetTable dateRange={dateRange} />
-      </div>
+      <BudgetTable dateRange={dateRange} />
     </PageContainer>
   );
 };
