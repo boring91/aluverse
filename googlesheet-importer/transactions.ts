@@ -173,6 +173,7 @@ export async function getTransactions() {
       );
       if (exactMatch) {
         exactMatch.matched = true;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { normalizedDate, matched, ...consolidation } = exactMatch;
         cashTx.consolidations.push(consolidation);
         continue;
@@ -203,6 +204,7 @@ export async function getTransactions() {
 
         for (const c of bestSubset) {
           c.matched = true;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { normalizedDate, matched, ...consolidation } = c;
           cashTx.consolidations.push(consolidation);
         }
@@ -214,6 +216,7 @@ export async function getTransactions() {
     const bankTransactions: BankTransaction[] = allConsolidations
       .filter((c) => !c.matched)
       .map((c) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { normalizedDate, matched, ...consolidation } = c;
         return {
           time: c.time,

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict SS3bjavMUc0bQEKbqArLKikBTReIPxg20n0BFcTtPinrGmw6Tqy6EBdED0DangY
+\restrict Dns7gO89c1RqFyFgfX9EJTG2pVSE4W0uG2LcUfxoUcbyYSwPtodMEOsGO2bKV1s
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1 (Debian 18.1-1.pgdg13+2)
@@ -1544,7 +1544,7 @@ GKUWh3utjtoejXEgmWvHkUSRJrprFNoW	2025-12-31 08:43:02.17	rKgtEsaqyU3rp2j4sJkIKhxR
 CCuXkSG7u3Bq5iXjyXboeI9fVprz7lsy	2026-01-06 17:17:13.696	OffK4fOGV78BEfHHspmfG3gSKDp0bdkF	2025-12-25 00:21:46.131	2025-12-30 17:17:13.696	127.0.0.1	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36	3NX2lECU7OVtmknBHeYAiJmwNOPN2ROf
 tGFKhGAWgx053URze85JWXN1fG3rZWEP	2026-01-02 06:45:13.342	fPxujAhQAjxGFJF0Vr068b3YctlJIlHT	2025-12-26 06:45:13.343	2025-12-26 06:45:13.343	127.0.0.1	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36	3NX2lECU7OVtmknBHeYAiJmwNOPN2ROf
 3I1ICXIUo35pNYkFeoHt17lWBb5VzNLX	2026-01-03 07:33:30.954	VmxJ2FZymEpyE8jQOmz4qMVtdp9SqAyN	2025-12-27 07:33:30.955	2025-12-27 07:33:30.955	127.0.0.1	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36	3NX2lECU7OVtmknBHeYAiJmwNOPN2ROf
-DZef3CsIi0RdWdiTpa4HyVyUHR3KKU66	2026-01-13 10:05:44.91	u3WwYz9F4w8sIsweTewFWUVE2Kz1edTo	2025-12-30 19:03:34.79	2026-01-06 10:05:44.91	127.0.0.1	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36	3NX2lECU7OVtmknBHeYAiJmwNOPN2ROf
+DZef3CsIi0RdWdiTpa4HyVyUHR3KKU66	2026-01-22 00:33:05.861	u3WwYz9F4w8sIsweTewFWUVE2Kz1edTo	2025-12-30 19:03:34.79	2026-01-15 00:33:05.861	127.0.0.1	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36	3NX2lECU7OVtmknBHeYAiJmwNOPN2ROf
 \.
 
 
@@ -2413,5 +2413,5 @@ ALTER TABLE ONLY public.transactions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict SS3bjavMUc0bQEKbqArLKikBTReIPxg20n0BFcTtPinrGmw6Tqy6EBdED0DangY
+\unrestrict Dns7gO89c1RqFyFgfX9EJTG2pVSE4W0uG2LcUfxoUcbyYSwPtodMEOsGO2bKV1s
 

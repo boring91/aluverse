@@ -20,24 +20,27 @@ export async function syncWithBank(
       .limit(1)
       .executeTakeFirst();
 
-    since = lastTransaction?.date;
+    since = lastTransaction?.date
+      ? new Date(new Date(lastTransaction.date).getTime() + 1000)
+      : undefined;
   }
 
   let transactions: Insertable<DB["transactions"]>[] = [];
 
   switch (bank) {
     case "westpac":
-      transactions = await getWestpacTransactions(accountId, since, until);
+      console.log({ since, until });
+      transactions = await getWestpacTransactions(accountId, { since, until });
       break;
   }
 
   if (!transactions.length) return 0;
 
-  await db
+  const result = await db
     .insertInto("transactions")
     .values(transactions)
     .onConflict((x) => x.column("id").doNothing())
     .execute();
 
-  return transactions.length;
+  return result[0].numInsertedOrUpdatedRows;
 }

@@ -1,3 +1,4 @@
+import { v5 as uuidv5 } from "uuid";
 import { type AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { Locale } from "next-intl";
@@ -42,6 +43,12 @@ export const getProjectStatus = (
 };
 
 export const getCurrentTime = () => new Date();
+
+export function toUuid(input: number | string): string {
+  const NUMBER_NAMESPACE = "1b671a64-40d5-491e-99b0-da01ff1f3341";
+  const name = input.toString();
+  return uuidv5(name, NUMBER_NAMESPACE);
+}
 
 /**
  * Converts an array of strings into an array of distinguishable blue shades.

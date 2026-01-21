@@ -24,7 +24,9 @@
     "isr",
     "embla",
     "vaul",
-    "rsc"
+    "rsc",
+    "frollo",
+    "uuidv"
   ],
   "ignoreWords": [],
   "ignorePaths": [

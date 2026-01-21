@@ -326,11 +326,6 @@ interface DateRange {
   to: Date | undefined;
 }
 
-interface Preset {
-  name: string;
-  label: string;
-}
-
 // Define presets
 const PRESETS = [
   "today",

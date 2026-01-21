@@ -64,7 +64,7 @@ export const FinancialAccountsListView = () => {
       onSuccess: (syncedTransactionCount, { id }) => {
         toast.success(
           t("successfullySyncedCountTransactions", {
-            count: syncedTransactionCount,
+            count: syncedTransactionCount?.toString() ?? 0,
           })
         );
 
