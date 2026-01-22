@@ -29,7 +29,7 @@ type FrolloTransaction = {
   };
 };
 
-const BASE_URL = "https://auth.frollo.com.au";
+const AUTH_BASE_URL = "https://auth.frollo.com.au";
 const SCOPES = "offline_access openid email client";
 const CLIENT_ID = process.env.FROLLO_CLIENT_ID!;
 const TENANT_ID = process.env.FROLLO_TENANT_ID!;
@@ -92,7 +92,7 @@ async function login(username: string, password: string) {
   });
 
   const initResponse = await fetch(
-    `${BASE_URL}/oauth2/authorize/?${authParams}`,
+    `${AUTH_BASE_URL}/oauth2/authorize/?${authParams}`,
     {
       method: "GET",
       headers: {
@@ -135,7 +135,7 @@ async function login(username: string, password: string) {
     rememberDevice: "true",
   });
 
-  let currentResponse = await fetch(`${BASE_URL}/oauth2/authorize`, {
+  let currentResponse = await fetch(`${AUTH_BASE_URL}/oauth2/authorize`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -143,8 +143,8 @@ async function login(username: string, password: string) {
         "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1",
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language": "en-AU,en;q=0.9",
-      Origin: BASE_URL,
-      Referer: `${BASE_URL}/`,
+      Origin: AUTH_BASE_URL,
+      Referer: `${AUTH_BASE_URL}/`,
       Cookie: cookiesToHeader(cookies),
     },
     body: loginBody,
@@ -164,7 +164,7 @@ async function login(username: string, password: string) {
     // Make URL absolute if relative
     const absoluteUrl = redirectLocation.startsWith("http")
       ? redirectLocation
-      : `${BASE_URL}${redirectLocation}`;
+      : `${AUTH_BASE_URL}${redirectLocation}`;
 
     cookies = mergeCookies(cookies, parseCookies(currentResponse));
 
@@ -176,7 +176,7 @@ async function login(username: string, password: string) {
         Accept:
           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-AU,en;q=0.9",
-        Referer: `${BASE_URL}/`,
+        Referer: `${AUTH_BASE_URL}/`,
         Cookie: cookiesToHeader(cookies),
       },
       redirect: "manual",
@@ -215,7 +215,7 @@ async function login(username: string, password: string) {
     grant_type: "authorization_code",
   });
 
-  const tokenResponse = await fetch(`${BASE_URL}/oauth2/token/`, {
+  const tokenResponse = await fetch(`${AUTH_BASE_URL}/oauth2/token/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -240,7 +240,7 @@ async function login(username: string, password: string) {
 
 async function refresh(refreshToken: string) {
   console.log("Refreshing token...");
-  const url = `${BASE_URL}/oauth2/token/`;
+  const url = `${AUTH_BASE_URL}/oauth2/token/`;
 
   const body = new URLSearchParams({
     refresh_token: refreshToken,
@@ -283,12 +283,35 @@ export async function getWestpacTransactions(
     size?: number;
   } = {}
 ) {
-  const url = "https://api.frollo.com.au/api/v2/aggregation/transactions";
+  const baseUrl = "https://api.frollo.com.au/api/v2";
 
   let auth = await login(
     process.env.FROLLO_USERNAME!,
     process.env.FROLLO_PASSWORD!
   );
+
+  const headers = {
+    Host: "api.frollo.com.au",
+    "X-Api-Version": "2.29",
+    "X-Software-Version": "SDK6.3.2-B632/APP3.34.0-B107301",
+    "Accept-Encoding": "gzip, deflate, br",
+    "User-Agent": "Frollo/107301 CFNetwork/3860.300.31 Darwin/25.2.0",
+    Connection: "keep-alive",
+    Accept: "*/*",
+    "Accept-Language": "en-AU,en;q=0.9",
+    "X-Device-Version": "iOSVersion 26.2 (Build 23C55)",
+    "X-Bundle-Id": "frollo-swift-sdk.FrolloSDK.resources",
+  };
+
+  // syncing first
+  await fetch(`${baseUrl}/aggregation/provideraccounts/sync`, {
+    method: "POST",
+    headers: {
+      ...headers,
+      Authorization: `Bearer ${auth.access_token}`,
+      "Content-Length": "0",
+    },
+  });
 
   const load = async (after: string | null) => {
     const params: Record<string, string> = {
@@ -310,23 +333,15 @@ export async function getWestpacTransactions(
 
     const query = new URLSearchParams(params);
 
-    const headers = {
-      Host: "api.frollo.com.au",
-      "X-Api-Version": "2.29",
-      "X-Software-Version": "SDK6.3.2-B632/APP3.34.0-B107301",
-      "Accept-Encoding": "gzip, deflate, br",
-      "User-Agent": "Frollo/107301 CFNetwork/3860.300.31 Darwin/25.2.0",
-      Connection: "keep-alive",
-      Accept: "*/*",
-      "Accept-Language": "en-AU,en;q=0.9",
-      Authorization: `Bearer ${auth.access_token}`,
-      "X-Device-Version": "iOSVersion 26.2 (Build 23C55)",
-      "X-Bundle-Id": "frollo-swift-sdk.FrolloSDK.resources",
-    };
-
-    const response = await fetch(`${url}?${query}`, {
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/aggregation/transactions?${query}`,
+      {
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${auth.access_token}`,
+        },
+      }
+    );
 
     if (response.status === 401) {
       auth = await refresh(auth.refresh_token);
@@ -350,20 +365,21 @@ export async function getWestpacTransactions(
   let after = null;
 
   do {
-    console.log("iteration");
     const { transactions: t, after: nextAfter } = await load(after);
     transactions.push(...t);
     after = nextAfter;
   } while (after);
 
-  return transactions.map((t) => {
-    return {
-      id: toUuid(t.id),
-      accountId,
-      date: new Date(t.post_date),
-      description: t.description.original,
-      amount: Math.abs(Math.round(t.amount.amount * 100)),
-      type: t.amount.amount > 0 ? "income" : "expense",
-    };
-  }) satisfies Transaction[];
+  return transactions
+    .filter((x) => x.status === "posted")
+    .map((t) => {
+      return {
+        id: toUuid(t.id),
+        accountId,
+        date: new Date(t.post_date),
+        description: t.description.original,
+        amount: Math.abs(Math.round(t.amount.amount * 100)),
+        type: t.amount.amount > 0 ? "income" : "expense",
+      };
+    }) satisfies Transaction[];
 }
