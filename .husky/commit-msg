@@ -9,7 +9,7 @@ temp_file=$(mktemp)
 cat "$1" > "$temp_file"
 
 # Check spelling - exit code will be non-zero if errors are found
-if ! bun cspell check "$temp_file" --no-color; then
+if ! bun cspell check --config cspell.json "$temp_file" --no-color; then
   echo ""
   echo "Error: Commit message contains spelling errors."
   echo "Please fix the spelling errors above and try again."
