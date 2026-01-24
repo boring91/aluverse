@@ -54,6 +54,7 @@ export const ConsolidationsList = ({
 
   const dataTable = useDataTable({
     pageSize: 100,
+    disableUrlKeys: true,
   });
 
   const queryClient = useQueryClient();
