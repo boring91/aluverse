@@ -25,6 +25,7 @@ import { z } from "zod";
 import { TextInput } from "@/components/form/text-input";
 import { NumberInput } from "@/components/form/number-input";
 import { DateInput } from "@/components/form/date-input";
+import { AddressInput } from "@/components/form/address-input";
 
 type SchemaType = z.infer<typeof createProjectSchema>;
 
@@ -144,7 +145,7 @@ export const CreateProject = ({
             <TextInput name="title" label={t("title")} control={form.control} />
 
             {/* Address */}
-            <TextInput
+            <AddressInput
               name="address"
               label={t("address")}
               control={form.control}
