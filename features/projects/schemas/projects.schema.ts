@@ -12,7 +12,7 @@ export const createProjectSchema = z.object({
   endDate: z.date().nullable().optional(),
   address: z.string().nullable().optional(),
   meters: z.number().nullable().optional(),
-  price: z.number().min(1),
+  price: z.number().min(0),
   margin: z.number().min(0).max(1),
   budgetUnits: z.number().min(0),
 });
