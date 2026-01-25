@@ -18,21 +18,21 @@ import { ProjectPipeline } from "../components/project-pipeline";
 import { EfficiencyMetrics } from "../components/efficiency-metrics";
 import { GeneralOverview } from "../components/general-overview";
 import { PeriodComparisonSection } from "../components/period-comparison";
-import { dashboardData } from "../lib/dummy-data";
 import { useState } from "react";
 import { DateRange } from "@/components/date-range";
+
+const startCurrentMonth = new Date();
+startCurrentMonth.setDate(1);
+
+const now = new Date();
 
 export const DashboardView = () => {
   const t = useTranslations("Common");
 
   useTitle(t("dashboard"));
 
-  const [fromDate, setFromDate] = useState<Date | undefined>(
-    dashboardData.dateRange.from
-  );
-  const [toDate, setToDate] = useState<Date | undefined>(
-    dashboardData.dateRange.to
-  );
+  const [fromDate, setFromDate] = useState<Date | undefined>(startCurrentMonth);
+  const [toDate, setToDate] = useState<Date | undefined>(now);
 
   const dateRange = { from: fromDate, to: toDate };
 
@@ -40,8 +40,8 @@ export const DashboardView = () => {
     <PageContainer>
       <div className="flex items-center justify-end">
         <DateRange
-          initialDateFrom={dashboardData.dateRange.from}
-          initialDateTo={dashboardData.dateRange.to}
+          initialDateFrom={startCurrentMonth}
+          initialDateTo={now}
           onUpdate={({ range }) => {
             setFromDate(range.from);
             setToDate(range.to);
