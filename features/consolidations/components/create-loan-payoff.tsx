@@ -3,6 +3,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { CreateLoanPayoff as BaseCreateLoanPayoff } from "@/features/loans/components/create-loan-payoff";
 
+type LoanPayoffPrefillData = {
+  date: Date;
+  amount: number;
+  description: string;
+};
+
 export type CreateLoanPayoffHandle = {
   open: () => void;
   close: () => void;
@@ -11,10 +17,11 @@ export type CreateLoanPayoffHandle = {
 type Props = {
   loanId: string;
   onPayoffCreated: (payoffId: string) => void;
+  prefillData?: LoanPayoffPrefillData;
 };
 
 export const CreateLoanPayoff = forwardRef<CreateLoanPayoffHandle, Props>(
-  ({ loanId, onPayoffCreated }, ref) => {
+  ({ loanId, onPayoffCreated, prefillData }, ref) => {
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
     const trpc = useTRPC();
@@ -51,6 +58,15 @@ export const CreateLoanPayoff = forwardRef<CreateLoanPayoffHandle, Props>(
         loanId={loanId}
         itemId={null}
         onItemCreated={handleCreated}
+        prefillData={
+          prefillData
+            ? {
+                date: prefillData.date,
+                amount: prefillData.amount,
+                notes: prefillData.description,
+              }
+            : undefined
+        }
       />
     );
   }

@@ -24,12 +24,18 @@ import { TextInput } from "@/components/form/text-input";
 
 type SchemaType = z.infer<typeof createProjectLaborSchema>;
 
+type PrefillData = {
+  name: string;
+  amount: number;
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
   itemId: string | null;
   onItemCreated?: (itemId: string) => void;
+  prefillData?: PrefillData;
 };
 
 export const CreateLabor = ({
@@ -38,6 +44,7 @@ export const CreateLabor = ({
   projectId,
   itemId,
   onItemCreated,
+  prefillData,
 }: Props) => {
   const t = useTranslations("Projects");
   const tc = useTranslations("Common");
@@ -121,7 +128,17 @@ export const CreateLabor = ({
         onOpenChange(value);
       }}
     >
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={() => {
+          if (prefillData && !isUpdate) {
+            fillForm(form, {
+              name: prefillData.name,
+              hours: 1,
+              rate: prefillData.amount,
+            });
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t("labors")}</DialogTitle>
           <DialogDescription>

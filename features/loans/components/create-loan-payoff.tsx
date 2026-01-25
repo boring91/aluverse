@@ -25,12 +25,19 @@ import { TextareaInput } from "@/components/form/textarea-input";
 
 type SchemaType = z.infer<typeof createLoanPayoffSchema>;
 
+type PrefillData = {
+  date: Date;
+  amount: number;
+  notes: string;
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   loanId: string;
   itemId: string | null;
   onItemCreated?: (itemId: string) => void;
+  prefillData?: PrefillData;
 };
 
 export const CreateLoanPayoff = ({
@@ -39,6 +46,7 @@ export const CreateLoanPayoff = ({
   loanId,
   itemId,
   onItemCreated,
+  prefillData,
 }: Props) => {
   const t = useTranslations("Loans");
   const tc = useTranslations("Common");
@@ -123,7 +131,13 @@ export const CreateLoanPayoff = ({
         onOpenChange(value);
       }}
     >
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={() => {
+          if (prefillData && !isUpdate) {
+            fillForm(form, prefillData);
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t("payoffs")}</DialogTitle>
           <DialogDescription>

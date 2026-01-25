@@ -34,6 +34,12 @@ import { CheckboxInput } from "@/components/form/checkbox-input";
 
 type SchemaType = z.infer<typeof createConsolidationSchema>;
 
+export type ConsolidationPrefillData = {
+  date: Date;
+  amount: number;
+  description: string;
+};
+
 type FieldProps = {
   control: UseFormReturn<SchemaType>["control"];
 };
@@ -112,6 +118,7 @@ export const BudgetCategoryField = ({ control }: BudgetCategoryFieldProps) => {
 
 type ProjectFieldsProps = FieldProps & {
   form: UseFormReturn<SchemaType>;
+  prefillData: ConsolidationPrefillData;
 };
 
 export type ProjectFieldsHandle = {
@@ -121,7 +128,7 @@ export type ProjectFieldsHandle = {
 export const ProjectFields = forwardRef<
   ProjectFieldsHandle,
   ProjectFieldsProps
->(({ control, form }, ref) => {
+>(({ control, form, prefillData }, ref) => {
   const t = useTranslations("FinancialAccounts");
 
   const projectId = form.watch("projectId");
@@ -230,6 +237,7 @@ export const ProjectFields = forwardRef<
           projectId={projectId}
           stream={projectStream}
           onItemCreated={handleItemCreated}
+          prefillData={prefillData}
         />
       )}
       <CreateProject
@@ -245,6 +253,7 @@ ProjectFields.displayName = "ProjectFields";
 
 type LoanFieldsProps = FieldProps & {
   form: UseFormReturn<SchemaType>;
+  prefillData: ConsolidationPrefillData;
 };
 
 export type LoanFieldsHandle = {
@@ -252,7 +261,7 @@ export type LoanFieldsHandle = {
 };
 
 export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
-  ({ control, form }, ref) => {
+  ({ control, form, prefillData }, ref) => {
     const t = useTranslations("FinancialAccounts");
     const tLoans = useTranslations("Loans");
 
@@ -354,6 +363,7 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
             ref={createLoanPayoffRef}
             loanId={loanId}
             onPayoffCreated={handlePayoffCreated}
+            prefillData={prefillData}
           />
         )}
         <CreateLoan
@@ -361,6 +371,11 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
           onOpenChange={setIsCreateLoanOpen}
           itemId={null}
           onCreated={handleLoanCreated}
+          prefillData={{
+            date: prefillData.date,
+            amount: prefillData.amount,
+            notes: prefillData.description,
+          }}
         />
       </>
     );

@@ -31,11 +31,18 @@ import { SelectInput } from "@/components/form/select-input";
 
 type SchemaType = z.infer<typeof createLoanSchema>;
 
+type PrefillData = {
+  date: Date;
+  amount: number;
+  notes: string;
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   itemId: string | null;
   onCreated?: (loanId: string) => void;
+  prefillData?: PrefillData;
 };
 
 export const CreateLoan = ({
@@ -43,6 +50,7 @@ export const CreateLoan = ({
   onOpenChange,
   itemId,
   onCreated,
+  prefillData,
 }: Props) => {
   const t = useTranslations("Loans");
   const tc = useTranslations("Common");
@@ -122,7 +130,14 @@ export const CreateLoan = ({
         onOpenChange(value);
       }}
     >
-      <DialogContent className="sm:max-w-[640px]">
+      <DialogContent
+        className="sm:max-w-[640px]"
+        onOpenAutoFocus={() => {
+          if (prefillData && !isUpdate) {
+            fillForm(form, prefillData);
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t("loans")}</DialogTitle>
           <DialogDescription>

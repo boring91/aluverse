@@ -22,17 +22,23 @@ import {
   ProjectFieldsHandle,
   LoanFieldsHandle,
 } from "./consolidation-form-fields";
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
+import type { ConsolidationPrefillData } from "./consolidation-form-fields";
+import { AppRouter } from "@/trpc/routers/_app";
+import { inferRouterOutputs } from "@trpc/server";
+
+type Transaction =
+  inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
 
 type Props = {
-  transactionId: string;
+  transaction: Transaction;
   itemId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
 export const CreateConsolidation = ({
-  transactionId,
+  transaction,
   itemId,
   open,
   onOpenChange,
@@ -41,13 +47,29 @@ export const CreateConsolidation = ({
   const tc = useTranslations("Common");
 
   const { form, handleSubmit, isPending } = useConsolidationForm({
-    transactionId,
+    transactionId: transaction.id,
     itemId,
     open,
     onOpenChange,
   });
 
   const selectedGroup = form.watch("consolidationGroup");
+  const consolidationAmount = form.watch("amount");
+  const consolidationDescription = form.watch("description");
+
+  const prefillData = useMemo<ConsolidationPrefillData>(
+    () => ({
+      date: transaction.date,
+      amount: consolidationAmount,
+      description: consolidationDescription ?? transaction.description,
+    }),
+    [
+      transaction.date,
+      transaction.description,
+      consolidationAmount,
+      consolidationDescription,
+    ]
+  );
 
   const projectFieldsRef = useRef<ProjectFieldsHandle>(null);
   const loanFieldsRef = useRef<LoanFieldsHandle>(null);
@@ -95,6 +117,7 @@ export const CreateConsolidation = ({
                   ref={projectFieldsRef}
                   control={form.control}
                   form={form}
+                  prefillData={prefillData}
                 />
               )}
 
@@ -103,6 +126,7 @@ export const CreateConsolidation = ({
                   ref={loanFieldsRef}
                   control={form.control}
                   form={form}
+                  prefillData={prefillData}
                 />
               )}
 

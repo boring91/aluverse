@@ -24,12 +24,19 @@ import { TextInput } from "@/components/form/text-input";
 
 type SchemaType = z.infer<typeof createProjectSupplySchema>;
 
+type PrefillData = {
+  name: string;
+  unitPrice: number;
+  quantity: number;
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
   itemId: string | null;
   onItemCreated?: (itemId: string) => void;
+  prefillData?: PrefillData;
 };
 
 export const CreateSupply = ({
@@ -38,6 +45,7 @@ export const CreateSupply = ({
   projectId,
   itemId,
   onItemCreated,
+  prefillData,
 }: Props) => {
   const t = useTranslations("Projects");
   const tc = useTranslations("Common");
@@ -124,7 +132,13 @@ export const CreateSupply = ({
         onOpenChange(value);
       }}
     >
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={() => {
+          if (prefillData && !isUpdate) {
+            fillForm(form, prefillData);
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t("supplies")}</DialogTitle>
           <DialogDescription>

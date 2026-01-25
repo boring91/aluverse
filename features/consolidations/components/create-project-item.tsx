@@ -9,6 +9,12 @@ import { CreateSupply } from "@/features/projects/components/create-supply";
 
 type Stream = (typeof projectStreams)[number];
 
+type ProjectItemPrefillData = {
+  date: Date;
+  amount: number;
+  description: string;
+};
+
 export type CreateProjectItemHandle = {
   open: () => void;
   close: () => void;
@@ -18,10 +24,11 @@ type Props = {
   projectId: string;
   stream?: Stream;
   onItemCreated: (itemId: string) => void;
+  prefillData?: ProjectItemPrefillData;
 };
 
 export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
-  ({ projectId, stream, onItemCreated }, ref) => {
+  ({ projectId, stream, onItemCreated, prefillData }, ref) => {
     const [openStream, setOpenStream] = useState<Stream | null>(null);
     const queryClient = useQueryClient();
     const trpc = useTRPC();
@@ -73,6 +80,15 @@ export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
           projectId={projectId}
           itemId={null}
           onItemCreated={handleCreated("supplies")}
+          prefillData={
+            prefillData
+              ? {
+                  name: prefillData.description,
+                  unitPrice: prefillData.amount,
+                  quantity: 1,
+                }
+              : undefined
+          }
         />
         <CreateLabor
           open={openStream === "labors"}
@@ -80,6 +96,14 @@ export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
           projectId={projectId}
           itemId={null}
           onItemCreated={handleCreated("labors")}
+          prefillData={
+            prefillData
+              ? {
+                  name: prefillData.description,
+                  amount: prefillData.amount,
+                }
+              : undefined
+          }
         />
         <CreateMisc
           open={openStream === "misc"}
@@ -87,6 +111,14 @@ export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
           projectId={projectId}
           itemId={null}
           onItemCreated={handleCreated("misc")}
+          prefillData={
+            prefillData
+              ? {
+                  name: prefillData.description,
+                  amount: prefillData.amount,
+                }
+              : undefined
+          }
         />
         <CreatePayment
           open={openStream === "payments"}
@@ -94,6 +126,14 @@ export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
           projectId={projectId}
           itemId={null}
           onItemCreated={handleCreated("payments")}
+          prefillData={
+            prefillData
+              ? {
+                  date: prefillData.date,
+                  amount: prefillData.amount,
+                }
+              : undefined
+          }
         />
       </>
     );

@@ -24,12 +24,18 @@ import { NumberInput } from "@/components/form/number-input";
 
 type SchemaType = z.infer<typeof createProjectMiscSchema>;
 
+type PrefillData = {
+  name: string;
+  amount: number;
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
   itemId: string | null;
   onItemCreated?: (itemId: string) => void;
+  prefillData?: PrefillData;
 };
 
 export const CreateMisc = ({
@@ -38,6 +44,7 @@ export const CreateMisc = ({
   projectId,
   itemId,
   onItemCreated,
+  prefillData,
 }: Props) => {
   const t = useTranslations("Projects");
   const tc = useTranslations("Common");
@@ -121,7 +128,13 @@ export const CreateMisc = ({
         onOpenChange(value);
       }}
     >
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={() => {
+          if (prefillData && !isUpdate) {
+            fillForm(form, prefillData);
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t("misc")}</DialogTitle>
           <DialogDescription>

@@ -120,7 +120,7 @@ export const ConsolidationsList = ({
     <>
       {(dataTable.openCreateSheet || itemId) && (
         <CreateConsolidation
-          transactionId={transactionId}
+          transaction={transaction}
           itemId={itemId}
           open={dataTable.openCreateSheet || !!itemId}
           onOpenChange={(value) => {

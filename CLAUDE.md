@@ -24,3 +24,8 @@ When working with entities, always infer types from existing sources rather than
 - Infer from tRPC route outputs using `RouterOutputs`
 - Infer from Drizzle/Kysely schema definitions using `typeof` or `InferSelectModel`
 - Never duplicate type definitions that can be derived from the source of truth
+
+### TypeScript Conventions
+
+- Always use `type` instead of `interface`
+- Only export functions, types, constants, etc. if they are used in other files. Keep things unexported by default
