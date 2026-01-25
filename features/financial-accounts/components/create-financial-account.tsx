@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { createFinancialAccountSchema } from "../schemas/financial-accounts.schema";
 import { fillForm } from "@/lib/client-utils";
+import { formQueryOptions } from "@/lib/query-utils";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -48,7 +49,7 @@ export const CreateFinancialAccount = ({
   const { data } = useQuery(
     trpc.financialAccounts.get.queryOptions(
       { id: itemId! },
-      { enabled: isUpdate }
+      { enabled: isUpdate, ...formQueryOptions }
     )
   );
 

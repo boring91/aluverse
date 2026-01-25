@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
+import { formQueryOptions } from "@/lib/query-utils";
 import { createLoanPayoffSchema } from "../schemas/loan-payoffs.schema";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,6 +70,7 @@ export const CreateLoanPayoff = ({
       { id: itemId! },
       {
         enabled: isUpdate,
+        ...formQueryOptions,
       }
     )
   );

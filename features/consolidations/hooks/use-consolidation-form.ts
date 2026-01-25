@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
 import { fillForm } from "@/lib/client-utils";
+import { formQueryOptions } from "@/lib/query-utils";
 import { useTRPC } from "@/trpc/client";
 import { createConsolidationSchema } from "../schemas/consolidations.schema";
 import { useTranslations } from "next-intl";
@@ -55,6 +56,7 @@ export const useConsolidationForm = ({
       },
       {
         enabled: isUpdate,
+        ...formQueryOptions,
       }
     )
   );
@@ -66,6 +68,7 @@ export const useConsolidationForm = ({
       },
       {
         enabled: !isUpdate,
+        ...formQueryOptions,
       }
     )
   );

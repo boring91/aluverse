@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { fillForm } from "@/lib/client-utils";
+import { formQueryOptions } from "@/lib/query-utils";
 import { createProjectSupplySchema } from "../schemas/project-items.schema";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,6 +68,7 @@ export const CreateSupply = ({
       { id: itemId! },
       {
         enabled: isUpdate,
+        ...formQueryOptions,
       }
     )
   );
