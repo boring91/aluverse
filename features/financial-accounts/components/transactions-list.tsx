@@ -146,17 +146,19 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         />
       )}
 
-      {consolidateId && mode === "consolidation" && (
-        <ConsolidationsList
-          transactionId={consolidateId}
-          open={!!consolidateId}
-          onOpenChange={(open) => {
-            if (!open) {
-              setConsolidateId(null);
-            }
-          }}
-        />
-      )}
+      {consolidateId &&
+        mode === "consolidation" &&
+        data?.items.find((item) => item.id === consolidateId) && (
+          <ConsolidationsList
+            transaction={data.items.find((item) => item.id === consolidateId)!}
+            open={!!consolidateId}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConsolidateId(null);
+              }
+            }}
+          />
+        )}
 
       <DataTable
         columns={columns}

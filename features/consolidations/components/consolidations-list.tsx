@@ -20,18 +20,24 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/lib/confirm-context";
+import type { AppRouter } from "@/trpc/routers/_app";
+import type { inferRouterOutputs } from "@trpc/server";
+
+type Transaction =
+  inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
 
 type Props = {
-  transactionId: string;
+  transaction: Transaction;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
 export const ConsolidationsList = ({
-  transactionId,
+  transaction,
   open,
   onOpenChange,
 }: Props) => {
+  const transactionId = transaction.id;
   const t = useTranslations("FinancialAccounts");
   const tc = useTranslations("Common");
   const { confirm } = useConfirm();
@@ -59,6 +65,7 @@ export const ConsolidationsList = ({
 
   const queryClient = useQueryClient();
   const trpc = useTRPC();
+
   const { data } = useQuery(
     trpc.consolidations.list.queryOptions(
       {
@@ -134,6 +141,11 @@ export const ConsolidationsList = ({
             <DialogDescription>
               {t("consolidationsListDetails")}
             </DialogDescription>
+            {transaction.description && (
+              <p className="text-sm text-muted-foreground pt-2">
+                {transaction.description}
+              </p>
+            )}
           </DialogHeader>
 
           <DataTable columns={columns} data={data} {...dataTable} />
