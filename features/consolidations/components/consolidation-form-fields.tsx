@@ -75,10 +75,12 @@ export const ConsolidationGroupField = ({
       name="consolidationGroup"
       label={t("consolidationGroup")}
       control={control}
-      items={transactionConsolidationGroups.map((group) => ({
-        value: group,
-        label: t(group),
-      }))}
+      items={transactionConsolidationGroups
+        .map((group) => ({
+          value: group,
+          label: t(group),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label))}
       onChange={(value) => {
         if (value !== "budget") form.setValue("budgetCategory", undefined);
 
