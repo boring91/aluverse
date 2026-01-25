@@ -146,8 +146,10 @@ export const CreateLoan = ({
         </DialogHeader>
 
         <form
-          id="create-loan-form"
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={(e) => {
+            e.stopPropagation();
+            form.handleSubmit(handleSubmit)(e);
+          }}
           className="grid grid-cols-1 gap-4 px-4 overflow-y-auto max-h-[calc(100vh-12rem)]"
         >
           <FieldGroup className="contents">
@@ -190,16 +192,16 @@ export const CreateLoan = ({
               control={form.control}
             />
           </FieldGroup>
-        </form>
 
-        <DialogFooter>
-          <Button disabled={isPending} type="submit" form="create-loan-form">
-            {(createMutation.isPending || updateMutation.isPending) && (
-              <Loader2 className="animate-spin" />
-            )}
-            {tc("save")}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button disabled={isPending} type="submit">
+              {(createMutation.isPending || updateMutation.isPending) && (
+                <Loader2 className="animate-spin" />
+              )}
+              {tc("save")}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

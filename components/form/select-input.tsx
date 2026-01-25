@@ -95,7 +95,6 @@ const BasicSelectInput = <T extends FieldValues>({
       value={field.value ?? ""}
       onValueChange={(value) => {
         if (onCreate && value === "__create_new__") {
-          field.onChange("");
           onCreate();
           return;
         }
@@ -142,7 +141,6 @@ const SearchableSelectInput = <T extends FieldValues>({
       value={field.value ?? ""}
       onValueChange={(value) => {
         if (onCreate && value === "__create_new__") {
-          field.onChange("");
           onCreate();
           return;
         }

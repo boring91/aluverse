@@ -149,7 +149,9 @@ export const ProjectFields = forwardRef<
   const handleItemCreated = usePendingSelection({
     items: projectItems,
     onItemFound: useCallback(
-      (id) => form.setValue("projectItemId", id),
+      (id) => {
+        form.setValue("projectItemId", id);
+      },
       [form]
     ),
     resetDependencies: [projectId, projectStream],
@@ -282,7 +284,9 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
     const handlePayoffCreated = usePendingSelection({
       items: loanPayoffs,
       onItemFound: useCallback(
-        (id) => form.setValue("loanPayoffId", id),
+        (id) => {
+          form.setValue("loanPayoffId", id);
+        },
         [form]
       ),
       resetDependencies: [loanId],

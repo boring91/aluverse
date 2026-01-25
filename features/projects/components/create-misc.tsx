@@ -143,8 +143,10 @@ export const CreateMisc = ({
         </DialogHeader>
 
         <form
-          id="create-misc-form"
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={(e) => {
+            e.stopPropagation();
+            form.handleSubmit(handleSubmit)(e);
+          }}
           className="flex flex-col gap-8 px-4 overflow-y-auto"
         >
           <FieldGroup>
@@ -158,16 +160,16 @@ export const CreateMisc = ({
               control={form.control}
             />
           </FieldGroup>
-        </form>
 
-        <DialogFooter>
-          <Button disabled={isPending} type="submit" form="create-misc-form">
-            {(createMutation.isPending || updateMutation.isPending) && (
-              <Loader2 className="animate-spin" />
-            )}
-            {tc("save")}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button disabled={isPending} type="submit">
+              {(createMutation.isPending || updateMutation.isPending) && (
+                <Loader2 className="animate-spin" />
+              )}
+              {tc("save")}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -124,8 +124,10 @@ export const CreateProject = ({
         </DialogHeader>
 
         <form
-          id="create-project-form"
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={(e) => {
+            e.stopPropagation();
+            form.handleSubmit(handleSubmit)(e);
+          }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 overflow-y-auto max-h-[calc(100vh-12rem)]"
         >
           <FieldGroup className="contents">
@@ -195,16 +197,16 @@ export const CreateProject = ({
               control={form.control}
             />
           </FieldGroup>
-        </form>
 
-        <DialogFooter>
-          <Button disabled={isPending} type="submit" form="create-project-form">
-            {(createMutation.isPending || updateMutation.isPending) && (
-              <Loader2 className="animate-spin" />
-            )}
-            {tc("save")}
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="col-span-full">
+            <Button disabled={isPending} type="submit">
+              {(createMutation.isPending || updateMutation.isPending) && (
+                <Loader2 className="animate-spin" />
+              )}
+              {tc("save")}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
