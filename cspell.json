@@ -50,7 +50,8 @@
     "**/*.min.css",
     "db/migrations/**",
     "aluverse.sql",
-    "docs"
+    "docs",
+    ".claude"
   ],
   "flagWords": [],
   "dictionaries": [
