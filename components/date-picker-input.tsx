@@ -7,8 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useState } from "react";
 
 type Props = {
-  value?: Date;
-  onChange: (value?: Date) => void;
+  value?: Date | null;
+  onChange: (value?: Date | null) => void;
   placeholder?: string;
 };
 
@@ -33,7 +33,7 @@ export const DatePickerInput = ({ value, onChange, placeholder }: Props) => {
               size="icon"
               onClick={(event) => {
                 event.stopPropagation();
-                onChange(undefined);
+                onChange(null);
               }}
             >
               <Trash2Icon />
@@ -44,8 +44,8 @@ export const DatePickerInput = ({ value, onChange, placeholder }: Props) => {
       <PopoverContent>
         <Calendar
           mode="single"
-          selected={value}
-          defaultMonth={value}
+          selected={value ?? undefined}
+          defaultMonth={value ?? undefined}
           onSelect={(value) => {
             setOpen(false);
             onChange(value);

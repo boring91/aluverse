@@ -16,7 +16,7 @@ export const DateFilter = ({ label, control, placeholder }: Props) => {
       <Label className="text-xs text-muted-foreground">{label}</Label>
       <DatePickerInput
         value={control.value}
-        onChange={(value) => control.set(value)}
+        onChange={(value) => control.set(value ?? undefined)}
         placeholder={placeholder}
       />
     </div>
