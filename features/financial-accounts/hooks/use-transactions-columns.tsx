@@ -9,14 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import {
-  ChartPie,
-  CheckIcon,
-  ClockIcon,
-  Hourglass,
-  HourglassIcon,
-  XIcon,
-} from "lucide-react";
+import { ChartPie, CheckIcon, HourglassIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
@@ -27,7 +20,8 @@ export const useTransactionsColumns = (
   handleUpdate: (itemId: string) => void,
   handleDelete: (itemId: string) => void,
   handleConsolidation: (itemId: string) => void,
-  currentlyProcessing: Set<string>
+  currentlyProcessing: Set<string>,
+  isConsolidationMode: boolean
 ) => {
   const t = useTranslations("FinancialAccounts");
   const tc = useTranslations("Common");
@@ -50,9 +44,16 @@ export const useTransactionsColumns = (
         cell: ({ row }) => {
           const item = row.original;
           return (
-            <p className="wrap-break-word whitespace-normal">
-              {item.description}
-            </p>
+            <div className="flex flex-col gap-1">
+              <p className="wrap-break-word whitespace-normal">
+                {item.description}
+              </p>
+              {isConsolidationMode && (
+                <p className="text-muted-foreground text-xs">
+                  {item.account.name}
+                </p>
+              )}
+            </div>
           );
         },
       },
@@ -190,5 +191,6 @@ export const useTransactionsColumns = (
     handleDelete,
     handleConsolidation,
     handleUpdate,
+    isConsolidationMode,
   ]);
 };

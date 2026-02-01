@@ -102,7 +102,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         );
         queryClient.invalidateQueries(
           trpc.financialAccounts.get.queryOptions({
-            id: transaction.accountId,
+            id: transaction.account.id,
           })
         );
         setCurrentlyProcessing((set) => {
@@ -122,7 +122,8 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
     setItemId,
     handleDelete,
     setConsolidateId,
-    currentlyProcessing
+    currentlyProcessing,
+    mode === "consolidation"
   );
 
   const { data: projects } = useQuery(trpc.projects.list.queryOptions({}));

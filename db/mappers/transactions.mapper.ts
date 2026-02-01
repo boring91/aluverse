@@ -10,9 +10,17 @@ export const transactionMapper = (eb: ExpressionBuilder<DB, "transactions">) =>
     "amount",
     "type",
     "description",
-    "accountId",
     isTransactionConsolidated(eb).as("isConsolidated"),
     consolidatedAmount(eb).as("consolidatedAmount"),
+
+    jsonObjectFrom(
+      eb
+        .selectFrom("financialAccounts")
+        .whereRef("financialAccounts.id", "=", "transactions.accountId")
+        .select(["financialAccounts.id", "financialAccounts.name"])
+    )
+      .$notNull()
+      .as("account"),
 
     jsonArrayFrom(
       eb
