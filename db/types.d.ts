@@ -75,6 +75,23 @@ export interface Accounts {
   userId: string;
 }
 
+export interface BudgetCategories {
+  createdAt: Generated<Timestamp>;
+  humanId: string;
+  id: Generated<string>;
+  name: string;
+  updatedAt: Generated<Timestamp>;
+}
+
+export interface BudgetCategoryAllocations {
+  amount: number;
+  budgetCategoryId: string;
+  createdAt: Generated<Timestamp>;
+  effectiveDate: Timestamp;
+  id: Generated<string>;
+  updatedAt: Generated<Timestamp>;
+}
+
 export interface Consolidations {
   amount: number;
   budgetCategory: ConsolidationBudgetCategory | null;
@@ -235,6 +252,8 @@ export interface Verifications {
 export interface DB {
   _PrismaMigrations: _PrismaMigrations;
   accounts: Accounts;
+  budgetCategories: BudgetCategories;
+  budgetCategoryAllocations: BudgetCategoryAllocations;
   consolidations: Consolidations;
   "drizzle.DrizzleMigrations": DrizzleDrizzleMigrations;
   financialAccounts: FinancialAccounts;
