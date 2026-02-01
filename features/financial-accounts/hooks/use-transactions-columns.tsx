@@ -9,7 +9,14 @@ import { formatCurrency } from "@/lib/utils";
 import type { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import { ChartPie, CheckIcon, XIcon } from "lucide-react";
+import {
+  ChartPie,
+  CheckIcon,
+  ClockIcon,
+  Hourglass,
+  HourglassIcon,
+  XIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
@@ -101,13 +108,22 @@ export const useTransactionsColumns = (
         cell: ({ row }) => {
           const item = row.original;
           return (
-            <p className="flex items-center justify-center">
+            <div className="flex items-center justify-center flex-col gap-2">
               {item.isConsolidated ? (
                 <CheckIcon className="text-emerald-500" size={16} />
               ) : (
                 <XIcon className="text-rose-500" size={16} />
               )}
-            </p>
+
+              {item.amount !== item.consolidatedAmount && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <HourglassIcon size={10} />
+                  <span className="font-mono">
+                    {formatCurrency(item.amount - item.consolidatedAmount)}
+                  </span>
+                </p>
+              )}
+            </div>
           );
         },
       },
