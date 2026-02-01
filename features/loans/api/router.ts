@@ -17,6 +17,7 @@ import { listLoanPayoffs } from "../queries/list-loan-payoffs";
 import { getLoanPayoffById } from "../queries/get-loan-payoff-by-id";
 import { createLoanPayoff } from "../mutations/create-loan-payoff";
 import { updateLoanPayoff } from "../mutations/update-loan-payoff";
+import { deleteLoan } from "../mutations/delete-loan";
 
 export const loansRouter = createTRPCRouter({
   list: protectedProcedure.input(listLoanSchema).query(async ({ input }) => {
@@ -60,7 +61,7 @@ export const loansRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await deleteLoanPayoff(input.id);
+      return await deleteLoan(input.id);
     }),
 });
 
