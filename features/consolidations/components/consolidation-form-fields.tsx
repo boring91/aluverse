@@ -190,7 +190,7 @@ export const ProjectFields = forwardRef<
         items={
           projects?.items.map((project) => ({
             value: project.id,
-            label: `${project.humanId} - ${project.title}`,
+            label: `${project.humanId} - ${project.client}`,
           })) ?? []
         }
         isSearchable
