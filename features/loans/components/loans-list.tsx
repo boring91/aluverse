@@ -74,23 +74,26 @@ export const LoansList = () => {
 
   const deleteMutation = useMutation(
     trpc.loans.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: () => {
         queryClient.invalidateQueries(
           trpc.loans.list.queryOptions({
             pagination: dataTable.pagination,
             sorting: dataTable.sorting,
           })
         );
-        setCurrentlyProcessing((set) => {
-          set.delete(id);
-          return new Set(set);
-        });
+
         toast.success(tc("deletedSuccessfully"));
       },
 
       onError: (error) => {
         toast.error(error.message);
+      },
+
+      onSettled: (_, __, { id }) => {
+        setCurrentlyProcessing((set) => {
+          set.delete(id);
+          return new Set(set);
+        });
       },
     })
   );
