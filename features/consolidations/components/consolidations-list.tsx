@@ -148,7 +148,9 @@ export const ConsolidationsList = ({
             )}
           </DialogHeader>
 
-          <DataTable columns={columns} data={data} {...dataTable} />
+          <div className="max-h-[500px]">
+            <DataTable columns={columns} data={data} {...dataTable} />
+          </div>
         </DialogContent>
       </Dialog>
     </>
