@@ -1,40 +1,50 @@
 import { db } from "@/db";
+import { jsonArrayFrom } from "@/db/json-helpers";
 
 export async function deleteLoan(id: string) {
   return await db.transaction().execute(async (tx) => {
-    // Delete loan payoffs associated with this loan
-    const payoffs = await db
-      .deleteFrom("loanPayoffs")
-      .where("loanId", "=", id)
-      .returning(["id", "consolidationId"])
-      .execute();
+    const loan = await tx
+      .selectFrom("loans")
+      .where("id", "=", id)
+      .select((eb) => [
+        "consolidationId",
+        jsonArrayFrom(
+          eb
+            .selectFrom("loanPayoffs")
+            .whereRef("loanId", "=", "loans.id")
+            .select(["loanPayoffs.id", "loanPayoffs.consolidationId"])
+        ).as("payoffs"),
+      ])
+      .executeTakeFirst();
 
-    // Delete any related consolidations for payoffs
-    const payoffConsolidationIds = payoffs
-      .map((payoff) => payoff.consolidationId)
-      .filter((id): id is string => !!id);
+    if (!loan) return;
 
-    if (payoffConsolidationIds.length > 0) {
+    // Remove all consolidations if any
+    const consolidationIds = [
+      loan.consolidationId,
+      ...loan.payoffs.map((x) => x.consolidationId),
+    ].filter((id): id is string => !!id);
+
+    if (consolidationIds.length) {
       await tx
         .deleteFrom("consolidations")
-        .where("id", "in", payoffConsolidationIds)
+        .where("id", "in", consolidationIds)
         .execute();
     }
 
-    // Delete the loan and get its info (including consolidationId)
-    const loan = await db
+    // Remove all payoffs
+    const payoffIds = loan.payoffs
+      .map((x) => x.id)
+      .filter((id): id is string => !!id);
+    if (payoffIds.length) {
+      await tx.deleteFrom("loanPayoffs").where("id", "in", payoffIds).execute();
+    }
+
+    // Remove the loan
+    return await tx
       .deleteFrom("loans")
       .where("id", "=", id)
-      .returning(["id", "consolidationId"])
-      .executeTakeFirstOrThrow();
-
-    // Delete the loan's consolidation if it exists
-    if (loan.consolidationId) {
-      await tx
-        .deleteFrom("consolidations")
-        .where("id", "=", loan.consolidationId)
-        .execute();
-    }
-    return loan;
+      .returning(["id"])
+      .execute();
   });
 }
