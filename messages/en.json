@@ -78,7 +78,6 @@
     "amount": "Amount",
     "createNewTransaction": "Create new transaction",
     "updateExistingTransaction": "Update existing transaction",
-    "transactionType": "Transaction type",
     "income": "Income",
     "expense": "Expense",
     "transactions": "Transactions",

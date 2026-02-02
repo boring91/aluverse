@@ -6,6 +6,7 @@
     "auth:generate": "pnpm dlx @better-auth/cli generate --config lib/auth.ts",
     "auth:seed": "tsx scripts/seed-admin.ts",
     "build": "next build",
+    "check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate --config db/drizzle.config.ts",
     "db:introspect": "kysely-codegen --camel-case --out-file ./db/types.d.ts",
     "db:migrate": "drizzle-kit migrate --config db/drizzle.config.ts",

@@ -14,25 +14,25 @@ export async function getCashFlow() {
       eb.fn
         .sum<number>(
           eb
-            .case("type")
-            .when("income")
+            .case()
+            .when("amount", ">", eb.lit(0))
             .then(eb.ref("amount"))
             .else(eb.lit(0))
             .end()
         )
         .as("income"),
-      eb(
-        eb.fn.sum<number>(
+
+      eb.fn
+        .sum<number>(
           eb
-            .case("type")
-            .when("expense")
+            .case()
+            .when("amount", "<", eb.lit(0))
             .then(eb.ref("amount"))
             .else(eb.lit(0))
             .end()
-        ),
-        "*",
-        eb.lit(-1)
-      ).as("expense"),
+        )
+        .as("expense"),
+
       getMonth(eb.ref("date")).as("month"),
       getYear(eb.ref("date")).as("year"),
     ])

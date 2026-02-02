@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { transactionTypes } from "@/lib/constants";
 import { createTransactionSchema } from "../schemas/transactions.schema";
 import { fillForm } from "@/lib/client-utils";
 import { formQueryOptions } from "@/lib/query-utils";
@@ -153,17 +152,6 @@ export const CreateTransaction = ({
           <FieldGroup>
             {/* Date */}
             <DateInput name="date" label={tc("date")} control={form.control} />
-
-            {/* Type */}
-            <SelectInput
-              name="type"
-              label={t("transactionType")}
-              control={form.control}
-              items={transactionTypes.map((type) => ({
-                value: type,
-                label: t(type),
-              }))}
-            />
 
             {/* Amount */}
             <NumberInput

@@ -2,7 +2,6 @@ import { db } from "@/db";
 import {
   consolidationCost,
   consolidationRevenue,
-  consolidationSignedAmount,
 } from "@/db/expressions/consolidations.expression";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
 
@@ -30,7 +29,7 @@ export async function getGeneralStats(input: DashboardDateRange) {
       .where(consolidationRevenue)
       .select((eb) =>
         eb.fn
-          .coalesce(eb.fn.sum<number>(consolidationSignedAmount), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
           .as("total")
       )
       .executeTakeFirstOrThrow()
@@ -41,7 +40,7 @@ export async function getGeneralStats(input: DashboardDateRange) {
       .where(consolidationCost)
       .select((eb) =>
         eb.fn
-          .coalesce(eb.fn.sum<number>(consolidationSignedAmount), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
           .as("total")
       )
       .executeTakeFirstOrThrow()
@@ -52,7 +51,7 @@ export async function getGeneralStats(input: DashboardDateRange) {
       .where("consolidationGroup", "=", "tax")
       .select((eb) =>
         eb.fn
-          .coalesce(eb.fn.sum<number>(consolidationSignedAmount), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
           .as("total")
       )
       .executeTakeFirstOrThrow()

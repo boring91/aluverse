@@ -12,7 +12,7 @@ export const listConsolidationSchema = listSchema.safeExtend({
 
 export const createConsolidationSchema = z
   .object({
-    amount: z.number().min(1),
+    amount: z.number(),
     description: z.string().min(1).optional(),
     consolidationGroup: z.enum(transactionConsolidationGroups),
     budgetCategory: z.enum(transactionBudgetCategories).optional(),

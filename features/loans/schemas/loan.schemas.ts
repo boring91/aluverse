@@ -8,7 +8,7 @@ import {
 export const createLoanSchema = z.object({
   type: z.enum(loanTypes),
   partyName: z.string().min(1),
-  amount: z.number().min(1),
+  amount: z.number().max(0),
   date: z.date(),
   dueDate: z.date().nullable().optional(),
   notes: z.string().nullable().optional(),

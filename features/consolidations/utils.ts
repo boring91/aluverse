@@ -35,13 +35,7 @@ export async function updateConsolidationWithRelatedItem(
       .select(amountExpression[projectStream])
       .executeTakeFirstOrThrow();
 
-    const sign = projectStream === "payments" ? 1 : -1;
-    const amountType = Math.sign(sign * amount) > 0 ? "income" : "expense";
-
-    if (
-      Math.abs(amount) !== consolidation.amount ||
-      consolidation.transaction.type !== amountType
-    ) {
+    if (amount !== consolidation.amount) {
       throw new Error(
         "Consolidation amount does not match item amount. Please update the item amount to match the consolidation amount."
       );

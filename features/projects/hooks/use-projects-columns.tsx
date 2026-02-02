@@ -106,17 +106,17 @@ export const useProjectsColumns = (
               {/* Profit */}
               <p
                 className={cn("items-center flex gap-1 text-emerald-500", {
-                  "text-rose-500": project.price - project.cost < 0,
+                  "text-rose-500": project.price + project.cost < 0,
                 })}
               >
                 {/* Cash */}
                 <span className="font-mono">
-                  {formatCurrency(project.price - project.cost)}
+                  {formatCurrency(project.price + project.cost)}
                 </span>
                 {/* Percentage */}
                 <span
                   className={cn("text-xs text-emerald-500/70", {
-                    "text-rose-500/70": project.price - project.cost < 0,
+                    "text-rose-500/70": project.price + project.cost < 0,
                   })}
                 >
                   (

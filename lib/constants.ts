@@ -1,5 +1,3 @@
-export const transactionTypes = ["income", "expense"] as const;
-
 export const transactionConsolidationGroups = [
   "budget",
   "project",

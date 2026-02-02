@@ -75,7 +75,7 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
                 "text-rose-500": project.price - project.cost < 0,
               })}
             >
-              {formatCurrency(project.price - project.cost)}
+              {formatCurrency(project.price + project.cost)}
             </p>
           </div>
         </CardContent>

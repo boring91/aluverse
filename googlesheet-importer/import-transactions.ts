@@ -69,11 +69,6 @@ function isGst(category: string): boolean {
   return catLower.includes("gst");
 }
 
-// Determine transaction type from amount
-function getTransactionType(amount: number): "income" | "expense" {
-  return amount >= 0 ? "income" : "expense";
-}
-
 // Find project item that matches consolidation amount
 async function findMatchingProjectItem(
   projectId: string,
@@ -201,7 +196,6 @@ export async function importTransactions(projectMapping: Map<string, string>) {
         continue;
       }
 
-      const txType = getTransactionType(cashTx.amount);
       const amountCents = Math.round(Math.abs(cashTx.amount) * 100);
 
       // Create transaction
@@ -210,7 +204,6 @@ export async function importTransactions(projectMapping: Map<string, string>) {
         date: txDate,
         description: cashTx.description,
         amount: amountCents,
-        type: txType,
       });
 
       transactionCount++;
@@ -378,7 +371,6 @@ export async function importTransactions(projectMapping: Map<string, string>) {
         continue;
       }
 
-      const txType = getTransactionType(bankTx.amount);
       const amountCents = Math.round(Math.abs(bankTx.amount) * 100);
 
       // Create transaction
@@ -387,7 +379,6 @@ export async function importTransactions(projectMapping: Map<string, string>) {
         date: txDate,
         description: bankTx.description,
         amount: amountCents,
-        type: txType,
       });
 
       transactionCount++;

@@ -2,7 +2,6 @@ import { z } from "zod";
 import {
   transactionBudgetCategories,
   transactionConsolidationGroups,
-  transactionTypes,
 } from "@/lib/constants";
 import {
   listSchema,
@@ -32,8 +31,7 @@ export const listTransactionSchema = listSchema.safeExtend({
 export const createTransactionSchema = z.object({
   date: z.date(),
   description: z.string().min(1),
-  amount: z.number().min(1),
-  type: z.enum(transactionTypes),
+  amount: z.number(),
 });
 
 export const createTransactionWithAccountIdSchema =

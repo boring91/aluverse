@@ -10,7 +10,7 @@ export async function updateTransaction(
     // First, fetch the old transaction to compare the amount
     const oldTransaction = await tx
       .selectFrom("transactions")
-      .select(["amount", "type"])
+      .select(["amount"])
       .where("id", "=", data.id)
       .executeTakeFirst();
 
@@ -19,10 +19,7 @@ export async function updateTransaction(
     }
 
     // If the amount is being updated and actually changed, remove associated consolidations
-    if (
-      data.amount !== oldTransaction.amount ||
-      data.type !== oldTransaction.type
-    ) {
+    if (data.amount !== oldTransaction.amount) {
       await tx
         .deleteFrom("consolidations")
         .where("transactionId", "=", data.id)

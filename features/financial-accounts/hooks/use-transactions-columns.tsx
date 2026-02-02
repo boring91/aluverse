@@ -64,17 +64,15 @@ export const useTransactionsColumns = (
           <DataTableColumnHeader column={column} title={t("amount")} />
         ),
         cell: ({ row }) => {
-          const isExpense = row.original.type === "expense";
+          const item = row.original;
           return (
             <p
               className={cn(
                 "font-mono",
-                isExpense ? "text-rose-500" : "text-emerald-500"
+                item.amount < 0 ? "text-rose-500" : "text-emerald-500"
               )}
             >
-              {isExpense
-                ? `(${formatCurrency(row.original.amount)})`
-                : formatCurrency(row.original.amount)}
+              {formatCurrency(item.amount)}
             </p>
           );
         },

@@ -13,7 +13,7 @@ export async function getExpensesStats(input: DashboardDateRange) {
       "transactions.id",
       "consolidations.transactionId"
     )
-    .where("transactions.type", "=", "expense");
+    .where((eb) => eb("consolidations.amount", "<", eb.lit(0)));
 
   if (from) {
     expensesQuery = expensesQuery.where("transactions.date", ">=", from);
