@@ -1,6 +1,7 @@
 import { ExpressionBuilder } from "kysely";
 import { DB } from "../types";
 import { getCurrentTime } from "@/lib/utils";
+import { consolidationSignedAmount } from "./consolidations.expression";
 
 export const projectPaid = (
   eb: ExpressionBuilder<DB, "projects">,
@@ -9,19 +10,29 @@ export const projectPaid = (
 ) => {
   let exp = eb
     .selectFrom("projectPayments")
+    .innerJoin(
+      "consolidations",
+      "consolidations.id",
+      "projectPayments.consolidationId"
+    )
+    .innerJoin(
+      "transactions",
+      "transactions.id",
+      "consolidations.transactionId"
+    )
     .whereRef("projectPayments.projectId", "=", "projects.id");
 
   if (from) {
-    exp = exp.where("projectPayments.date", ">=", from);
+    exp = exp.where("transactions.date", ">=", from);
   }
   if (to) {
-    exp = exp.where("projectPayments.date", "<=", to);
+    exp = exp.where("transactions.date", "<", to);
   }
 
   return exp
     .select((sub) =>
       sub.fn
-        .coalesce(sub.fn.sum<number>("projectPayments.amount"), sub.lit(0))
+        .coalesce(sub.fn.sum<number>(consolidationSignedAmount), sub.lit(0))
         .as("paid")
     )
     .$asScalar();
@@ -34,13 +45,23 @@ export const suppliesCost = (
 ) => {
   let exp = eb
     .selectFrom("projectSupplies")
+    .innerJoin(
+      "consolidations",
+      "consolidations.id",
+      "projectSupplies.consolidationId"
+    )
+    .innerJoin(
+      "transactions",
+      "transactions.id",
+      "consolidations.transactionId"
+    )
     .whereRef("projectSupplies.projectId", "=", "projects.id");
 
   if (from) {
-    exp = exp.where("projectSupplies.createdAt", ">=", from);
+    exp = exp.where("transactions.date", ">=", from);
   }
   if (to) {
-    exp = exp.where("projectSupplies.createdAt", "<=", to);
+    exp = exp.where("transactions.date", "<", to);
   }
 
   return exp
@@ -62,13 +83,23 @@ export const laborCost = (
 ) => {
   let exp = eb
     .selectFrom("projectLabors")
+    .innerJoin(
+      "consolidations",
+      "consolidations.id",
+      "projectLabors.consolidationId"
+    )
+    .innerJoin(
+      "transactions",
+      "transactions.id",
+      "consolidations.transactionId"
+    )
     .whereRef("projectLabors.projectId", "=", "projects.id");
 
   if (from) {
-    exp = exp.where("projectLabors.createdAt", ">=", from);
+    exp = exp.where("transactions.date", ">=", from);
   }
   if (to) {
-    exp = exp.where("projectLabors.createdAt", "<=", to);
+    exp = exp.where("transactions.date", "<", to);
   }
 
   return exp
@@ -90,13 +121,23 @@ export const miscCost = (
 ) => {
   let exp = eb
     .selectFrom("projectMisc")
+    .innerJoin(
+      "consolidations",
+      "consolidations.id",
+      "projectMisc.consolidationId"
+    )
+    .innerJoin(
+      "transactions",
+      "transactions.id",
+      "consolidations.transactionId"
+    )
     .whereRef("projectMisc.projectId", "=", "projects.id");
 
   if (from) {
-    exp = exp.where("projectMisc.createdAt", ">=", from);
+    exp = exp.where("transactions.date", ">=", from);
   }
   if (to) {
-    exp = exp.where("projectMisc.createdAt", "<=", to);
+    exp = exp.where("transactions.date", "<", to);
   }
 
   return exp
@@ -115,8 +156,11 @@ export const projectCost = (
   eb: ExpressionBuilder<DB, "projects">,
   from?: Date,
   to?: Date
-) =>
-  eb
+) => {
+  from ??= new Date(0);
+  to ??= new Date(2100, 0, 1);
+
+  return eb
     .parens(
       eb(
         eb(
@@ -125,10 +169,16 @@ export const projectCost = (
           miscCost(eb, from, to)
         ),
         "+",
-        eb("budgetUnits", "*", eb.ref("budgetUnitValue"))
+        eb
+          .case()
+          .when(eb.and([eb("startDate", ">=", from), eb("startDate", "<", to)]))
+          .then(eb("budgetUnits", "*", eb.ref("budgetUnitValue")))
+          .else(0)
+          .end()
       )
     )
     .$notNull();
+};
 
 export const projectMarkup = (eb: ExpressionBuilder<DB, "projects">) =>
   eb

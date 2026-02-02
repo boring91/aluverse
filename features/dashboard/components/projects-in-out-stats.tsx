@@ -41,7 +41,7 @@ export const ProjectsInOutStats = ({ dateRange }: Props) => {
 
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
-      <ProjectsInOutStatsChart in={data.in} out={data.out} />
+      <ProjectsInOutStatsChart in={data.in} out={-data.out} />
     </DashboardSection>
   );
 };
