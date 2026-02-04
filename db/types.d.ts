@@ -46,8 +46,6 @@ export type LoanType = "borrowed" | "lent";
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export type TransactionType = "expense" | "income";
-
 export interface _PrismaMigrations {
   appliedStepsCount: Generated<number>;
   checksum: string;
@@ -226,7 +224,6 @@ export interface Transactions {
   date: Timestamp;
   description: string;
   id: Generated<string>;
-  type: TransactionType;
   updatedAt: Generated<Timestamp>;
 }
 

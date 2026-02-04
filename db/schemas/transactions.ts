@@ -6,11 +6,7 @@ import {
   integer,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { pgEnum } from "drizzle-orm/pg-core";
-import { transactionTypes } from "@/lib/constants";
 import { financialAccounts } from "./financial-accounts";
-
-export const transactionType = pgEnum("transaction_type", transactionTypes);
 
 export const transactions = pgTable("transactions", {
   id: uuid().primaryKey().defaultRandom(),
@@ -24,7 +20,6 @@ export const transactions = pgTable("transactions", {
     length: 1024,
   }).notNull(),
   amount: integer().notNull(), // in cents
-  type: transactionType().notNull(),
   createdAt: timestamp().notNull().defaultNow(),
   updatedAt: timestamp()
     .notNull()

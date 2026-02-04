@@ -6,19 +6,7 @@ export const balance = (eb: ExpressionBuilder<DB, "financialAccounts">) => {
     .selectFrom("transactions")
     .whereRef("transactions.accountId", "=", "financialAccounts.id")
     .select((sub) =>
-      sub.fn
-        .coalesce(
-          sub.fn.sum<number>(
-            sub
-              .case("type")
-              .when("income")
-              .then(sub.ref("amount"))
-              .else(sub("amount", "*", sub.lit(-1)))
-              .end()
-          ),
-          sub.lit(0)
-        )
-        .as("balance")
+      sub.fn.coalesce(sub.fn.sum<number>("amount"), sub.lit(0)).as("balance")
     )
     .$asScalar();
 };

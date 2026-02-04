@@ -42,7 +42,7 @@ export const consolidationMapper = (
       eb
         .selectFrom("transactions")
         .whereRef("transactions.id", "=", "consolidations.transactionId")
-        .select(["id", "date", "description", "amount", "type"])
+        .select(["id", "date", "description", "amount"])
     )
       .$notNull()
       .as("transaction"),

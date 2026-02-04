@@ -1,7 +1,6 @@
 import { ExpressionBuilder } from "kysely";
 import { DB } from "../types";
 import { getCurrentTime } from "@/lib/utils";
-import { consolidationSignedAmount } from "./consolidations.expression";
 
 export const projectPaid = (
   eb: ExpressionBuilder<DB, "projects">,
@@ -10,16 +9,12 @@ export const projectPaid = (
 ) => {
   let exp = eb
     .selectFrom("projectPayments")
-    .innerJoin(
+    .leftJoin(
       "consolidations",
       "consolidations.id",
       "projectPayments.consolidationId"
     )
-    .innerJoin(
-      "transactions",
-      "transactions.id",
-      "consolidations.transactionId"
-    )
+    .leftJoin("transactions", "transactions.id", "consolidations.transactionId")
     .whereRef("projectPayments.projectId", "=", "projects.id");
 
   if (from) {
@@ -32,7 +27,7 @@ export const projectPaid = (
   return exp
     .select((sub) =>
       sub.fn
-        .coalesce(sub.fn.sum<number>(consolidationSignedAmount), sub.lit(0))
+        .coalesce(sub.fn.sum<number>("projectPayments.amount"), sub.lit(0)) // XXX: We're taking the amounts from the project payments as opposed to the consolidation because some of the payments don't have consolidations.
         .as("paid")
     )
     .$asScalar();
@@ -168,7 +163,7 @@ export const projectCost = (
           "+",
           miscCost(eb, from, to)
         ),
-        "+",
+        "-",
         eb
           .case()
           .when(eb.and([eb("startDate", ">=", from), eb("startDate", "<", to)]))
@@ -183,10 +178,10 @@ export const projectCost = (
 export const projectMarkup = (eb: ExpressionBuilder<DB, "projects">) =>
   eb
     .case()
-    .when(projectCost, ">", 0)
+    .when(eb.fn<number>("abs", [projectCost]), ">", eb.lit(0))
     .then(
       eb(
-        eb.parens(eb("price", "-", projectCost(eb))),
+        eb.parens(eb("price", "+", projectCost(eb))),
         "/",
         eb.cast<number>(projectCost(eb), "double precision")
       )
@@ -201,7 +196,7 @@ export const projectMargin = (eb: ExpressionBuilder<DB, "projects">) =>
     .when("price", ">", 0)
     .then(
       eb(
-        eb.parens(eb("price", "-", projectCost(eb))),
+        eb.parens(eb("price", "+", projectCost(eb))),
         "/",
         eb.cast<number>(eb.ref("price"), "double precision")
       )
@@ -313,7 +308,7 @@ export const projectAllocationOverrun = (
       eb.and([eb(projectCost, ">", projectAllocation), eb("price", ">", 0)])
     )
     .then(
-      eb(eb.parens(projectCost, "-", projectAllocation), "/", projectAllocation)
+      eb(eb.parens(projectCost, "+", projectAllocation), "/", projectAllocation)
     )
     .else(null)
     .end();

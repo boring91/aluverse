@@ -8,7 +8,6 @@ export const transactionMapper = (eb: ExpressionBuilder<DB, "transactions">) =>
     "id",
     "date",
     "amount",
-    "type",
     "description",
     isTransactionConsolidated(eb).as("isConsolidated"),
     consolidatedAmount(eb).as("consolidatedAmount"),
