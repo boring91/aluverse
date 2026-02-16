@@ -1,0 +1,1 @@
+ALTER TABLE "budget_categories" ADD COLUMN "including_gst" boolean NOT NULL;

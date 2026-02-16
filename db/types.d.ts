@@ -77,6 +77,7 @@ export interface BudgetCategories {
   createdAt: Generated<Timestamp>;
   humanId: string;
   id: Generated<string>;
+  includingGst: boolean;
   name: string;
   updatedAt: Generated<Timestamp>;
 }

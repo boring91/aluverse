@@ -1,5 +1,6 @@
 import { getCurrentTime } from "@/lib/utils";
 import {
+  boolean,
   date,
   integer,
   pgTable,
@@ -15,6 +16,7 @@ export const budgetCategories = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     name: varchar({ length: 128 }).notNull(),
     humanId: varchar({ length: 32 }).notNull(),
+    includingGst: boolean().notNull(),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
       .notNull()

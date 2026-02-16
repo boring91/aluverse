@@ -162,6 +162,13 @@
       "when": 1769996773118,
       "tag": "0022_big_sebastian_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1770167421712,
+      "tag": "0023_steep_naoko",
+      "breakpoints": true
     }
   ]
 }

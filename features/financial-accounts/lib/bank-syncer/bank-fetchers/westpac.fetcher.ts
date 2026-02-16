@@ -378,8 +378,7 @@ export async function getWestpacTransactions(
         accountId,
         date: new Date(t.post_date),
         description: t.description.original,
-        amount: Math.abs(Math.round(t.amount.amount * 100)),
-        type: t.amount.amount > 0 ? "income" : "expense",
+        amount: Math.round(t.amount.amount * 100),
       };
     }) satisfies Transaction[];
 }

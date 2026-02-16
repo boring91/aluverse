@@ -1,13 +1,24 @@
 import { db } from "@/db";
-import { listSchema } from "@/shared/lib/schemas/util-schemas";
+import {
+  booleanFilterSchema,
+  listSchema,
+} from "@/shared/lib/schemas/util-schemas";
 import { z } from "zod";
 
-export const listBudgetCategorySchema = listSchema;
+export const budgetCategoryFiltersSchema = z.object({
+  keyword: z.string().optional(),
+  includingGst: booleanFilterSchema.optional(),
+});
+
+export const listBudgetCategorySchema = listSchema.safeExtend({
+  filters: budgetCategoryFiltersSchema.optional(),
+});
 
 export const createBudgetCategorySchema = z
   .object({
     name: z.string().min(1),
     humanId: z.string().min(1),
+    includingGst: z.boolean(),
   })
   .superRefine(async (data, ctx) => {
     const existingCategory = await db
