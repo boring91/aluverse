@@ -14,7 +14,6 @@ import {
 } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreateMisc } from "./create-misc";
@@ -30,15 +29,12 @@ const useColumns = (
   handleDelete: (itemId: string) => void,
   currentlyProcessing: Set<string>
 ) => {
-  const t = useTranslations("Projects");
-  const tc = useTranslations("Common");
-
   return useMemo<ColumnDef<ProjectMisc>[]>(() => {
     return [
       {
         accessorKey: "name",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("name")} />
+          <DataTableColumnHeader column={column} title="Name" />
         ),
       },
 
@@ -47,7 +43,7 @@ const useColumns = (
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title={t("amount")}
+            title="Amount"
             className="text-center"
           />
         ),
@@ -67,7 +63,7 @@ const useColumns = (
           <DataTableColumnHeader
             className="text-center"
             column={column}
-            title={t("isConsolidated")}
+            title="Is consolidated"
           />
         ),
         cell: ({ row }) => {
@@ -99,7 +95,7 @@ const useColumns = (
         },
       },
     ];
-  }, [t, tc, currentlyProcessing, handleDelete, handleUpdate]);
+  }, [currentlyProcessing, handleDelete, handleUpdate]);
 };
 
 type Props = {
@@ -107,7 +103,6 @@ type Props = {
 };
 
 export const MiscList = ({ projectId }: Props) => {
-  const tc = useTranslations("Common");
   const { confirm } = useConfirm();
 
   const [itemId, setItemId] = useState<string | null>(null);
@@ -117,8 +112,8 @@ export const MiscList = ({ projectId }: Props) => {
 
   const handleDelete = (itemId: string) => {
     confirm({
-      title: tc("delete"),
-      description: tc("areYouSureYouWantToDeleteThisItem"),
+      title: "Delete",
+      description: "Are you sure you want to delete this item?",
       onConfirm: () => {
         setCurrentlyProcessing((set) => new Set(set.add(itemId)));
         deleteMutation.mutate({ id: itemId });
@@ -165,7 +160,7 @@ export const MiscList = ({ projectId }: Props) => {
           set.delete(id);
           return new Set(set);
         });
-        toast.success(tc("deletedSuccessfully"));
+        toast.success("Deleted successfully");
       },
 
       onError: (error) => {

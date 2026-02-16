@@ -1,27 +1,22 @@
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useAppForm } from "@/components/form/form-context";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { fillForm } from "@/lib/client-utils";
-import { formQueryOptions } from "@/lib/query-utils";
-import { createProjectPaymentSchema } from "../schemas/project-items.schema";
+import { formQueryOptions } from "@/lib/client-utils";
+import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { DateInput } from "@/components/form/date-input";
-import { NumberInput } from "@/components/form/number-input";
+import { createProjectPaymentSchema } from "../schemas/project-items.schema";
 
 type SchemaType = z.infer<typeof createProjectPaymentSchema>;
 
@@ -39,23 +34,15 @@ type Props = {
   prefillData?: PrefillData;
 };
 
-export const CreatePayment = ({
+export function CreatePayment({
   open,
   onOpenChange,
   projectId,
   itemId,
   onItemCreated,
   prefillData,
-}: Props) => {
-  const t = useTranslations("Projects");
-  const tc = useTranslations("Common");
-
+}: Props) {
   const isUpdate = !!itemId;
-
-  const form = useForm({
-    resolver: zodResolver(createProjectPaymentSchema),
-  });
-
   const queryClient = useQueryClient();
   const trpc = useTRPC();
 
@@ -69,57 +56,90 @@ export const CreatePayment = ({
     )
   );
 
-  const onSuccess = (data: { id: string }) => {
-    queryClient.invalidateQueries(
-      trpc.projectPayments.list.queryOptions({ projectId })
-    );
-    queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
-    queryClient.invalidateQueries(
-      trpc.projects.get.queryOptions({ id: projectId })
-    );
-    if (isUpdate) {
-      queryClient.invalidateQueries(
-        trpc.projectPayments.get.queryOptions({ id: itemId })
-      );
-    } else {
-      // Call onItemCreated callback with the newly created item ID
-      const createdItem = data;
-      if (createdItem && onItemCreated) {
-        onItemCreated(createdItem.id);
-      }
-    }
-    form.reset();
-    onOpenChange(false);
-    toast.success(tc("savedSuccessfully"));
-  };
-
-  const onError = (error: { message: string }) => {
-    toast.error(error.message);
-  };
-
   const createMutation = useMutation(
-    trpc.projectPayments.create.mutationOptions({ onSuccess, onError })
+    trpc.projectPayments.create.mutationOptions({
+      onSuccess: (created) => {
+        queryClient.invalidateQueries(
+          trpc.projectPayments.list.queryOptions({ projectId })
+        );
+        queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
+        queryClient.invalidateQueries(
+          trpc.projects.get.queryOptions({ id: projectId })
+        );
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.projectPayments.get.queryOptions({ id: itemId })
+          );
+        } else if (created && onItemCreated) {
+          onItemCreated(created.id);
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
   );
 
   const updateMutation = useMutation(
-    trpc.projectPayments.update.mutationOptions({ onSuccess, onError })
+    trpc.projectPayments.update.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.projectPayments.list.queryOptions({ projectId })
+        );
+        queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
+        queryClient.invalidateQueries(
+          trpc.projects.get.queryOptions({ id: projectId })
+        );
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.projectPayments.get.queryOptions({ id: itemId })
+          );
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
   );
 
-  const handleSubmit = (data: SchemaType) => {
-    if (isUpdate && itemId) {
-      updateMutation.mutate({ id: itemId, ...data });
-    } else {
-      createMutation.mutate({ projectId, ...data });
-    }
-  };
+  const form = useAppForm({
+    defaultValues: getFormDefaults(
+      createProjectPaymentSchema,
+      isUpdate
+        ? data
+          ? { ...data, amount: data.amount / 100 }
+          : data
+        : prefillData
+    ),
+    validators: {
+      onChange: createProjectPaymentSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (isUpdate && itemId) {
+        await updateMutation.mutateAsync({ id: itemId, ...value });
+      } else {
+        await createMutation.mutateAsync({
+          projectId,
+          ...value,
+        } as SchemaType & { projectId: string });
+      }
+    },
+  });
 
   useEffect(() => {
-    if (!data || !isUpdate) return;
+    form.reset(
+      getFormDefaults(
+        createProjectPaymentSchema,
+        isUpdate
+          ? data
+            ? { ...data, amount: data.amount / 100 }
+            : data
+          : prefillData
+      )
+    );
+  }, [form, open, data, isUpdate, prefillData]);
 
-    fillForm(form, { ...data, amount: data.amount / 100 });
-  }, [data, form, isUpdate]);
-
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending = form.state.isSubmitting;
 
   return (
     <Dialog
@@ -130,49 +150,43 @@ export const CreatePayment = ({
         onOpenChange(value);
       }}
     >
-      <DialogContent
-        onOpenAutoFocus={() => {
-          if (prefillData && !isUpdate) {
-            fillForm(form, prefillData);
-          }
-        }}
-      >
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("payments")}</DialogTitle>
+          <DialogTitle>Payments</DialogTitle>
           <DialogDescription>
-            {isUpdate ? t("updateExistingPayment") : t("createNewPayment")}
+            {isUpdate ? "Update existing payment" : "Create new payment"}
           </DialogDescription>
         </DialogHeader>
 
         <form
           onSubmit={(e) => {
+            e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit(handleSubmit)(e);
+            form.handleSubmit();
           }}
           className="flex flex-col gap-8 px-4 overflow-y-auto"
         >
-          <FieldGroup>
-            {/* Date */}
-            <DateInput name="date" label={tc("date")} control={form.control} />
+          <form.AppForm>
+            <FieldGroup>
+              <form.AppField
+                name="date"
+                children={(field) => <field.DatePickerField label="Date" />}
+              />
 
-            {/* Amount */}
-            <NumberInput
-              name="amount"
-              label={t("amount")}
-              control={form.control}
-            />
-          </FieldGroup>
+              <form.AppField
+                name="amount"
+                children={(field) => <field.NumberField label="Amount" />}
+              />
+            </FieldGroup>
 
-          <DialogFooter>
-            <Button disabled={isPending} type="submit">
-              {(createMutation.isPending || updateMutation.isPending) && (
-                <Loader2 className="animate-spin" />
-              )}
-              {tc("save")}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button disabled={isPending} type="submit">
+                Save
+              </Button>
+            </DialogFooter>
+          </form.AppForm>
         </form>
       </DialogContent>
     </Dialog>
   );
-};
+}

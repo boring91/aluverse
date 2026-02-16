@@ -20,8 +20,6 @@ import {
 import { Switch } from "./ui/switch";
 import { ChevronUpIcon, ChevronDownIcon, CheckIcon } from "lucide-react";
 import { cn } from "@/lib/client-utils";
-import { useTranslations } from "next-intl";
-
 type DateInputProps = {
   value?: Date;
   onChange: (date: Date) => void;
@@ -339,6 +337,18 @@ const PRESETS = [
   "lastMonth",
 ] as const;
 
+const PRESET_LABELS: Record<(typeof PRESETS)[number], string> = {
+  today: "Today",
+  yesterday: "Yesterday",
+  last7: "Last 7 days",
+  last14: "Last 14 days",
+  last30: "Last 30 days",
+  thisWeek: "This week",
+  lastWeek: "Last week",
+  thisMonth: "This month",
+  lastMonth: "Last month",
+};
+
 /** The DateRangePicker component allows a user to select a range of dates */
 export const DateRange: FC<DateRangePickerProps> = ({
   initialDateFrom = new Date(new Date().setHours(0, 0, 0, 0)),
@@ -350,7 +360,6 @@ export const DateRange: FC<DateRangePickerProps> = ({
   locale = "en-US",
   showCompare = false,
 }): JSX.Element => {
-  const tc = useTranslations("Common");
   const [isOpen, setIsOpen] = useState(false);
 
   const [range, setRange] = useState<DateRange>({
@@ -589,7 +598,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
       }}
     >
       <PopoverTrigger asChild>
-        <Button size={"lg"} variant="outline">
+        <Button size="lg" variant="outline">
           <div className="text-right">
             <div className="py-1">
               <div>{`${formatDate(range.from, locale)}${
@@ -744,7 +753,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
                   <SelectContent>
                     {PRESETS.map((preset) => (
                       <SelectItem key={preset} value={preset}>
-                        {tc(`${preset}DateRangePreset`)}
+                        {PRESET_LABELS[preset]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -778,7 +787,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
                   <PresetButton
                     key={preset}
                     preset={preset}
-                    label={tc(`${preset}DateRangePreset`)}
+                    label={PRESET_LABELS[preset]}
                     isSelected={selectedPreset === preset}
                   />
                 ))}
@@ -794,7 +803,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
             }}
             variant="ghost"
           >
-            {tc("cancel")}
+            Cancel
           </Button>
           <Button
             onClick={() => {
@@ -807,7 +816,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
               }
             }}
           >
-            {tc("update")}
+            Update
           </Button>
         </div>
       </PopoverContent>

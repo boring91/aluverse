@@ -1,5 +1,1 @@
-export const formQueryOptions = {
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
-  refetchOnReconnect: false,
-} as const;
+export { formQueryOptions } from "@/lib/client-utils";

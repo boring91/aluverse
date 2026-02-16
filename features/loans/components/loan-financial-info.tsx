@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/client-utils";
-import { useTranslations } from "next-intl";
 import { DollarSignIcon } from "lucide-react";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
@@ -11,8 +10,6 @@ import { inferRouterOutputs } from "@trpc/server";
 type Loan = inferRouterOutputs<AppRouter>["loans"]["get"];
 
 export const LoanFinancialInfo = ({ loan }: { loan: Loan }) => {
-  const t = useTranslations("Loans");
-
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       {/* Principal Amount */}
@@ -20,7 +17,7 @@ export const LoanFinancialInfo = ({ loan }: { loan: Loan }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
             <DollarSignIcon size={16} />
-            {t("principal")}
+            Principal
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-xl font-semibold">
@@ -32,7 +29,7 @@ export const LoanFinancialInfo = ({ loan }: { loan: Loan }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("paid")}
+            Paid
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-xl font-semibold text-sky-500">
@@ -44,7 +41,7 @@ export const LoanFinancialInfo = ({ loan }: { loan: Loan }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("remaining")}
+            Remaining
           </CardTitle>
         </CardHeader>
         <CardContent

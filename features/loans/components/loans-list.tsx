@@ -17,7 +17,6 @@ import {
   keepPreviousData,
   useMutation,
 } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CreateLoan } from "./create-loan";
@@ -27,9 +26,6 @@ import { useLoansColumns } from "../hooks/use-loans-columns";
 import { loanFiltersSchema } from "../schemas/loan.schemas";
 
 export const LoansList = () => {
-  const tc = useTranslations("Common");
-  const t = useTranslations("Loans");
-
   const { confirm } = useConfirm();
 
   const [itemId, setItemId] = useQueryState("itemId", parseAsString);
@@ -40,8 +36,8 @@ export const LoansList = () => {
 
   const handleDelete = (itemId: string) => {
     confirm({
-      title: tc("delete"),
-      description: tc("areYouSureYouWantToDeleteThisItem"),
+      title: "Delete",
+      description: "Are you sure you want to delete this item?",
       onConfirm: () => {
         setCurrentlyProcessing((set) => new Set(set.add(itemId)));
         deleteMutation.mutate({ id: itemId });
@@ -82,7 +78,7 @@ export const LoansList = () => {
           })
         );
 
-        toast.success(tc("deletedSuccessfully"));
+        toast.success("Deleted successfully");
       },
 
       onError: (error) => {
@@ -121,27 +117,27 @@ export const LoansList = () => {
         {...dataTable}
         filtersSlot={
           <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
-            <StringFilter label={tc("keyword")} control={filter.keyword} />
+            <StringFilter label="Keyword" control={filter.keyword} />
 
             <EnumFilter
-              label={t("type")}
+              label="Type"
               control={filter.type}
               options={[
-                { value: "lent", label: t("lent") },
-                { value: "borrowed", label: t("borrowed") },
+                { value: "lent", label: "Lent" },
+                { value: "borrowed", label: "Borrowed" },
               ]}
             />
 
             <BooleanFilter
               label="Paid off"
               control={filter.isPaidOff}
-              trueLabel={tc("yes")}
-              falseLabel={tc("no")}
+              trueLabel="Yes"
+              falseLabel="No"
             />
 
-            <DateFilter label={tc("fromDate")} control={filter.from} />
+            <DateFilter label="From date" control={filter.from} />
 
-            <DateFilter label={tc("toDate")} control={filter.to} />
+            <DateFilter label="To date" control={filter.to} />
           </DataTableFilters>
         }
       />

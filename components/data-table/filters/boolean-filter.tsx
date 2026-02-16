@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslations } from "next-intl";
 import { FilterControl } from "../types";
 
 type BooleanFilterValue = "true" | "false" | "all";
@@ -33,12 +32,10 @@ export const BooleanFilter = ({
   falseLabel,
   placeholder,
 }: Props) => {
-  const tc = useTranslations("Common");
-
   const options: Option[] = [
-    { value: "all", label: tc("all") },
-    { value: "true", label: trueLabel ?? tc("yes") },
-    { value: "false", label: falseLabel ?? tc("no") },
+    { value: "all", label: "All" },
+    { value: "true", label: trueLabel ?? "Yes" },
+    { value: "false", label: falseLabel ?? "No" },
   ];
 
   const value = control.value;
@@ -53,7 +50,7 @@ export const BooleanFilter = ({
         }
       >
         <SelectTrigger className="h-9 w-full">
-          <SelectValue placeholder={placeholder ?? tc("all")} />
+          <SelectValue placeholder={placeholder ?? "All"} />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (

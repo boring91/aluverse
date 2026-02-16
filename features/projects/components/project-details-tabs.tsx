@@ -8,29 +8,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTranslations } from "next-intl";
 import { LaborsList } from "@/features/projects/components/labors-list";
 import { MiscList } from "@/features/projects/components/misc-list";
 import { PaymentsList } from "@/features/projects/components/payments-list";
 import { SuppliesList } from "@/features/projects/components/supplies-list";
 
 export const ProjectDetailsTabs = ({ projectId }: { projectId: string }) => {
-  const t = useTranslations("Projects");
-
   return (
     <Tabs defaultValue="supplies" className="mt-2 space-y-4">
       <TabsList>
-        <TabsTrigger value="supplies">{t("supplies")}</TabsTrigger>
-        <TabsTrigger value="labors">{t("labors")}</TabsTrigger>
-        <TabsTrigger value="misc">{t("misc")}</TabsTrigger>
-        <TabsTrigger value="payments">{t("payments")}</TabsTrigger>
+        <TabsTrigger value="supplies">Supplies</TabsTrigger>
+        <TabsTrigger value="labors">Labors</TabsTrigger>
+        <TabsTrigger value="misc">Misc</TabsTrigger>
+        <TabsTrigger value="payments">Payments</TabsTrigger>
       </TabsList>
 
       <TabsContent value="supplies" className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>{t("supplies")}</CardTitle>
-            <CardDescription>{t("suppliesDescription")}</CardDescription>
+            <CardTitle>Supplies</CardTitle>
+            <CardDescription>
+              Manage and track all supplies and materials for this project
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <SuppliesList projectId={projectId} />
@@ -41,8 +40,10 @@ export const ProjectDetailsTabs = ({ projectId }: { projectId: string }) => {
       <TabsContent value="labors" className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>{t("labors")}</CardTitle>
-            <CardDescription>{t("laborsDescription")}</CardDescription>
+            <CardTitle>Labors</CardTitle>
+            <CardDescription>
+              View and manage labor hours and rates for this project
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <LaborsList projectId={projectId} />
@@ -53,8 +54,10 @@ export const ProjectDetailsTabs = ({ projectId }: { projectId: string }) => {
       <TabsContent value="misc" className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>{t("misc")}</CardTitle>
-            <CardDescription>{t("miscDescription")}</CardDescription>
+            <CardTitle>Misc</CardTitle>
+            <CardDescription>
+              Track miscellaneous expenses and items for this project
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <MiscList projectId={projectId} />
@@ -65,8 +68,10 @@ export const ProjectDetailsTabs = ({ projectId }: { projectId: string }) => {
       <TabsContent value="payments" className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>{t("payments")}</CardTitle>
-            <CardDescription>{t("paymentsDescription")}</CardDescription>
+            <CardTitle>Payments</CardTitle>
+            <CardDescription>
+              View and manage all payments received for this project
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <PaymentsList projectId={projectId} />

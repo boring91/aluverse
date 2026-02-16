@@ -89,7 +89,7 @@ export async function listProjects(input: z.infer<typeof listProjectSchema>) {
   });
 
   if (!sorting?.length) {
-    query = query.orderBy("humanId", "asc");
+    query = query.orderBy("createdAt", "desc");
   }
 
   query =

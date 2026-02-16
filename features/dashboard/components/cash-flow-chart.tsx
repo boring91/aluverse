@@ -11,13 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardSection } from "./dashboard-section";
-import { useTranslations } from "next-intl";
 import { formatCurrency, stringsToNeutralColors } from "@/lib/utils";
 
 const fills = stringsToNeutralColors(["income", "expense"]);
 
 export const CashFlowChart = () => {
-  const t = useTranslations("Dashboard");
   const trpc = useTRPC();
 
   const { data, isLoading } = useQuery(trpc.dashboard.cashFlow.queryOptions());
@@ -36,7 +34,7 @@ export const CashFlowChart = () => {
       {data && (
         <Card className="h-full flex flex-col">
           <CardHeader>
-            <CardTitle>{t("cashFlowTimeline")}</CardTitle>
+            <CardTitle>Cash flow timeline</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer
@@ -77,7 +75,8 @@ export const CashFlowChart = () => {
                               }}
                             />
                             <span className="text-muted-foreground">
-                              {t(payload.name as "income" | "expense")}:
+                              {payload.name === "income" ? "Income" : "Expense"}
+                              :
                             </span>
                             <span className="font-mono font-medium tabular-nums">
                               {`${formatCurrency(payload.value as number)}`}

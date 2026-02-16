@@ -16,6 +16,15 @@ const eslintConfig = defineConfig([
     },
     rules: {
       "prettier/prettier": "error",
+      "react/no-children-prop": "off",
+      "react/jsx-curly-brace-presence": [
+        "error",
+        {
+          props: "never",
+          children: "never",
+          propElementValues: "always",
+        },
+      ],
     },
   },
   // Override default ignores of eslint-config-next.

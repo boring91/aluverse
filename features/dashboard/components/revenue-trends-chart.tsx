@@ -9,7 +9,6 @@ import {
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSection } from "./dashboard-section";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
@@ -22,7 +21,6 @@ type Props = {
 const color = stringsToNeutralColors([""])[0];
 
 export const RevenueTrendsChart = ({ dateRange }: Props) => {
-  const t = useTranslations("Dashboard");
   const trpc = useTRPC();
 
   const { data, isLoading } = useQuery(
@@ -46,7 +44,7 @@ export const RevenueTrendsChart = ({ dateRange }: Props) => {
         <Card className="h-full flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              {t("revenueTrends")}
+              Revenue trends
               <div className="text-sm font-normal">
                 <span
                   className={
@@ -56,7 +54,7 @@ export const RevenueTrendsChart = ({ dateRange }: Props) => {
                   {data.monthOnMonth >= 0 ? "+" : ""}
                   {(data.monthOnMonth * 100).toFixed(1)}%
                 </span>
-                <span className="text-muted-foreground ml-1">{t("mom")}</span>
+                <span className="text-muted-foreground ml-1">MoM</span>
               </div>
             </CardTitle>
           </CardHeader>
@@ -91,7 +89,8 @@ export const RevenueTrendsChart = ({ dateRange }: Props) => {
                               }}
                             />
                             <span className="text-muted-foreground">
-                              {t(payload.name as "income" | "expense")}:
+                              {payload.name === "income" ? "Income" : "Expense"}
+                              :
                             </span>
                             <span className="font-mono font-medium tabular-nums">
                               {`${formatCurrency(payload.value as number)}`}

@@ -20,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { useTranslations } from "next-intl";
 import { ReactNode, useState } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
@@ -55,8 +54,6 @@ export const DataTable = <TData, TValue>({
   setOpenCreateSheet,
   filtersSlot,
 }: Props<TData, TValue>) => {
-  const tc = useTranslations("Common");
-
   // Internal state fallback
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalColumnVisibility, setInternalColumnVisibility] =
@@ -146,7 +143,7 @@ export const DataTable = <TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {tc("noResults")}
+                  No results
                 </TableCell>
               </TableRow>
             )}

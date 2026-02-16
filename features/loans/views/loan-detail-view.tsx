@@ -4,7 +4,6 @@ import { PageContainer } from "@/components/page-container";
 import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { notFound, useParams } from "next/navigation";
 import { CreateLoan } from "@/features/loans/components/create-loan";
 import { useState } from "react";
@@ -14,12 +13,14 @@ import { LoanBasicInfo } from "@/features/loans/components/loan-basic-info";
 import { LoanFinancialInfo } from "@/features/loans/components/loan-financial-info";
 import { LoanDetailsCard } from "@/features/loans/components/loan-details-card";
 
+const LOAN_TYPE_LABELS = {
+  lent: "Lent",
+  borrowed: "Borrowed",
+} as const;
+
 export const LoanDetailView = () => {
   const params = useParams();
   const loanId = params["loanId"] as string;
-
-  const tc = useTranslations("Common");
-  const t = useTranslations("Loans");
 
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(
@@ -28,7 +29,9 @@ export const LoanDetailView = () => {
     })
   );
 
-  useTitle(data ? `${data.partyName} - ${t(data.type)}` : tc("loading"));
+  useTitle(
+    data ? `${data.partyName} - ${LOAN_TYPE_LABELS[data.type]}` : "Loading"
+  );
 
   const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
@@ -64,21 +67,21 @@ export const LoanDetailView = () => {
           <div className="space-y-6">
             <section className="space-y-3">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                {tc("details")}
+                Details
               </h2>
               <LoanBasicInfo loan={data} />
             </section>
 
             <section className="space-y-3">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                {t("financialSummary")}
+                Financial Summary
               </h2>
               <LoanFinancialInfo loan={data} />
             </section>
 
             <section className="space-y-3">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                {t("payoffs")}
+                Payoffs
               </h2>
               <LoanDetailsCard loanId={loanId} />
             </section>

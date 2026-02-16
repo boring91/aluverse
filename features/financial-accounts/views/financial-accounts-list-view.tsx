@@ -5,7 +5,6 @@ import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { CreateFinancialAccount } from "@/features/financial-accounts/components/create-financial-account";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,11 +14,9 @@ import { PageLoader } from "@/components/page-loader";
 import { useConfirm } from "@/lib/confirm-context";
 
 export const FinancialAccountsListView = () => {
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
   const { confirm } = useConfirm();
 
-  useTitle(tc("financialAccounts"));
+  useTitle("Financial accounts");
 
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [updatingItemId, setUpdatingItemId] = useState<string | undefined>(
@@ -50,7 +47,7 @@ export const FinancialAccountsListView = () => {
           set.delete(id);
           return new Set(set);
         });
-        toast.success(tc("deletedSuccessfully"));
+        toast.success("Deleted successfully");
       },
 
       onError: (error) => {
@@ -63,9 +60,7 @@ export const FinancialAccountsListView = () => {
     trpc.financialAccounts.syncWithBank.mutationOptions({
       onSuccess: (syncedTransactionCount, { id }) => {
         toast.success(
-          t("successfullySyncedCountTransactions", {
-            count: syncedTransactionCount?.toString() ?? 0,
-          })
+          `Successfully synced \${syncedTransactionCount?.toString() ?? 0} transactions`
         );
 
         queryClient.invalidateQueries(
@@ -113,8 +108,8 @@ export const FinancialAccountsListView = () => {
 
   const handleDelete = async (itemId: string) => {
     confirm({
-      title: tc("delete"),
-      description: tc("areYouSureYouWantToDeleteThisItem"),
+      title: "Delete",
+      description: "Are you sure you want to delete this item?",
       onConfirm: () => {
         deleteMutation.mutate({ id: itemId });
         setCurrentlyProcessing((set) => {
@@ -135,11 +130,11 @@ export const FinancialAccountsListView = () => {
       <PageContainer>
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="font-bold text-2xl">{tc("financialAccounts")}</h1>
+          <h1 className="font-bold text-2xl">Financial accounts</h1>
 
           <Button onClick={handleCreate}>
             <PlusIcon />
-            {tc("createNew")}
+            Create new
           </Button>
         </div>
 

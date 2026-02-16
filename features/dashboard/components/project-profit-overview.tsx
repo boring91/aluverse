@@ -11,7 +11,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useTranslations } from "next-intl";
 import { XAxis, YAxis, Bar, BarChart } from "recharts";
 import { inferRouterOutputs } from "@trpc/server";
 import { AppRouter } from "@/trpc/routers/_app";
@@ -57,8 +56,6 @@ const fill = stringsToNeutralColors([""])[0];
 export const ProjectProfitOverviewChart = ({
   data,
 }: ProjectProfitOverviewChartProps) => {
-  const t = useTranslations("Dashboard");
-
   const chartData = data.map((item) => ({
     name: item.name,
     profit: Math.round(item.profit * 100),
@@ -68,7 +65,7 @@ export const ProjectProfitOverviewChart = ({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle>{t("projectsProfitPercentage")}</CardTitle>
+        <CardTitle>Projects profit percentage</CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <ChartContainer config={{}} className="aspect-auto! h-[280px] w-full">

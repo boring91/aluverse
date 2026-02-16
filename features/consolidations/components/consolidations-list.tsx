@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/lib/confirm-context";
@@ -38,8 +37,6 @@ export const ConsolidationsList = ({
   onOpenChange,
 }: Props) => {
   const transactionId = transaction.id;
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
   const { confirm } = useConfirm();
 
   const [itemId, setItemId] = useState<string | null>(null);
@@ -49,8 +46,8 @@ export const ConsolidationsList = ({
 
   const handleDelete = (itemId: string) => {
     confirm({
-      title: tc("delete"),
-      description: tc("areYouSureYouWantToDeleteThisItem"),
+      title: "Delete",
+      description: "Are you sure you want to delete this item?",
       onConfirm: () => {
         setCurrentlyProcessing((set) => new Set(set.add(itemId)));
         deleteMutation.mutate({ id: itemId });
@@ -101,7 +98,7 @@ export const ConsolidationsList = ({
           return new Set(set);
         });
 
-        toast(tc("deletedSuccessfully"));
+        toast("Deleted successfully");
       },
 
       onError: (error) => {
@@ -137,9 +134,10 @@ export const ConsolidationsList = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
-            <DialogTitle>{t("consolidations")}</DialogTitle>
+            <DialogTitle>Consolidations</DialogTitle>
             <DialogDescription>
-              {t("consolidationsListDetails")}
+              Assign this transaction to a consolidation group and categorize it
+              accordingly.
             </DialogDescription>
             {transaction.description && (
               <p className="text-sm text-muted-foreground pt-2">

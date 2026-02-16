@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./_components/app-sidebar";
 import { AppHeader } from "./_components/app-header";
 import { useSession } from "@/lib/auth-client";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 

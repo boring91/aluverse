@@ -7,26 +7,27 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
-import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { CheckIcon, XIcon } from "lucide-react";
 
 type Loan = inferRouterOutputs<AppRouter>["loans"]["list"]["items"][number];
+
+const LOAN_TYPE_LABELS = {
+  lent: "Lent",
+  borrowed: "Borrowed",
+} as const;
 
 export const useLoansColumns = (
   handleUpdate: (itemId: string) => void,
   handleDelete: (itemId: string) => void,
   currentlyProcessing: Set<string>
 ) => {
-  const t = useTranslations("Loans");
-  const tc = useTranslations("Common");
-
   return useMemo<ColumnDef<Loan>[]>(() => {
     return [
       {
         id: "details",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("details")} />
+          <DataTableColumnHeader column={column} title="Details" />
         ),
         cell: ({ row }) => {
           const loan = row.original;
@@ -34,7 +35,7 @@ export const useLoansColumns = (
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <Badge variant={loan.type === "lent" ? "default" : "secondary"}>
-                  {t(loan.type)}
+                  {LOAN_TYPE_LABELS[loan.type]}
                 </Badge>
                 <p className="font-medium">{loan.partyName}</p>
               </div>
@@ -45,11 +46,10 @@ export const useLoansColumns = (
           );
         },
       },
-
       {
         id: "date",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("date")} />
+          <DataTableColumnHeader column={column} title="Date" />
         ),
         cell: ({ row }) => {
           const loan = row.original;
@@ -58,18 +58,17 @@ export const useLoansColumns = (
               <p>{loan.date.toDateString()}</p>
               {loan.dueDate && (
                 <p className="text-muted-foreground text-xs">
-                  {t("dueDate")}: {loan.dueDate.toDateString()}
+                  Due date: {loan.dueDate.toDateString()}
                 </p>
               )}
             </div>
           );
         },
       },
-
       {
         id: "amount",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("amount")} />
+          <DataTableColumnHeader column={column} title="Amount" />
         ),
         cell: ({ row }) => {
           const loan = row.original;
@@ -77,30 +76,28 @@ export const useLoansColumns = (
             <div className="flex flex-col gap-1">
               <p className="font-mono">{formatCurrency(loan.amount)}</p>
               <p className="text-muted-foreground text-xs">
-                {t("paid")}: {formatCurrency(loan.paid)}
+                Paid: {formatCurrency(loan.paid)}
               </p>
             </div>
           );
         },
       },
-
       {
         id: "remaining",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("remaining")} />
+          <DataTableColumnHeader column={column} title="Remaining" />
         ),
         cell: ({ row }) => {
           const loan = row.original;
           return <p className="font-mono">{formatCurrency(loan.remaining)}</p>;
         },
       },
-
       {
         id: "isConsolidated",
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title={t("isConsolidated")}
+            title="Is consolidated"
             className="text-center"
           />
         ),
@@ -117,13 +114,12 @@ export const useLoansColumns = (
           );
         },
       },
-
       {
         id: "unconsolidatedPayoffCount",
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title={t("unconsolidatedPayoffs")}
+            title="Unconsolidated payoffs"
             className="text-center"
           />
         ),
@@ -136,7 +132,6 @@ export const useLoansColumns = (
           );
         },
       },
-
       {
         id: "actions",
         cell: ({ row }) => {
@@ -153,5 +148,5 @@ export const useLoansColumns = (
         },
       },
     ];
-  }, [t, tc, currentlyProcessing, handleDelete, handleUpdate]);
+  }, [currentlyProcessing, handleDelete, handleUpdate]);
 };

@@ -7,35 +7,44 @@ import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { ConsolidationGroupBadge } from "../components/consolidation-group-badge";
+import { transactionBudgetCategories } from "@/lib/constants";
 
 type Consolidation =
   inferRouterOutputs<AppRouter>["consolidations"]["list"]["items"][number];
+
+const BUDGET_LABELS: Record<
+  (typeof transactionBudgetCategories)[number],
+  string
+> = {
+  subscription: "Subscription",
+  consumable: "Consumable",
+  toll: "Toll",
+  tool: "Tool",
+  food: "Food",
+  salary: "Salary",
+  fuel: "Fuel",
+};
 
 export const useConsolidationsColumns = (
   handleUpdate: (itemId: string) => void,
   handleDelete: (itemId: string) => void,
   currentlyProcessing: Set<string>
 ) => {
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
-
   return useMemo<ColumnDef<Consolidation>[]>(() => {
     return [
       {
         accessorKey: "date",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("date")} />
+          <DataTableColumnHeader column={column} title="Date" />
         ),
         cell: ({ row }) => row.original.transaction.date.toDateString(),
       },
-
       {
         accessorKey: "description",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("description")} />
+          <DataTableColumnHeader column={column} title="Description" />
         ),
         cell: ({ row }) => {
           const item = row.original;
@@ -46,11 +55,10 @@ export const useConsolidationsColumns = (
           );
         },
       },
-
       {
         accessorKey: "amount",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("amount")} />
+          <DataTableColumnHeader column={column} title="Amount" />
         ),
         cell: ({ row }) => {
           const item = row.original;
@@ -68,28 +76,23 @@ export const useConsolidationsColumns = (
           );
         },
       },
-
       {
         id: "consolidationGroup",
         header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("consolidationGroup")}
-          />
+          <DataTableColumnHeader column={column} title="Consolidation group" />
         ),
         cell: ({ row }) => {
           const item = row.original;
           return (
             item.consolidationGroup && (
               <div className="flex flex-col gap-1 items-center">
-                {/* Group */}
                 <ConsolidationGroupBadge group={item.consolidationGroup} />
-
-                {/* Extra details */}
                 <div className="text-xs text-muted-foreground flex gap-2">
                   {item.project && <span>{item.project.humanId}</span>}
-                  {item.budgetCategory && <span>{t(item.budgetCategory)}</span>}
-                  {item.isGst && <span>{t("withGst")}</span>}
+                  {item.budgetCategory && (
+                    <span>{BUDGET_LABELS[item.budgetCategory]}</span>
+                  )}
+                  {item.isGst && <span>with GST</span>}
                 </div>
               </div>
             )
@@ -111,5 +114,5 @@ export const useConsolidationsColumns = (
         },
       },
     ];
-  }, [t, tc, currentlyProcessing, handleDelete, handleUpdate]);
+  }, [currentlyProcessing, handleDelete, handleUpdate]);
 };

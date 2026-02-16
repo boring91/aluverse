@@ -10,14 +10,11 @@ import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardSection } from "./dashboard-section";
 import { formatCurrency, formatPercent } from "@/lib/utils";
-import { useTranslations } from "next-intl";
-
 type Props = {
   dateRange: DashboardDateRange;
 };
 
 export const BudgetBurnRate = ({ dateRange }: Props) => {
-  const t = useTranslations("Dashboard");
   const trpc = useTRPC();
 
   const { data, isLoading } = useQuery(
@@ -46,7 +43,7 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
         <Card className="h-full">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              {t("budgetBurnRate")}
+              Budget burn rate
               {data.projectedSpent > data.spent ? (
                 <AlertTriangleIcon className="h-5 w-5 text-destructive" />
               ) : (
@@ -57,7 +54,7 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">{t("spent")}</span>
+                <span className="text-muted-foreground">Spent</span>
                 <span className="font-medium">
                   {formatCurrency(data.spent)} / {formatCurrency(data.budget)}
                 </span>
@@ -67,11 +64,9 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
                 className="h-2"
               />
               <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <span>{formatPercent(data.spent / data.budget)}% used</span>
                 <span>
-                  {formatPercent(data.spent / data.budget)}% {t("used")}
-                </span>
-                <span>
-                  {formatCurrency(data.budget - data.spent)} {t("remaining")}
+                  {formatCurrency(data.budget - data.spent)} remaining
                 </span>
               </div>
             </div>
@@ -79,7 +74,7 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
             <div className="grid grid-cols-2 gap-4 pt-4 border-t">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("dailyBurnRate")}
+                  Daily burn rate
                 </div>
                 <div className="text-lg font-semibold">
                   {formatCurrency(data.dailyBurnRate)}
@@ -87,7 +82,7 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("daysRemaining")}
+                  Days remaining
                 </div>
                 <div className="text-lg font-semibold">
                   {data.daysRemaining}
@@ -97,7 +92,7 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
 
             <div className="pt-4 border-t">
               <div className="text-xs text-muted-foreground mb-1">
-                {t("projectedTotalSpend")}
+                Projected total spend
               </div>
               <div
                 className={cn(
@@ -109,8 +104,7 @@ export const BudgetBurnRate = ({ dateRange }: Props) => {
               </div>
               {data.projectedSpent > data.budget && (
                 <div className="text-xs text-destructive mt-1">
-                  {t("projectedToExceedBudgetBy")}{" "}
-                  {formatCurrency(data.projectedSpent - data.budget)}
+                  {`Projected to exceed budget by ${formatCurrency(data.projectedSpent - data.budget)}`}
                 </div>
               )}
             </div>

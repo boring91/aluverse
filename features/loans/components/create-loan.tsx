@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useAppForm } from "@/components/form/form-context";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
-
 import {
   Dialog,
   DialogContent,
@@ -11,24 +15,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { fillForm } from "@/lib/client-utils";
-import { formQueryOptions } from "@/lib/query-utils";
-import { createLoanSchema } from "../schemas/loan.schemas";
-import { useTRPC } from "@/trpc/client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
 import { loanTypes } from "@/lib/constants";
-import { TextInput } from "@/components/form/text-input";
-import { NumberInput } from "@/components/form/number-input";
-import { DateInput } from "@/components/form/date-input";
-import { TextareaInput } from "@/components/form/textarea-input";
-import { SelectInput } from "@/components/form/select-input";
+import { formQueryOptions } from "@/lib/client-utils";
+import { getFormDefaults } from "@/lib/shared-utils";
+import { useTRPC } from "@/trpc/client";
+import { createLoanSchema } from "../schemas/loan.schemas";
 
 type SchemaType = z.infer<typeof createLoanSchema>;
 
@@ -46,25 +37,19 @@ type Props = {
   prefillData?: PrefillData;
 };
 
-export const CreateLoan = ({
+const LOAN_TYPE_LABELS: Record<(typeof loanTypes)[number], string> = {
+  lent: "Lent",
+  borrowed: "Borrowed",
+};
+
+export function CreateLoan({
   open,
   onOpenChange,
   itemId,
   onCreated,
   prefillData,
-}: Props) => {
-  const t = useTranslations("Loans");
-  const tc = useTranslations("Common");
-
+}: Props) {
   const isUpdate = !!itemId;
-
-  const form = useForm<SchemaType>({
-    resolver: zodResolver(createLoanSchema),
-    defaultValues: {
-      type: "lent",
-    },
-  });
-
   const queryClient = useQueryClient();
   const trpc = useTRPC();
 
@@ -78,51 +63,80 @@ export const CreateLoan = ({
     )
   );
 
-  const onSuccess = (data?: { id: string }) => {
-    queryClient.invalidateQueries(trpc.loans.list.queryOptions({}));
-    if (isUpdate) {
-      queryClient.invalidateQueries(
-        trpc.loans.get.queryOptions({ id: itemId })
-      );
-    }
-    if (!isUpdate && data?.id) {
-      onCreated?.(data.id);
-    }
-    onOpenChange(false);
-    toast.success(tc("savedSuccessfully"));
-  };
-
-  const onError = (error: { message: string }) => {
-    toast.error(error.message);
-  };
-
   const createMutation = useMutation(
-    trpc.loans.create.mutationOptions({ onSuccess, onError })
+    trpc.loans.create.mutationOptions({
+      onSuccess: (created) => {
+        queryClient.invalidateQueries(trpc.loans.list.queryOptions({}));
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.loans.get.queryOptions({ id: itemId })
+          );
+        }
+        if (!isUpdate && created?.id) {
+          onCreated?.(created.id);
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
   );
 
   const updateMutation = useMutation(
-    trpc.loans.update.mutationOptions({ onSuccess, onError })
+    trpc.loans.update.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.loans.list.queryOptions({}));
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.loans.get.queryOptions({ id: itemId })
+          );
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
   );
 
-  const handleSubmit = (data: SchemaType) => {
-    if (isUpdate && itemId) {
-      updateMutation.mutate({ id: itemId, ...data });
-    } else {
-      createMutation.mutate(data);
-    }
-  };
+  const form = useAppForm({
+    defaultValues: getFormDefaults(
+      createLoanSchema,
+      isUpdate
+        ? data
+          ? { ...data, amount: data.amount / 100 }
+          : data
+        : prefillData
+          ? { type: "lent", ...prefillData }
+          : { type: "lent" }
+    ),
+    validators: {
+      onChange: createLoanSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (isUpdate && itemId) {
+        await updateMutation.mutateAsync({ id: itemId, ...value });
+      } else {
+        await createMutation.mutateAsync(value as SchemaType);
+      }
+    },
+  });
 
   useEffect(() => {
-    if (!open) {
-      form.reset();
-      return;
-    }
-    if (!data || !isUpdate) return;
+    form.reset(
+      getFormDefaults(
+        createLoanSchema,
+        isUpdate
+          ? data
+            ? { ...data, amount: data.amount / 100 }
+            : data
+          : prefillData
+            ? { type: "lent", ...prefillData }
+            : { type: "lent" }
+      )
+    );
+  }, [form, open, data, isUpdate, prefillData]);
 
-    fillForm(form, { ...data, amount: data.amount / 100 });
-  }, [data, form, isUpdate, open]);
-
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending = form.state.isSubmitting;
 
   return (
     <Dialog
@@ -132,79 +146,73 @@ export const CreateLoan = ({
         onOpenChange(value);
       }}
     >
-      <DialogContent
-        className="sm:max-w-[640px]"
-        onOpenAutoFocus={() => {
-          if (prefillData && !isUpdate) {
-            fillForm(form, prefillData);
-          }
-        }}
-      >
+      <DialogContent className="sm:max-w-[640px]">
         <DialogHeader>
-          <DialogTitle>{t("loans")}</DialogTitle>
+          <DialogTitle>Loans</DialogTitle>
           <DialogDescription>
-            {isUpdate ? t("updateExistingLoan") : t("createNewLoan")}
+            {isUpdate ? "Update existing loan" : "Create new loan"}
           </DialogDescription>
         </DialogHeader>
 
         <form
           onSubmit={(e) => {
+            e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit(handleSubmit)(e);
+            form.handleSubmit();
           }}
           className="grid grid-cols-1 gap-4 px-4 overflow-y-auto max-h-[calc(100vh-12rem)]"
         >
-          <FieldGroup className="contents">
-            {/* Type */}
-            <SelectInput
-              name="type"
-              label={t("type")}
-              control={form.control}
-              items={loanTypes.map((type) => ({ value: type, label: t(type) }))}
-            />
+          <form.AppForm>
+            <FieldGroup className="contents">
+              <form.AppField
+                name="type"
+                children={(field) => (
+                  <field.SelectField
+                    label="Type"
+                    items={loanTypes.map((type) => ({
+                      value: type,
+                      label: LOAN_TYPE_LABELS[type],
+                    }))}
+                  />
+                )}
+              />
 
-            {/* Party Name */}
-            <TextInput
-              name="partyName"
-              label={t("partyName")}
-              control={form.control}
-            />
+              <form.AppField
+                name="partyName"
+                children={(field) => <field.TextField label="Party name" />}
+              />
 
-            {/* Amount */}
-            <NumberInput
-              name="amount"
-              label={t("amount")}
-              control={form.control}
-            />
+              <form.AppField
+                name="amount"
+                children={(field) => <field.NumberField label="Amount" />}
+              />
 
-            {/* Date */}
-            <DateInput name="date" label={tc("date")} control={form.control} />
+              <form.AppField
+                name="date"
+                children={(field) => <field.DatePickerField label="Date" />}
+              />
 
-            {/* Due Date */}
-            <DateInput
-              name="dueDate"
-              label={t("dueDate")}
-              control={form.control}
-            />
+              <form.AppField
+                name="dueDate"
+                children={(field) => <field.DatePickerField label="Due date" />}
+              />
 
-            {/* Notes */}
-            <TextareaInput
-              name="notes"
-              label={tc("description")}
-              control={form.control}
-            />
-          </FieldGroup>
+              <form.AppField
+                name="notes"
+                children={(field) => (
+                  <field.TextareaField label="Description" />
+                )}
+              />
+            </FieldGroup>
 
-          <DialogFooter>
-            <Button disabled={isPending} type="submit">
-              {(createMutation.isPending || updateMutation.isPending) && (
-                <Loader2 className="animate-spin" />
-              )}
-              {tc("save")}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button disabled={isPending} type="submit">
+                Save
+              </Button>
+            </DialogFooter>
+          </form.AppForm>
         </form>
       </DialogContent>
     </Dialog>
   );
-};
+}

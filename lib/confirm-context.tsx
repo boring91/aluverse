@@ -1,3 +1,5 @@
+"use client";
+
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import {
   createContext,

@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { isPromise } from "@/lib/utils";
-import { useTranslations } from "next-intl";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +28,6 @@ export const ConfirmDialog = ({
   open,
   onOpenChange,
 }: Props) => {
-  const tc = useTranslations("Common");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -57,10 +54,10 @@ export const ConfirmDialog = ({
         <AlertDialogFooter>
           <AlertDialogAction asChild>
             <Button disabled={isLoading} onClick={() => handleConfirm()}>
-              {tc("confirm")}
+              Confirm
             </Button>
           </AlertDialogAction>
-          <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

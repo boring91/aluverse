@@ -5,7 +5,6 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
 import { DashboardSection } from "./dashboard-section";
 import { formatCurrency, formatPercent } from "@/lib/utils";
@@ -16,8 +15,6 @@ type Props = {
 
 export const EfficiencyMetrics = ({ dateRange }: Props) => {
   const trpc = useTRPC();
-  const t = useTranslations("Dashboard");
-
   const { data, isLoading } = useQuery(
     trpc.dashboard.efficiencyMetrics.queryOptions(dateRange)
   );
@@ -43,13 +40,13 @@ export const EfficiencyMetrics = ({ dateRange }: Props) => {
       {data && (
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>{t("efficiencyMetrics")}</CardTitle>
+            <CardTitle>Efficiency metrics</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("revenuePerProject")}
+                  Revenue per project
                 </div>
                 <div className="text-lg font-semibold">
                   {formatCurrency(data.revenuePerProject)}
@@ -57,7 +54,7 @@ export const EfficiencyMetrics = ({ dateRange }: Props) => {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("costPerProject")}
+                  Cost per project
                 </div>
                 <div className="text-lg font-semibold">
                   {formatCurrency(data.costPerProject)}
@@ -65,7 +62,7 @@ export const EfficiencyMetrics = ({ dateRange }: Props) => {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("avgProjectValue")}
+                  Avg. project value
                 </div>
                 <div className="text-lg font-semibold">
                   {formatCurrency(data.valuePerProject)}
@@ -73,7 +70,7 @@ export const EfficiencyMetrics = ({ dateRange }: Props) => {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("completionRate")}
+                  Completion rate
                 </div>
                 <div className="text-lg font-semibold">
                   {formatPercent(
@@ -88,7 +85,7 @@ export const EfficiencyMetrics = ({ dateRange }: Props) => {
             <div className="pt-4 border-t space-y-2">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">
-                  {t("projectsCompleted")}
+                  Projects completed
                 </span>
                 <span className="font-medium">
                   {data.completedCount} / {data.projectCount}

@@ -16,7 +16,6 @@ import {
   keepPreviousData,
   useMutation,
 } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CreateProject } from "./create-project";
@@ -26,9 +25,6 @@ import { useProjectsColumns } from "../hooks/use-projects-columns";
 import { projectFiltersSchema } from "../schemas/projects.schema";
 
 export const ProjectsList = () => {
-  const tc = useTranslations("Common");
-  const t = useTranslations("Projects");
-
   const { confirm } = useConfirm();
 
   const [itemId, setItemId] = useQueryState("itemId", parseAsString);
@@ -39,8 +35,8 @@ export const ProjectsList = () => {
 
   const handleDelete = (itemId: string) => {
     confirm({
-      title: tc("delete"),
-      description: tc("areYouSureYouWantToDeleteThisItem"),
+      title: "Delete",
+      description: "Are you sure you want to delete this item?",
       onConfirm: () => {
         setCurrentlyProcessing((set) => new Set(set.add(itemId)));
         deleteMutation.mutate({ id: itemId });
@@ -85,7 +81,7 @@ export const ProjectsList = () => {
           set.delete(id);
           return new Set(set);
         });
-        toast.success(tc("deletedSuccessfully"));
+        toast.success("Deleted successfully");
       },
 
       onError: (error) => {
@@ -121,31 +117,31 @@ export const ProjectsList = () => {
         {...dataTable}
         filtersSlot={
           <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
-            <StringFilter label={tc("keyword")} control={filter.keyword} />
+            <StringFilter label="Keyword" control={filter.keyword} />
 
             <EnumFilter
-              label={t("status")}
+              label="Status"
               control={filter.status}
               options={[
-                { value: "planning", label: t("planning") },
-                { value: "inProgress", label: t("inProgress") },
+                { value: "planning", label: "Planning" },
+                { value: "inProgress", label: "In progress" },
                 {
                   value: "awaitingPayment",
-                  label: t("awaitingPayment"),
+                  label: "Awaiting payment",
                 },
-                { value: "completed", label: t("completed") },
+                { value: "completed", label: "Completed" },
               ]}
             />
 
-            <DateFilter label={tc("fromDate")} control={filter.from} />
+            <DateFilter label="From date" control={filter.from} />
 
-            <DateFilter label={tc("toDate")} control={filter.to} />
+            <DateFilter label="To date" control={filter.to} />
 
             <BooleanFilter
-              label={tc("consolidated")}
+              label="Consolidated"
               control={filter.isConsolidated}
-              trueLabel={tc("consolidated")}
-              falseLabel={tc("notConsolidated")}
+              trueLabel="Consolidated"
+              falseLabel="Not consolidated"
             />
           </DataTableFilters>
         }

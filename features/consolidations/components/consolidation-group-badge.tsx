@@ -1,14 +1,24 @@
 import { cn } from "@/lib/client-utils";
 import { transactionConsolidationGroups } from "@/lib/constants";
-import { useTranslations } from "next-intl";
+
+const GROUP_LABELS: Record<
+  (typeof transactionConsolidationGroups)[number],
+  string
+> = {
+  budget: "Budget",
+  project: "Project",
+  loan: "Loan",
+  tax: "Tax",
+  refund: "Refund",
+  refunded: "Refunded",
+  unclassified: "Unclassified",
+};
 
 export const ConsolidationGroupBadge = ({
   group,
 }: {
   group: (typeof transactionConsolidationGroups)[number];
 }) => {
-  const t = useTranslations("FinancialAccounts");
-
   return (
     <div
       className={cn(
@@ -24,7 +34,7 @@ export const ConsolidationGroupBadge = ({
         }
       )}
     >
-      {t(group)}
+      {GROUP_LABELS[group]}
     </div>
   );
 };

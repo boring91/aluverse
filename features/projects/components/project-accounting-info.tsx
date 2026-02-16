@@ -3,22 +3,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/client-utils";
-import { useTranslations } from "next-intl";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 
 export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
-  const t = useTranslations("Projects");
-
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
       {/* Amount paid */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("budgetAllocation")}
+            Budget allocation
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-xl font-semibold text-sky-500 flex flex-col gap-2">
@@ -31,7 +28,7 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("cost")}
+            Cost
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-xl font-semibold text-rose-500">
@@ -43,7 +40,7 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("overdue")}
+            Overdue
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-xl font-semibold text-amber-500">
@@ -55,7 +52,7 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-            {t("profitMargin")}
+            Profit margin
           </CardTitle>
         </CardHeader>
         <CardContent

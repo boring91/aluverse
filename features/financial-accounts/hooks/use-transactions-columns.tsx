@@ -5,16 +5,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConsolidationGroupBadge } from "@/features/consolidations/components/consolidation-group-badge";
 import { cn } from "@/lib/client-utils";
+import { transactionBudgetCategories } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import type { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { ChartPie, CheckIcon, HourglassIcon, XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
 type Transaction =
   inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
+
+const BUDGET_CATEGORY_LABELS: Record<
+  (typeof transactionBudgetCategories)[number],
+  string
+> = {
+  subscription: "Subscription",
+  consumable: "Consumable",
+  toll: "Toll",
+  tool: "Tool",
+  food: "Food",
+  salary: "Salary",
+  fuel: "Fuel",
+};
 
 export const useTransactionsColumns = (
   handleUpdate: (itemId: string) => void,
@@ -23,15 +36,12 @@ export const useTransactionsColumns = (
   currentlyProcessing: Set<string>,
   isConsolidationMode: boolean
 ) => {
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
-
   return useMemo<ColumnDef<Transaction>[]>(() => {
     return [
       {
         accessorKey: "date",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("date")} />
+          <DataTableColumnHeader column={column} title="Date" />
         ),
         cell: ({ row }) => row.original.date.toDateString(),
       },
@@ -39,7 +49,7 @@ export const useTransactionsColumns = (
       {
         accessorKey: "description",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("description")} />
+          <DataTableColumnHeader column={column} title="Description" />
         ),
         cell: ({ row }) => {
           const item = row.original;
@@ -61,7 +71,7 @@ export const useTransactionsColumns = (
       {
         accessorKey: "amount",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("amount")} />
+          <DataTableColumnHeader column={column} title="Amount" />
         ),
         cell: ({ row }) => {
           const item = row.original;
@@ -100,7 +110,7 @@ export const useTransactionsColumns = (
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title={t("isConsolidated")}
+            title="Is consolidated"
             className="text-center"
           />
         ),
@@ -132,7 +142,7 @@ export const useTransactionsColumns = (
           <DataTableColumnHeader
             column={column}
             className="text-center"
-            title={t("consolidationGroup")}
+            title="Consolidation group"
           />
         ),
         cell: ({ row }) => {
@@ -150,16 +160,20 @@ export const useTransactionsColumns = (
                   <span>{item.consolidations[0].project.humanId}</span>
                 )}
                 {item.consolidations[0].budgetCategory && (
-                  <span>{t(item.consolidations[0].budgetCategory)}</span>
+                  <span>
+                    {
+                      BUDGET_CATEGORY_LABELS[
+                        item.consolidations[0].budgetCategory
+                      ]
+                    }
+                  </span>
                 )}
-                {item.consolidations[0].isGst && <span>{t("withGst")}</span>}
+                {item.consolidations[0].isGst && <span>with GST</span>}
               </div>
             </div>
           ) : item.consolidations.length > 1 ? (
             <p className="text-xs text-muted-foreground flex items-center justify-center">
-              {t("countConsolidations", {
-                count: item.consolidations.length,
-              })}
+              {`${item.consolidations.length} consolidations`}
             </p>
           ) : null;
         },
@@ -183,8 +197,6 @@ export const useTransactionsColumns = (
       },
     ];
   }, [
-    t,
-    tc,
     currentlyProcessing,
     handleDelete,
     handleConsolidation,

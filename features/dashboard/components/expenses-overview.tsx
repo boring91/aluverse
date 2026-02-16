@@ -16,11 +16,20 @@ import { stringsToNeutralColors } from "@/lib/utils";
 import { Pie, PieChart } from "recharts";
 import { inferRouterOutputs } from "@trpc/server";
 import { AppRouter } from "@/trpc/routers/_app";
-import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
 type Props = {
   dateRange: DashboardDateRange;
+};
+
+const GROUP_LABELS: Record<string, string> = {
+  budget: "Budget",
+  project: "Project",
+  loan: "Loan",
+  tax: "Tax",
+  refund: "Refund",
+  refunded: "Refunded",
+  unclassified: "Unclassified",
 };
 
 export const ExpensesOverview = ({ dateRange }: Props) => {
@@ -57,10 +66,6 @@ type ExpensesOverviewChartProps = {
 const chartConfig = {} satisfies ChartConfig;
 
 export const ExpensesOverviewChart = ({ data }: ExpensesOverviewChartProps) => {
-  const t = useTranslations("Dashboard");
-  const tFinancial = useTranslations("FinancialAccounts");
-
-  // Process data for chart: calculate total and percentages
   const totalExpenses = (data || []).reduce((sum, item) => sum + item.total, 0);
 
   const colors = useMemo(() => {
@@ -80,7 +85,7 @@ export const ExpensesOverviewChart = ({ data }: ExpensesOverviewChartProps) => {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle>{t("expenses")}</CardTitle>
+        <CardTitle>Expenses</CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <ChartContainer
@@ -97,12 +102,8 @@ export const ExpensesOverviewChart = ({ data }: ExpensesOverviewChartProps) => {
               cy="50%"
               outerRadius={80}
               label={(value) => {
-                return (
-                  tFinancial(value.name) +
-                  " " +
-                  (value.percent as number).toFixed(2) +
-                  "%"
-                );
+                const name = GROUP_LABELS[value.name as string] ?? value.name;
+                return `${name} ${(value.percent as number).toFixed(2)}%`;
               }}
             />
           </PieChart>

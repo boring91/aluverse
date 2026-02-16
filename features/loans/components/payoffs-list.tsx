@@ -14,7 +14,6 @@ import {
 } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
-import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreateLoanPayoff } from "./create-loan-payoff";
@@ -29,15 +28,12 @@ const useColumns = (
   handleDelete: (itemId: string) => void,
   currentlyProcessing: Set<string>
 ) => {
-  const t = useTranslations("Loans");
-  const tc = useTranslations("Common");
-
   return useMemo<ColumnDef<LoanPayoff>[]>(() => {
     return [
       {
         id: "date",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("date")} />
+          <DataTableColumnHeader column={column} title="Date" />
         ),
         cell: ({ row }) => {
           const item = row.original;
@@ -48,7 +44,7 @@ const useColumns = (
       {
         id: "amount",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("amount")} />
+          <DataTableColumnHeader column={column} title="Amount" />
         ),
         cell: ({ row }) => {
           const item = row.original;
@@ -59,7 +55,7 @@ const useColumns = (
       {
         id: "notes",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("description")} />
+          <DataTableColumnHeader column={column} title="Description" />
         ),
         cell: ({ row }) => {
           const item = row.original;
@@ -84,7 +80,7 @@ const useColumns = (
         },
       },
     ];
-  }, [t, tc, currentlyProcessing, handleDelete, handleUpdate]);
+  }, [currentlyProcessing, handleDelete, handleUpdate]);
 };
 
 type Props = {
@@ -92,7 +88,6 @@ type Props = {
 };
 
 export const PayoffsList = ({ loanId }: Props) => {
-  const tc = useTranslations("Common");
   const { confirm } = useConfirm();
 
   const [itemId, setItemId] = useState<string | null>(null);
@@ -102,8 +97,8 @@ export const PayoffsList = ({ loanId }: Props) => {
 
   const handleDelete = (itemId: string) => {
     confirm({
-      title: tc("delete"),
-      description: tc("areYouSureYouWantToDeleteThisItem"),
+      title: "Delete",
+      description: "Are you sure you want to delete this item?",
       onConfirm: () => {
         setCurrentlyProcessing((set) => new Set(set.add(itemId)));
         deleteMutation.mutate({ id: itemId });
@@ -150,7 +145,7 @@ export const PayoffsList = ({ loanId }: Props) => {
           set.delete(id);
           return new Set(set);
         });
-        toast.success(tc("deletedSuccessfully"));
+        toast.success("Deleted successfully");
       },
 
       onError: (error) => {

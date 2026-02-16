@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/client-utils";
-import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
@@ -23,10 +22,17 @@ type Props = {
   dateRange: DashboardDateRange;
 };
 
-export const BudgetTable = ({ dateRange }: Props) => {
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
+const CATEGORY_LABELS: Record<string, string> = {
+  subscription: "Subscription",
+  consumable: "Consumable",
+  toll: "Toll",
+  tool: "Tool",
+  food: "Food",
+  salary: "Salary",
+  fuel: "Fuel",
+};
 
+export const BudgetTable = ({ dateRange }: Props) => {
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(
     trpc.dashboard.budgetItemsSpending.queryOptions(dateRange)
@@ -80,7 +86,7 @@ export const BudgetTable = ({ dateRange }: Props) => {
                       colSpan={5}
                       className="h-24 text-center text-muted-foreground"
                     >
-                      {tc("noResults")}
+                      No results
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -91,7 +97,7 @@ export const BudgetTable = ({ dateRange }: Props) => {
                       return (
                         <TableRow key={item.category}>
                           <TableCell className="font-medium">
-                            {t(item.category)}
+                            {CATEGORY_LABELS[item.category] ?? item.category}
                           </TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(item.allocated)}

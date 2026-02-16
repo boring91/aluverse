@@ -1,5 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useAppForm } from "@/components/form/form-context";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import {
@@ -10,22 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { fillForm } from "@/lib/client-utils";
-import { formQueryOptions } from "@/lib/query-utils";
-import { createProjectSchema } from "../schemas/projects.schema";
+import { formQueryOptions } from "@/lib/client-utils";
+import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { TextInput } from "@/components/form/text-input";
-import { NumberInput } from "@/components/form/number-input";
-import { DateInput } from "@/components/form/date-input";
-import { AddressInput } from "@/components/form/address-input";
+import { createProjectSchema } from "../schemas/projects.schema";
 
 type SchemaType = z.infer<typeof createProjectSchema>;
 
@@ -36,20 +29,13 @@ type Props = {
   onCreated?: (projectId: string) => void;
 };
 
-export const CreateProject = ({
+export function CreateProject({
   open,
   onOpenChange,
   itemId,
   onCreated,
-}: Props) => {
-  const t = useTranslations("Projects");
-  const tc = useTranslations("Common");
-
+}: Props) {
   const isUpdate = !!itemId;
-
-  const form = useForm<SchemaType>({
-    resolver: zodResolver(createProjectSchema),
-  });
 
   const queryClient = useQueryClient();
   const trpc = useTRPC();
@@ -64,51 +50,68 @@ export const CreateProject = ({
     )
   );
 
-  const onSuccess = (data?: { id: string }) => {
-    queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
-    if (isUpdate) {
-      queryClient.invalidateQueries(
-        trpc.projects.get.queryOptions({ id: itemId })
-      );
-    }
-    if (!isUpdate && data?.id) {
-      onCreated?.(data.id);
-    }
-    onOpenChange(false);
-    toast.success(tc("savedSuccessfully"));
-  };
-
-  const onError = (error: { message: string }) => {
-    toast.error(error.message);
-  };
-
   const createMutation = useMutation(
-    trpc.projects.create.mutationOptions({ onSuccess, onError })
+    trpc.projects.create.mutationOptions({
+      onSuccess: (created) => {
+        queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.projects.get.queryOptions({ id: itemId })
+          );
+        }
+        if (!isUpdate && created?.id) {
+          onCreated?.(created.id);
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
   );
 
   const updateMutation = useMutation(
-    trpc.projects.update.mutationOptions({ onSuccess, onError })
+    trpc.projects.update.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.projects.list.queryOptions({}));
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.projects.get.queryOptions({ id: itemId })
+          );
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
   );
 
-  const handleSubmit = (data: SchemaType) => {
-    if (isUpdate && itemId) {
-      updateMutation.mutate({ id: itemId, ...data });
-    } else {
-      createMutation.mutate(data);
-    }
-  };
+  const form = useAppForm({
+    defaultValues: getFormDefaults(
+      createProjectSchema,
+      data ? { ...data, price: data.price / 100 } : data
+    ),
+    validators: {
+      onChange: createProjectSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (isUpdate && itemId) {
+        await updateMutation.mutateAsync({ id: itemId, ...value });
+      } else {
+        await createMutation.mutateAsync(value as SchemaType);
+      }
+    },
+  });
 
   useEffect(() => {
-    if (!open) {
-      form.reset();
-      return;
-    }
-    if (!data || !isUpdate) return;
+    form.reset(
+      getFormDefaults(
+        createProjectSchema,
+        data ? { ...data, price: data.price / 100 } : data
+      )
+    );
+  }, [form, open, data]);
 
-    fillForm(form, { ...data, price: data.price / 100 });
-  }, [data, form, isUpdate, open]);
-
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending = form.state.isSubmitting;
 
   return (
     <Dialog
@@ -120,97 +123,85 @@ export const CreateProject = ({
     >
       <DialogContent className="sm:max-w-[640px] md:max-w-3xl lg:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{t("projects")}</DialogTitle>
+          <DialogTitle>Projects</DialogTitle>
           <DialogDescription>
-            {isUpdate ? t("updateExistingProject") : t("createNewProject")}
+            {isUpdate ? "Update existing project" : "Create new project"}
           </DialogDescription>
         </DialogHeader>
 
         <form
           onSubmit={(e) => {
             e.stopPropagation();
-            form.handleSubmit(handleSubmit)(e);
+            e.preventDefault();
+            form.handleSubmit();
           }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 overflow-y-auto max-h-[calc(100vh-12rem)]"
         >
-          <FieldGroup className="contents">
-            {/* Client */}
-            <TextInput
-              name="client"
-              label={t("client")}
-              control={form.control}
-            />
+          <form.AppForm>
+            <FieldGroup className="contents">
+              <form.AppField
+                name="client"
+                children={(field) => <field.TextField label="Client" />}
+              />
 
-            {/* Title */}
-            <TextInput name="title" label={t("title")} control={form.control} />
+              <form.AppField
+                name="title"
+                children={(field) => <field.TextField label="Title" />}
+              />
 
-            {/* Address */}
-            <AddressInput
-              name="address"
-              label={t("address")}
-              control={form.control}
-            />
+              <form.AppField
+                name="address"
+                children={(field) => <field.AddressField label="Address" />}
+              />
 
-            {/* Meters */}
-            <NumberInput
-              name="meters"
-              label={t("meters")}
-              control={form.control}
-            />
+              <form.AppField
+                name="meters"
+                children={(field) => <field.NumberField label="Meters" />}
+              />
 
-            {/* Price */}
-            <NumberInput
-              name="price"
-              label={t("price")}
-              control={form.control}
-            />
+              <form.AppField
+                name="price"
+                children={(field) => <field.NumberField label="Price" />}
+              />
 
-            {/* Visit Date */}
-            <DateInput
-              name="visitDate"
-              label={t("visitDate")}
-              control={form.control}
-            />
+              <form.AppField
+                name="visitDate"
+                children={(field) => (
+                  <field.DatePickerField label="Visit date" />
+                )}
+              />
 
-            {/* Start Date */}
-            <DateInput
-              name="startDate"
-              label={t("startDate")}
-              control={form.control}
-            />
+              <form.AppField
+                name="startDate"
+                children={(field) => (
+                  <field.DatePickerField label="Start date" />
+                )}
+              />
 
-            {/* End Date */}
-            <DateInput
-              name="endDate"
-              label={t("endDate")}
-              control={form.control}
-            />
+              <form.AppField
+                name="endDate"
+                children={(field) => <field.DatePickerField label="End date" />}
+              />
 
-            {/* Margin */}
-            <NumberInput
-              name="margin"
-              label={t("margin")}
-              control={form.control}
-            />
+              <form.AppField
+                name="margin"
+                children={(field) => <field.NumberField label="Margin" />}
+              />
 
-            {/* Budget Units */}
-            <NumberInput
-              name="budgetUnits"
-              label={t("budgetUnits")}
-              control={form.control}
-            />
-          </FieldGroup>
+              <form.AppField
+                name="budgetUnits"
+                children={(field) => <field.NumberField label="Budget units" />}
+              />
+            </FieldGroup>
 
-          <DialogFooter className="col-span-full">
-            <Button disabled={isPending} type="submit">
-              {(createMutation.isPending || updateMutation.isPending) && (
-                <Loader2 className="animate-spin" />
-              )}
-              {tc("save")}
-            </Button>
-          </DialogFooter>
+            <DialogFooter className="col-span-full">
+              <Button disabled={isPending} type="submit">
+                Save
+              </Button>
+            </DialogFooter>
+          </form.AppForm>
         </form>
       </DialogContent>
     </Dialog>
   );
-};
+}

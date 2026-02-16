@@ -3,7 +3,6 @@
 import { ReactNode } from "react";
 import { Button } from "../ui/button";
 import { XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { Card, CardContent, CardFooter } from "../ui/card";
 
 type Props = {
@@ -17,8 +16,6 @@ export const DataTableFilters = ({
   onReset,
   hasActiveFilters,
 }: Props) => {
-  const tc = useTranslations("Common");
-
   return (
     <Card>
       <CardContent className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -35,7 +32,7 @@ export const DataTableFilters = ({
             className="h-9"
           >
             <XIcon className="size-4" />
-            {tc("resetFilters")}
+            Reset filters
           </Button>
         </CardFooter>
       )}

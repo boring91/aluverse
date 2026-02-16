@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslations } from "next-intl";
 import { FilterControl } from "../types";
 
 type Option = {
@@ -29,9 +28,7 @@ export const EnumFilter = <T,>({
   options,
   placeholder,
 }: Props<T>) => {
-  const tc = useTranslations("Common");
-
-  const allOptions: Option[] = [{ value: "all", label: tc("all") }, ...options];
+  const allOptions: Option[] = [{ value: "all", label: "All" }, ...options];
 
   const value = control.value;
 
@@ -45,7 +42,7 @@ export const EnumFilter = <T,>({
         }
       >
         <SelectTrigger className="h-9 w-full">
-          <SelectValue placeholder={placeholder ?? tc("all")} />
+          <SelectValue placeholder={placeholder ?? "All"} />
         </SelectTrigger>
         <SelectContent>
           {allOptions.map((option) => (

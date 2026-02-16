@@ -4,7 +4,6 @@ import { PageContainer } from "@/components/page-container";
 import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { notFound, useParams } from "next/navigation";
 import { CreateProject } from "@/features/projects/components/create-project";
 import { useState } from "react";
@@ -18,9 +17,6 @@ export const ProjectDetailView = () => {
   const params = useParams();
   const projectId = params["projectId"] as string;
 
-  const tc = useTranslations("Common");
-  const t = useTranslations("Projects");
-
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(
     trpc.projects.get.queryOptions({
@@ -28,7 +24,7 @@ export const ProjectDetailView = () => {
     })
   );
 
-  useTitle(data ? `${data.humanId} - ${data.title}` : tc("loading"));
+  useTitle(data ? `${data.humanId} - ${data.title}` : "Loading");
 
   const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
@@ -64,21 +60,21 @@ export const ProjectDetailView = () => {
           <div className="space-y-6">
             <section className="space-y-3">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                {t("basicInformation")}
+                Basic Information
               </h2>
               <ProjectBasicInfo project={data} />
             </section>
 
             <section className="space-y-3">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                {t("financialSummary")}
+                Financial Summary
               </h2>
               <ProjectAccountingInfo project={data} />
             </section>
 
             <section className="space-y-3">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                {tc("details")}
+                Details
               </h2>
               <ProjectDetailsTabs projectId={projectId} />
             </section>

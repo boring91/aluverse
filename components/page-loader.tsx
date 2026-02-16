@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2Icon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { cn } from "@/lib/client-utils";
 
 type Props = {
@@ -10,8 +9,6 @@ type Props = {
 };
 
 export const PageLoader = ({ className, variant = "page" }: Props) => {
-  const tc = useTranslations("Common");
-
   return (
     <div
       className={cn(
@@ -22,7 +19,7 @@ export const PageLoader = ({ className, variant = "page" }: Props) => {
     >
       <div className="flex items-center gap-3 text-muted-foreground">
         <Loader2Icon className="size-5 animate-spin" />
-        <span className="text-sm">{tc("loading")}</span>
+        <span className="text-sm">Loading</span>
       </div>
     </div>
   );

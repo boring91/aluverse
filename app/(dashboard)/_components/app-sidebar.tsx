@@ -20,7 +20,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useConfirm } from "@/lib/confirm-context";
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
@@ -33,47 +32,46 @@ import {
   LogOutIcon,
   ReceiptIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 const items = [
   {
     id: "dashboard",
+    label: "Dashboard",
     link: "/",
     icon: HomeIcon,
   },
-
   {
     id: "projects",
+    label: "Projects",
     link: "/projects",
     icon: FolderIcon,
   },
-
   {
     id: "financialAccounts",
+    label: "Financial accounts",
     link: "/financial-accounts",
     icon: CoinsIcon,
   },
-
   {
     id: "consolidations",
+    label: "Consolidations",
     link: "/consolidations",
     icon: ChartPieIcon,
   },
-
   {
     id: "loans",
+    label: "Loans",
     link: "/loans",
     icon: ReceiptIcon,
   },
 ] as const;
 
-const UserNav = () => {
+function UserNav() {
   const { confirm } = useConfirm();
-
   const { data } = useSession();
   const { isMobile } = useSidebar();
-
-  const tc = useTranslations("Common");
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -82,18 +80,35 @@ const UserNav = () => {
   };
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <SidebarMenuButton
-            size="lg"
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          >
-            <Avatar className="h-8 w-8 rounded-lg grayscale">
-              {/* <AvatarImage
-                                src={user.avatar}
-                                alt={data?.user.name}
-                            /> */}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <SidebarMenuButton
+          size="lg"
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <Avatar className="h-8 w-8 rounded-lg grayscale">
+            <AvatarFallback className="rounded-lg">
+              {data?.user.name.substring(0, 2)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-medium">{data?.user.name}</span>
+            <span className="text-muted-foreground truncate text-xs">
+              {data?.user.email}
+            </span>
+          </div>
+          <ChevronsUpDown className="ml-auto size-4" />
+        </SidebarMenuButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        side={isMobile ? "bottom" : "right"}
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
               <AvatarFallback className="rounded-lg">
                 {data?.user.name.substring(0, 2)}
               </AvatarFallback>
@@ -104,52 +119,28 @@ const UserNav = () => {
                 {data?.user.email}
               </span>
             </div>
-            <ChevronsUpDown className="ml-auto size-4" />
-          </SidebarMenuButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-          side={isMobile ? "bottom" : "right"}
-          align="end"
-          sideOffset={4}
+          </div>
+        </DropdownMenuLabel>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() =>
+            confirm({
+              title: "Logout",
+              description: "Are you sure you want to logout?",
+              onConfirm: handleSignOut,
+            })
+          }
         >
-          <DropdownMenuLabel className="p-0 font-normal">
-            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">
-                  {data?.user.name.substring(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{data?.user.name}</span>
-                <span className="text-muted-foreground truncate text-xs">
-                  {data?.user.email}
-                </span>
-              </div>
-            </div>
-          </DropdownMenuLabel>
-
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() =>
-              confirm({
-                title: tc("logout"),
-                description: tc("areYouSureYouWantToLogout"),
-                onConfirm: handleSignOut,
-              })
-            }
-          >
-            <LogOutIcon />
-            {tc("logout")}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+          <LogOutIcon />
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-};
+}
 
-export const AppSidebar = () => {
-  const t = useTranslations("Common");
+export function AppSidebar() {
   const pathname = usePathname();
 
   const isActive = (link: string) => {
@@ -163,7 +154,7 @@ export const AppSidebar = () => {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center justify-center gap-2 px-4 py-2 font-bold text-xl">
-          {t("appName")}
+          AluVerse
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -176,7 +167,7 @@ export const AppSidebar = () => {
                     <SidebarMenuButton asChild isActive={isActive(item.link)}>
                       <Link href={item.link}>
                         <item.icon />
-                        <span>{t(item.id)}</span>
+                        <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -197,4 +188,4 @@ export const AppSidebar = () => {
       </SidebarFooter>
     </Sidebar>
   );
-};
+}

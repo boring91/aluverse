@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import { useTranslations } from "next-intl";
 import { CalendarIcon, DollarSignIcon, RulerIcon } from "lucide-react";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
@@ -10,9 +9,6 @@ import { inferRouterOutputs } from "@trpc/server";
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 
 export const ProjectBasicInfo = ({ project }: { project: Project }) => {
-  const t = useTranslations("Projects");
-  const tc = useTranslations("Common");
-
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
       {/* Visit date */}
@@ -20,7 +16,7 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
             <CalendarIcon size={16} />
-            {t("visitDate")}
+            Visit date
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-lg font-semibold">
@@ -33,12 +29,11 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
             <CalendarIcon size={16} />
-            {tc("dates")}
+            Dates
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-lg font-semibold">
-          {project.startDate?.toDateString()} &mdash;{" "}
-          {project.endDate?.toDateString()}
+          {`${project.startDate?.toDateString()} - ${project.endDate?.toDateString()}`}
         </CardContent>
       </Card>
 
@@ -47,7 +42,7 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
             <RulerIcon size={16} />
-            {t("meters")}
+            Meters
           </CardTitle>
         </CardHeader>
         <CardContent className="text-lg font-semibold">
@@ -66,7 +61,7 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
             <DollarSignIcon size={16} />
-            {t("priceAndMargin")}
+            Price & margin
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-lg font-semibold">

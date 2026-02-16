@@ -1,7 +1,6 @@
 "use client";
 
 import { useTitle } from "@/hooks/use-title";
-import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/page-container";
 import { ProjectsInOutStats } from "../components/projects-in-out-stats";
 import { ExpensesOverview } from "../components/expenses-overview";
@@ -27,9 +26,7 @@ startCurrentMonth.setDate(1);
 const now = new Date();
 
 export const DashboardView = () => {
-  const t = useTranslations("Common");
-
-  useTitle(t("dashboard"));
+  useTitle("Dashboard");
 
   const [fromDate, setFromDate] = useState<Date | undefined>(startCurrentMonth);
   const [toDate, setToDate] = useState<Date | undefined>(now);

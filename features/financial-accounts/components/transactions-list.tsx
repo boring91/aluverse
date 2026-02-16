@@ -5,7 +5,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CreateTransaction } from "./create-transaction";
@@ -35,9 +34,33 @@ type Props = {
   accountId?: string;
 };
 
+const CONSOLIDATION_GROUP_LABELS: Record<
+  (typeof transactionConsolidationGroups)[number],
+  string
+> = {
+  budget: "Budget",
+  project: "Project",
+  loan: "Loan",
+  tax: "Tax",
+  refund: "Refund",
+  refunded: "Refunded",
+  unclassified: "Unclassified",
+};
+
+const BUDGET_CATEGORY_LABELS: Record<
+  (typeof transactionBudgetCategories)[number],
+  string
+> = {
+  subscription: "Subscription",
+  consumable: "Consumable",
+  toll: "Toll",
+  tool: "Tool",
+  food: "Food",
+  salary: "Salary",
+  fuel: "Fuel",
+};
+
 export const TransactionsList = ({ mode = "account", accountId }: Props) => {
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
   const { confirm } = useConfirm();
 
   const [itemId, setItemId] = useQueryState("itemId", parseAsString);
@@ -51,8 +74,8 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
 
   const handleDelete = (itemId: string) => {
     confirm({
-      title: tc("delete"),
-      description: tc("areYouSureYouWantToDeleteThisItem"),
+      title: "Delete",
+      description: "Are you sure you want to delete this item?",
       onConfirm: () => {
         setCurrentlyProcessing((set) => new Set(set.add(itemId)));
         deleteMutation.mutate({ id: itemId });
@@ -109,7 +132,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
           set.delete(transaction.id);
           return new Set(set);
         });
-        toast.success(tc("deletedSuccessfully"));
+        toast.success("Deleted successfully");
       },
 
       onError: (error) => {
@@ -174,52 +197,52 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         }}
         filtersSlot={
           <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
-            <StringFilter label={tc("keyword")} control={filter.keyword} />
+            <StringFilter label="Keyword" control={filter.keyword} />
 
-            <DateFilter label={tc("fromDate")} control={filter.from} />
+            <DateFilter label="From date" control={filter.from} />
 
-            <DateFilter label={tc("toDate")} control={filter.to} />
+            <DateFilter label="To date" control={filter.to} />
 
-            <NumberFilter label={t("fromAmount")} control={filter.fromAmount} />
+            <NumberFilter label="From amount" control={filter.fromAmount} />
 
-            <NumberFilter label={t("toAmount")} control={filter.toAmount} />
+            <NumberFilter label="To amount" control={filter.toAmount} />
 
             {mode === "consolidation" && (
               <>
                 <BooleanFilter
-                  label={tc("consolidated")}
+                  label="Consolidated"
                   control={filter.isConsolidated}
-                  trueLabel={tc("consolidated")}
-                  falseLabel={tc("notConsolidated")}
+                  trueLabel="Consolidated"
+                  falseLabel="Not consolidated"
                 />
 
                 <BooleanFilter
-                  label={t("hasGst")}
+                  label="Has GST"
                   control={filter.hasGst}
-                  trueLabel={t("withGst")}
-                  falseLabel={t("withoutGst")}
+                  trueLabel="with GST"
+                  falseLabel="Without GST"
                 />
 
                 <EnumFilter
-                  label={t("consolidationGroup")}
+                  label="Consolidation group"
                   control={filter.consolidationGroup}
                   options={transactionConsolidationGroups.map((group) => ({
                     value: group,
-                    label: t(group),
+                    label: CONSOLIDATION_GROUP_LABELS[group],
                   }))}
                 />
 
                 <EnumFilter
-                  label={t("budgetCategory")}
+                  label="Budget Category"
                   control={filter.budgetCategory}
                   options={transactionBudgetCategories.map((category) => ({
                     value: category,
-                    label: t(category),
+                    label: BUDGET_CATEGORY_LABELS[category],
                   }))}
                 />
 
                 <EnumFilter
-                  label={t("project")}
+                  label="Project"
                   control={filter.projectId}
                   options={
                     projects?.items.map((project) => ({

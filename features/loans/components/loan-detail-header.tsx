@@ -1,14 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
 import { ArrowLeft, Edit3Icon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 
 type Loan = inferRouterOutputs<AppRouter>["loans"]["get"];
+
+const LOAN_TYPE_LABELS = {
+  lent: "Lent",
+  borrowed: "Borrowed",
+} as const;
 
 export const LoanDetailHeader = ({
   loan,
@@ -17,9 +21,6 @@ export const LoanDetailHeader = ({
   loan: Loan;
   onEditClick: () => void;
 }) => {
-  const tc = useTranslations("Common");
-  const t = useTranslations("Loans");
-
   return (
     <div className="flex flex-col gap-4 border-b pb-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-4">
@@ -34,7 +35,7 @@ export const LoanDetailHeader = ({
               {loan.partyName}
             </h1>
             <Badge variant={loan.type === "lent" ? "default" : "secondary"}>
-              {t(loan.type)}
+              {LOAN_TYPE_LABELS[loan.type]}
             </Badge>
           </div>
           {loan.notes && (
@@ -46,7 +47,7 @@ export const LoanDetailHeader = ({
       <div className="flex items-center gap-3">
         <Button variant="outline" onClick={onEditClick}>
           <Edit3Icon className="mr-2 size-4" />
-          {tc("edit")}
+          Edit
         </Button>
       </div>
     </div>

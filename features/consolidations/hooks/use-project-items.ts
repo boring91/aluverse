@@ -1,18 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { UseFormReturn } from "react-hook-form";
 import { useTRPC } from "@/trpc/client";
-import { createConsolidationSchema } from "../schemas/consolidations.schema";
-import { z } from "zod";
+import { projectStreams } from "@/lib/constants";
 
-type SchemaType = z.infer<typeof createConsolidationSchema>;
-
+type Stream = (typeof projectStreams)[number] | undefined;
 type UnionOfArraysToArrayOfUnion<T> = T extends (infer U)[] ? U : never;
 
-export const useProjectItems = (form: UseFormReturn<SchemaType>) => {
+export function useProjectItems(projectId: string | undefined, stream: Stream) {
   const trpc = useTRPC();
-
-  const projectId = form.watch("projectId");
-  const stream = form.watch("projectStream");
 
   const queryInput = {
     projectId: projectId!,
@@ -49,8 +43,7 @@ export const useProjectItems = (form: UseFormReturn<SchemaType>) => {
   );
 
   const dataMap = { supplies, labors, misc, payments };
-
   const data = stream ? dataMap[stream]?.items : undefined;
 
   return data as UnionOfArraysToArrayOfUnion<typeof data>[] | undefined;
-};
+}

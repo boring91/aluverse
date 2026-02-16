@@ -1,11 +1,6 @@
 import { v5 as uuidv5 } from "uuid";
 import { type AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
-import { Locale } from "next-intl";
-
-export const getDir = (locale: Locale) => {
-  return locale === "ar" ? "rtl" : "ltr";
-};
 
 export const isPromise = (obj: unknown): obj is Promise<unknown> =>
   !!obj &&

@@ -9,13 +9,12 @@ import { useMemo } from "react";
 import { ProjectStatusBadge } from "../components/project-status-badge";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
-import { useTranslations } from "next-intl";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
 
 type Project =
   inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
@@ -25,15 +24,12 @@ export const useProjectsColumns = (
   handleDelete: (itemId: string) => void,
   currentlyProcessing: Set<string>
 ) => {
-  const t = useTranslations("Projects");
-  const tc = useTranslations("Common");
-
   return useMemo<ColumnDef<Project>[]>(() => {
     return [
       {
         id: "details",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("details")} />
+          <DataTableColumnHeader column={column} title="Details" />
         ),
         cell: ({ row }) => {
           const project = row.original;
@@ -54,7 +50,7 @@ export const useProjectsColumns = (
       {
         id: "dates",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={tc("dates")} />
+          <DataTableColumnHeader column={column} title="Dates" />
         ),
         cell: ({ row }) => {
           const project = row.original;
@@ -62,8 +58,7 @@ export const useProjectsColumns = (
             <div className="flex flex-col gap-1">
               <p>{project.visitDate?.toDateString()}</p>
               <p className="text-muted-foreground text-xs">
-                {project.startDate?.toDateString()} -{" "}
-                {project.endDate?.toDateString()}
+                {`${project.startDate?.toDateString()} - ${project.endDate?.toDateString()}`}
               </p>
             </div>
           );
@@ -73,7 +68,7 @@ export const useProjectsColumns = (
       {
         id: "price",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("price")} />
+          <DataTableColumnHeader column={column} title="Price" />
         ),
         cell: ({ row }) => {
           const project = row.original;
@@ -84,7 +79,7 @@ export const useProjectsColumns = (
 
               {/* Paid */}
               <p className="text-muted-foreground text-xs">
-                <span>{t("paid")}: </span>
+                <span>Paid: </span>
                 <span className="font-mono">
                   {formatCurrency(project.paid)}
                 </span>
@@ -97,7 +92,7 @@ export const useProjectsColumns = (
       {
         id: "cost",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("profitAndCost")} />
+          <DataTableColumnHeader column={column} title="Profit & cost" />
         ),
         cell: ({ row }) => {
           const project = row.original;
@@ -140,7 +135,7 @@ export const useProjectsColumns = (
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {t("totalPendingConsolidationItems")}
+                      Total pending consolidation items
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -153,7 +148,7 @@ export const useProjectsColumns = (
       {
         id: "status",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("status")} />
+          <DataTableColumnHeader column={column} title="Status" />
         ),
         cell: ({ row }) => {
           const project = row.original;
@@ -177,5 +172,5 @@ export const useProjectsColumns = (
         },
       },
     ];
-  }, [t, tc, currentlyProcessing, handleDelete, handleUpdate]);
+  }, [currentlyProcessing, handleDelete, handleUpdate]);
 };

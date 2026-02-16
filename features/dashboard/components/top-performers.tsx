@@ -2,14 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { DashboardDateRange } from "../schemas/dashboard.schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardSection } from "./dashboard-section";
 import { formatCurrency, formatPercent } from "@/lib/utils";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
 import { LucideIcon } from "lucide-react";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
@@ -80,8 +79,6 @@ const PerformersList = ({
   titleKey,
   variant,
 }: PerformersListProps) => {
-  const t = useTranslations("Dashboard");
-  const tc = useTranslations("Common");
   const borderBgClass =
     variant === "primary"
       ? "border-primary/20 bg-primary/5"
@@ -94,13 +91,15 @@ const PerformersList = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Icon className={`h-5 w-5 ${textColorClass}`} />
-          {t(titleKey)}
+          {titleKey === "topPerformers"
+            ? "Top performers"
+            : "Bottom performers"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {items.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-8">
-            {tc("noResults")}
+            No results
           </div>
         ) : (
           items.map((item, index) => (
@@ -121,7 +120,7 @@ const PerformersList = ({
                   {item.client}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {t("revenue")}: {formatCurrency(item.paid)}
+                  Revenue: {formatCurrency(item.paid)}
                 </div>
               </div>
               <div className="text-right">
@@ -131,7 +130,7 @@ const PerformersList = ({
                     : formatPercent(item.effectiveMargin)}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {t("profitMargin")}
+                  Profit margin
                 </div>
               </div>
             </div>

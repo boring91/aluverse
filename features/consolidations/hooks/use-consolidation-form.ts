@@ -1,16 +1,12 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { z } from "zod";
-import { fillForm } from "@/lib/client-utils";
-import { formQueryOptions } from "@/lib/query-utils";
+import { useAppForm } from "@/components/form/form-context";
+import { formQueryOptions } from "@/lib/client-utils";
+import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
 import { createConsolidationSchema } from "../schemas/consolidations.schema";
-import { useTranslations } from "next-intl";
-
-type SchemaType = z.infer<typeof createConsolidationSchema>;
+import { z } from "zod";
 
 type Props = {
   transactionId: string;
@@ -19,33 +15,15 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
-export const useConsolidationForm = ({
+type SchemaType = z.infer<typeof createConsolidationSchema>;
+
+export function useConsolidationForm({
   transactionId,
   itemId,
   open,
   onOpenChange,
-}: Props) => {
-  const tc = useTranslations("Common");
-
+}: Props) {
   const isUpdate = !!itemId;
-
-  const form = useForm<SchemaType>({
-    resolver: zodResolver(createConsolidationSchema),
-    defaultValues: {
-      description: "",
-      amount: 0.0,
-      budgetCategory: undefined,
-      consolidationGroup: undefined,
-      projectId: undefined,
-      projectStream: undefined,
-      projectItemId: undefined,
-      isGst: true,
-      loanId: undefined,
-      isPayoff: false,
-      loanPayoffId: undefined,
-    },
-  });
-
   const queryClient = useQueryClient();
   const trpc = useTRPC();
 
@@ -73,81 +51,124 @@ export const useConsolidationForm = ({
     )
   );
 
-  const onSuccess = () => {
-    queryClient.invalidateQueries(
-      trpc.consolidations.list.queryOptions({ transactionId })
-    );
-    queryClient.invalidateQueries(
-      trpc.consolidations.statistics.queryOptions()
-    );
-    queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
-    queryClient.invalidateQueries(
-      trpc.consolidations.getDefault.queryOptions({ transactionId })
-    );
-    if (isUpdate) {
-      queryClient.invalidateQueries(
-        trpc.consolidations.get.queryOptions({
-          id: itemId,
-        })
-      );
-    }
-
-    form.reset();
-    onOpenChange(false);
-    toast.success(tc("savedSuccessfully"));
-  };
-
-  const onError = (error: { message: string }) => {
-    toast.error(error.message);
-  };
-
   const createMutation = useMutation(
-    trpc.consolidations.create.mutationOptions({ onSuccess, onError })
-  );
-  const updateMutation = useMutation(
-    trpc.consolidations.update.mutationOptions({ onSuccess, onError })
+    trpc.consolidations.create.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.consolidations.list.queryOptions({ transactionId })
+        );
+        queryClient.invalidateQueries(
+          trpc.consolidations.statistics.queryOptions()
+        );
+        queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
+        queryClient.invalidateQueries(
+          trpc.consolidations.getDefault.queryOptions({ transactionId })
+        );
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.consolidations.get.queryOptions({ id: itemId })
+          );
+        }
+
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
   );
 
-  const handleSubmit = (data: SchemaType) => {
-    if (isUpdate && itemId) {
-      updateMutation.mutate({ id: itemId, ...data });
-    } else {
-      createMutation.mutate({ transactionId, ...data });
+  const updateMutation = useMutation(
+    trpc.consolidations.update.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.consolidations.list.queryOptions({ transactionId })
+        );
+        queryClient.invalidateQueries(
+          trpc.consolidations.statistics.queryOptions()
+        );
+        queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
+        queryClient.invalidateQueries(
+          trpc.consolidations.getDefault.queryOptions({ transactionId })
+        );
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.consolidations.get.queryOptions({ id: itemId })
+          );
+        }
+
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
+  );
+
+  const mappedFormData = useMemo(() => {
+    if (isUpdate) {
+      if (!data) return undefined;
+      return {
+        description: data.description ?? "",
+        amount: data.amount / 100,
+        consolidationGroup: data.consolidationGroup,
+        budgetCategory: data.budgetCategory ?? undefined,
+        projectId: data.project?.id ?? undefined,
+        projectStream: data.projectStream ?? undefined,
+        projectItemId: data.projectItemId ?? undefined,
+        isGst: data.isGst ?? true,
+        loanId: data.loan?.id ?? undefined,
+        isPayoff: data.isPayoff ?? false,
+        loanPayoffId: data.loanPayoff?.id ?? undefined,
+      };
     }
-  };
+
+    if (!defaults) {
+      return {
+        description: "",
+        amount: 0,
+        isGst: true,
+        isPayoff: false,
+      };
+    }
+
+    return {
+      description: defaults.description ?? "",
+      amount: defaults.remainingAmount / 100,
+      isGst: true,
+      isPayoff: false,
+    };
+  }, [data, defaults, isUpdate]);
+
+  const formDefaults = useMemo(
+    () => getFormDefaults(createConsolidationSchema, mappedFormData),
+    [mappedFormData]
+  );
+
+  const form = useAppForm({
+    defaultValues: formDefaults,
+    validators: {
+      onChange: createConsolidationSchema,
+    },
+    onSubmit: async ({ value }) => {
+      const payload = value as SchemaType;
+      if (isUpdate && itemId) {
+        await updateMutation.mutateAsync({ id: itemId, ...payload });
+      } else {
+        await createMutation.mutateAsync({ transactionId, ...payload });
+      }
+    },
+  });
 
   useEffect(() => {
     if (!open) return;
-
-    if (defaults && !isUpdate) {
-      fillForm(form, {
-        ...defaults,
-        isGst: true,
-        amount: defaults.remainingAmount / 100,
-      });
-      form.setFocus("consolidationGroup");
-    } else if (data && isUpdate) {
-      fillForm(form, {
-        ...data,
-        amount: data.amount / 100,
-        isGst: data.isGst ?? true,
-        projectId: data.project?.id,
-        loanId: data.loan?.id,
-        loanPayoffId: data.loanPayoff?.id,
-        isPayoff: data.isPayoff ?? false,
-      });
-    }
-  }, [open, data, defaults, form, isUpdate]);
+    form.reset(formDefaults);
+  }, [form, formDefaults, open]);
 
   const isPending =
-    createMutation.isPending ||
-    updateMutation.isPending ||
-    (!data && !defaults);
+    form.state.isSubmitting || (!isUpdate && !defaults) || (isUpdate && !data);
 
   return {
     form,
-    handleSubmit,
     isPending,
     isUpdate,
   };
-};
+}

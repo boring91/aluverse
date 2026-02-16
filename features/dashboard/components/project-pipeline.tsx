@@ -6,14 +6,11 @@ import { CalendarIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { DashboardSection } from "./dashboard-section";
 import { formatCurrency } from "@/lib/utils";
 
 export const ProjectPipeline = () => {
   const trpc = useTRPC();
-  const t = useTranslations("Dashboard");
-
   const { data, isLoading } = useQuery(
     trpc.dashboard.projectPipeline.queryOptions()
   );
@@ -32,13 +29,13 @@ export const ProjectPipeline = () => {
       {data && (
         <Card>
           <CardHeader>
-            <CardTitle>{t("projectPipeline")}</CardTitle>
+            <CardTitle>Project pipeline</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("planning")}
+                  Planning
                 </div>
                 <div className="text-2xl font-semibold">
                   {data.stats.planningCount}
@@ -46,7 +43,7 @@ export const ProjectPipeline = () => {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("inProgress")}
+                  In progress
                 </div>
                 <div className="text-2xl font-semibold">
                   {data.stats.inProgressCount}
@@ -54,7 +51,7 @@ export const ProjectPipeline = () => {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t("totalValue")}
+                  Total value
                 </div>
                 <div className="text-2xl font-semibold">
                   {formatCurrency(data.stats.totalValue)}
@@ -64,9 +61,7 @@ export const ProjectPipeline = () => {
 
             {data.pipeline.length > 0 && (
               <div className="pt-4 border-t space-y-3">
-                <div className="text-sm font-medium">
-                  {t("upcomingProjects")}
-                </div>
+                <div className="text-sm font-medium">Upcoming projects</div>
                 <div className="grid lg:grid-cols-3 gap-4">
                   {data.pipeline.map((project) => (
                     <div
@@ -88,10 +83,10 @@ export const ProjectPipeline = () => {
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <CalendarIcon className="h-3 w-3" />
                           {project.startDate
-                            ? `${t("started")}: ${project.startDate.toLocaleDateString()}`
+                            ? `Started: ${project.startDate.toLocaleDateString()}`
                             : project.visitDate
-                              ? `${t("starts")}: ${project.visitDate.toLocaleDateString()}`
-                              : t("notVisitedYet")}
+                              ? `Starts: ${project.visitDate.toLocaleDateString()}`
+                              : "Not visited yet"}
                         </div>
                       </div>
                     </div>

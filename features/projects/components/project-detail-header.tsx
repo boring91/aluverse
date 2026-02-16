@@ -1,9 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
 import { ArrowLeft, Edit3Icon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { ProjectStatusBadge } from "@/features/projects/components/project-status-badge";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
@@ -17,8 +16,6 @@ export const ProjectDetailHeader = ({
   project: Project;
   onEditClick: () => void;
 }) => {
-  const tc = useTranslations("Common");
-
   return (
     <div className="flex flex-col gap-4 border-b pb-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-4">
@@ -46,7 +43,7 @@ export const ProjectDetailHeader = ({
       <div className="flex items-center gap-3">
         <Button variant="outline" onClick={onEditClick}>
           <Edit3Icon className="mr-2 size-4" />
-          {tc("edit")}
+          Edit
         </Button>
       </div>
     </div>

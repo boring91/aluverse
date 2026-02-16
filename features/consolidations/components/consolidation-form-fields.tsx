@@ -1,17 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   projectStreams,
   transactionBudgetCategories,
   transactionConsolidationGroups,
 } from "@/lib/constants";
-import { UseFormReturn } from "react-hook-form";
-import { createConsolidationSchema } from "../schemas/consolidations.schema";
-import { z } from "zod";
 import {
   CreateProjectItem,
   CreateProjectItemHandle,
 } from "./create-project-item";
 import { useProjectItems } from "../hooks/use-project-items";
-import { useTranslations } from "next-intl";
 import {
   useState,
   useRef,
@@ -27,12 +24,9 @@ import { CreateLoan } from "@/features/loans/components/create-loan";
 import { CreateLoanPayoff, CreateLoanPayoffHandle } from "./create-loan-payoff";
 import { useLoanPayoffs } from "../hooks/use-loan-payoffs";
 import { formatCurrency } from "@/lib/utils";
-import { TextInput } from "@/components/form/text-input";
-import { NumberInput } from "@/components/form/number-input";
-import { SelectInput } from "@/components/form/select-input";
-import { CheckboxInput } from "@/components/form/checkbox-input";
+import { useStore } from "@tanstack/react-form";
 
-type SchemaType = z.infer<typeof createConsolidationSchema>;
+type FormApi = any;
 
 export type ConsolidationPrefillData = {
   date: Date;
@@ -40,86 +34,111 @@ export type ConsolidationPrefillData = {
   description: string;
 };
 
-type FieldProps = {
-  control: UseFormReturn<SchemaType>["control"];
+const GROUP_LABELS: Record<
+  (typeof transactionConsolidationGroups)[number],
+  string
+> = {
+  budget: "Budget",
+  project: "Project",
+  loan: "Loan",
+  tax: "Tax",
+  refund: "Refund",
+  refunded: "Refunded",
+  unclassified: "Unclassified",
 };
 
-type DescriptionFieldProps = FieldProps;
+const CATEGORY_LABELS: Record<
+  (typeof transactionBudgetCategories)[number],
+  string
+> = {
+  subscription: "Subscription",
+  consumable: "Consumable",
+  toll: "Toll",
+  tool: "Tool",
+  food: "Food",
+  salary: "Salary",
+  fuel: "Fuel",
+};
 
-export const DescriptionField = ({ control }: DescriptionFieldProps) => {
-  const tc = useTranslations("Common");
+const STREAM_LABELS: Record<(typeof projectStreams)[number], string> = {
+  supplies: "Supplies",
+  labors: "Labors",
+  misc: "Misc",
+  payments: "Payments",
+};
 
+export function DescriptionField({ form }: { form: FormApi }) {
   return (
-    <TextInput name="description" label={tc("description")} control={control} />
+    <form.AppField
+      name="description"
+      children={(field: any) => <field.TextField label="Description" />}
+    />
   );
-};
+}
 
-type AmountFieldProps = FieldProps;
-
-export const AmountField = ({ control }: AmountFieldProps) => {
-  const t = useTranslations("FinancialAccounts");
-
-  return <NumberInput name="amount" label={t("amount")} control={control} />;
-};
-
-type ConsolidationGroupFieldProps = FieldProps;
-
-export const ConsolidationGroupField = ({
-  control,
-  form,
-}: ConsolidationGroupFieldProps & { form: UseFormReturn<SchemaType> }) => {
-  const t = useTranslations("FinancialAccounts");
-
+export function AmountField({ form }: { form: FormApi }) {
   return (
-    <SelectInput
+    <form.AppField
+      name="amount"
+      children={(field: any) => <field.NumberField label="Amount" />}
+    />
+  );
+}
+
+export function ConsolidationGroupField({ form }: { form: FormApi }) {
+  return (
+    <form.AppField
       name="consolidationGroup"
-      label={t("consolidationGroup")}
-      control={control}
-      items={transactionConsolidationGroups
-        .map((group) => ({
-          value: group,
-          label: t(group),
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label))}
-      onChange={(value) => {
-        if (value !== "budget") form.setValue("budgetCategory", undefined);
+      children={(field: any) => (
+        <field.SelectField
+          label="Consolidation group"
+          items={transactionConsolidationGroups
+            .map((group) => ({
+              value: group,
+              label: GROUP_LABELS[group],
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label))}
+          onChange={(value: string) => {
+            if (value !== "budget")
+              form.setFieldValue("budgetCategory", undefined);
 
-        if (value !== "project") {
-          form.setValue("projectId", undefined);
-          form.setValue("projectStream", undefined);
-          form.setValue("projectItemId", undefined);
-        }
+            if (value !== "project") {
+              form.setFieldValue("projectId", undefined);
+              form.setFieldValue("projectStream", undefined);
+              form.setFieldValue("projectItemId", undefined);
+            }
 
-        if (value !== "loan") {
-          form.setValue("loanId", undefined);
-          form.setValue("isPayoff", undefined);
-          form.setValue("loanPayoffId", undefined);
-        }
-      }}
+            if (value !== "loan") {
+              form.setFieldValue("loanId", undefined);
+              form.setFieldValue("isPayoff", undefined);
+              form.setFieldValue("loanPayoffId", undefined);
+            }
+          }}
+        />
+      )}
     />
   );
-};
+}
 
-type BudgetCategoryFieldProps = FieldProps;
-
-export const BudgetCategoryField = ({ control }: BudgetCategoryFieldProps) => {
-  const t = useTranslations("FinancialAccounts");
-
+export function BudgetCategoryField({ form }: { form: FormApi }) {
   return (
-    <SelectInput
+    <form.AppField
       name="budgetCategory"
-      label={t("budgetCategory")}
-      control={control}
-      items={transactionBudgetCategories.map((category) => ({
-        value: category,
-        label: t(category),
-      }))}
+      children={(field: any) => (
+        <field.SelectField
+          label="Budget category"
+          items={transactionBudgetCategories.map((category) => ({
+            value: category,
+            label: CATEGORY_LABELS[category],
+          }))}
+        />
+      )}
     />
   );
-};
+}
 
-type ProjectFieldsProps = FieldProps & {
-  form: UseFormReturn<SchemaType>;
+type ProjectFieldsProps = {
+  form: FormApi;
   prefillData: ConsolidationPrefillData;
 };
 
@@ -130,11 +149,15 @@ export type ProjectFieldsHandle = {
 export const ProjectFields = forwardRef<
   ProjectFieldsHandle,
   ProjectFieldsProps
->(({ control, form, prefillData }, ref) => {
-  const t = useTranslations("FinancialAccounts");
-
-  const projectId = form.watch("projectId");
-  const projectStream = form.watch("projectStream");
+>(({ form, prefillData }, ref) => {
+  const projectId = useStore(
+    form.store,
+    (state: any) => state.values.projectId
+  );
+  const projectStream = useStore(
+    form.store,
+    (state: any) => state.values.projectStream
+  );
 
   const trpc = useTRPC();
 
@@ -143,7 +166,8 @@ export const ProjectFields = forwardRef<
       pagination: { pageSize: -1, pageIndex: 0 },
     })
   );
-  const projectItems = useProjectItems(form);
+
+  const projectItems = useProjectItems(projectId, projectStream);
 
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
   const createProjectItemRef = useRef<CreateProjectItemHandle>(null);
@@ -152,7 +176,7 @@ export const ProjectFields = forwardRef<
     items: projectItems,
     onItemFound: useCallback(
       (id) => {
-        form.setValue("projectItemId", id);
+        form.setFieldValue("projectItemId", id);
       },
       [form]
     ),
@@ -163,9 +187,9 @@ export const ProjectFields = forwardRef<
     items: projects?.items,
     onItemFound: useCallback(
       (id) => {
-        form.setValue("projectId", id);
-        form.setValue("projectStream", undefined);
-        form.setValue("projectItemId", undefined);
+        form.setFieldValue("projectId", id);
+        form.setFieldValue("projectStream", undefined);
+        form.setFieldValue("projectItemId", undefined);
       },
       [form]
     ),
@@ -183,58 +207,64 @@ export const ProjectFields = forwardRef<
 
   return (
     <>
-      <SelectInput
+      <form.AppField
         name="projectId"
-        label={t("project")}
-        control={control}
-        items={
-          projects?.items.map((project) => ({
-            value: project.id,
-            label: `${project.humanId} - ${project.client}`,
-          })) ?? []
-        }
-        isSearchable
-        onCreate={() => {
-          setIsCreateProjectOpen(true);
-          form.setValue("projectStream", undefined);
-          form.setValue("projectItemId", undefined);
-        }}
-        onChange={() => {
-          form.setValue("projectStream", undefined);
-          form.setValue("projectItemId", undefined);
-        }}
+        children={(field: any) => (
+          <field.SelectField
+            label="Project"
+            items={
+              projects?.items.map((project) => ({
+                value: project.id,
+                label: `${project.humanId} - ${project.client}`,
+              })) ?? []
+            }
+            isSearchable
+            onCreate={() => {
+              setIsCreateProjectOpen(true);
+              form.setFieldValue("projectStream", undefined);
+              form.setFieldValue("projectItemId", undefined);
+            }}
+            onChange={() => {
+              form.setFieldValue("projectStream", undefined);
+              form.setFieldValue("projectItemId", undefined);
+            }}
+          />
+        )}
       />
 
-      <SelectInput
+      <form.AppField
         name="projectStream"
-        label={t("projectStream")}
-        control={control}
-        items={projectStreams.map((stream) => ({
-          value: stream,
-          label: t(stream),
-        }))}
+        children={(field: any) => (
+          <field.SelectField
+            label="Project stream"
+            items={projectStreams.map((stream) => ({
+              value: stream,
+              label: STREAM_LABELS[stream],
+            }))}
+          />
+        )}
       />
 
-      <SelectInput
+      <form.AppField
         name="projectItemId"
-        label={t("projectItem")}
-        control={control}
-        items={
-          projectItems?.map((item) => ({
-            value: item.id,
-            label:
-              ("name" in item
-                ? `${item.name} - ${formatCurrency("amount" in item ? item.amount : "quantity" in item ? item.quantity * item.unitPrice : item.hours * item.rate)}`
-                : `${item.date.toDateString()} - (${formatCurrency(
-                    item.amount
-                  )})`) +
-              ` - ${item.isConsolidated ? "consolidated" : "not consolidated"}`,
-          })) ?? []
-        }
-        onCreate={() => createProjectItemRef.current?.open()}
+        children={(field: any) => (
+          <field.SelectField
+            label="Project item"
+            items={
+              projectItems?.map((item: any) => ({
+                value: item.id,
+                label:
+                  ("name" in item
+                    ? `${item.name} - ${formatCurrency("amount" in item ? item.amount : "quantity" in item ? item.quantity * item.unitPrice : item.hours * item.rate)}`
+                    : `${item.date.toDateString()} - (${formatCurrency(item.amount)})`) +
+                  ` - ${item.isConsolidated ? "Consolidated" : "Not consolidated"}`,
+              })) ?? []
+            }
+            onCreate={() => createProjectItemRef.current?.open()}
+          />
+        )}
       />
 
-      {/* Nested create modal handler */}
       {projectId && (
         <CreateProjectItem
           ref={createProjectItemRef}
@@ -255,8 +285,8 @@ export const ProjectFields = forwardRef<
 });
 ProjectFields.displayName = "ProjectFields";
 
-type LoanFieldsProps = FieldProps & {
-  form: UseFormReturn<SchemaType>;
+type LoanFieldsProps = {
+  form: FormApi;
   prefillData: ConsolidationPrefillData;
 };
 
@@ -265,12 +295,12 @@ export type LoanFieldsHandle = {
 };
 
 export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
-  ({ control, form, prefillData }, ref) => {
-    const t = useTranslations("FinancialAccounts");
-    const tLoans = useTranslations("Loans");
-
-    const loanId = form.watch("loanId");
-    const isPayoff = form.watch("isPayoff");
+  ({ form, prefillData }, ref) => {
+    const loanId = useStore(form.store, (state: any) => state.values.loanId);
+    const isPayoff = useStore(
+      form.store,
+      (state: any) => state.values.isPayoff
+    );
 
     const trpc = useTRPC();
 
@@ -279,7 +309,7 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
         pagination: { pageSize: -1, pageIndex: 0 },
       })
     );
-    const loanPayoffs = useLoanPayoffs(form);
+    const loanPayoffs = useLoanPayoffs(loanId);
 
     const [isCreateLoanOpen, setIsCreateLoanOpen] = useState(false);
     const createLoanPayoffRef = useRef<CreateLoanPayoffHandle>(null);
@@ -287,16 +317,16 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
       items: loanPayoffs,
       onItemFound: useCallback(
         (id) => {
-          form.setValue("loanPayoffId", id);
+          form.setFieldValue("loanPayoffId", id);
         },
         [form]
       ),
       resetDependencies: [loanId],
     });
-    const handleLoanCreated = (loanId: string) => {
-      form.setValue("loanId", loanId);
-      form.setValue("isPayoff", undefined);
-      form.setValue("loanPayoffId", undefined);
+    const handleLoanCreated = (createdLoanId: string) => {
+      form.setFieldValue("loanId", createdLoanId);
+      form.setFieldValue("isPayoff", undefined);
+      form.setFieldValue("loanPayoffId", undefined);
     };
 
     useImperativeHandle(ref, () => {
@@ -310,60 +340,64 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
 
     return (
       <>
-        <SelectInput
+        <form.AppField
           name="loanId"
-          label={t("loan")}
-          control={control}
-          items={
-            loans?.items.map((loan) => ({
-              value: loan.id,
-              label: `${loan.partyName} - ${tLoans(loan.type)} (${formatCurrency(
-                loan.amount
-              )})`,
-            })) ?? []
-          }
-          isSearchable
-          onCreate={() => {
-            setIsCreateLoanOpen(true);
-            form.setValue("isPayoff", undefined);
-            form.setValue("loanPayoffId", undefined);
-          }}
-          onChange={() => {
-            form.setValue("isPayoff", undefined);
-            form.setValue("loanPayoffId", undefined);
-          }}
+          children={(field: any) => (
+            <field.SelectField
+              label="Loan"
+              items={
+                loans?.items.map((loan) => ({
+                  value: loan.id,
+                  label: `${loan.partyName} - ${loan.type === "lent" ? "Lent" : "Borrowed"} (${formatCurrency(loan.amount)})`,
+                })) ?? []
+              }
+              isSearchable
+              onCreate={() => {
+                setIsCreateLoanOpen(true);
+                form.setFieldValue("isPayoff", undefined);
+                form.setFieldValue("loanPayoffId", undefined);
+              }}
+              onChange={() => {
+                form.setFieldValue("isPayoff", undefined);
+                form.setFieldValue("loanPayoffId", undefined);
+              }}
+            />
+          )}
         />
 
-        <CheckboxInput
+        <form.AppField
           name="isPayoff"
-          label={t("isPayoff")}
-          control={control}
-          onChange={(checked) => {
-            if (!checked) {
-              form.setValue("loanPayoffId", undefined);
-            }
-          }}
+          children={(field: any) => (
+            <field.CheckboxField
+              label="Is payoff"
+              onChange={(checked: any) => {
+                if (!checked) {
+                  form.setFieldValue("loanPayoffId", undefined);
+                }
+              }}
+            />
+          )}
         />
 
         {isPayoff && (
-          <SelectInput
+          <form.AppField
             name="loanPayoffId"
-            label={t("loanPayoff")}
-            control={control}
-            items={
-              loanPayoffs?.map((payoff) => ({
-                value: payoff.id,
-                label: `${payoff.date.toDateString()} - ${formatCurrency(
-                  payoff.amount
-                )}`,
-              })) ?? []
-            }
-            isSearchable
-            onCreate={() => createLoanPayoffRef.current?.open()}
+            children={(field: any) => (
+              <field.SelectField
+                label="Loan payoff"
+                items={
+                  loanPayoffs?.map((payoff) => ({
+                    value: payoff.id,
+                    label: `${payoff.date.toDateString()} - ${formatCurrency(payoff.amount)}`,
+                  })) ?? []
+                }
+                isSearchable
+                onCreate={() => createLoanPayoffRef.current?.open()}
+              />
+            )}
           />
         )}
 
-        {/* Nested create modal handler */}
         {loanId && (
           <CreateLoanPayoff
             ref={createLoanPayoffRef}
@@ -389,10 +423,11 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
 );
 LoanFields.displayName = "LoanFields";
 
-type IsGstFieldProps = FieldProps;
-
-export const IsGstField = ({ control }: IsGstFieldProps) => {
-  const t = useTranslations("FinancialAccounts");
-
-  return <CheckboxInput name="isGst" label={t("isGst")} control={control} />;
-};
+export function IsGstField({ form }: { form: FormApi }) {
+  return (
+    <form.AppField
+      name="isGst"
+      children={(field: any) => <field.CheckboxField label="Is GST" />}
+    />
+  );
+}

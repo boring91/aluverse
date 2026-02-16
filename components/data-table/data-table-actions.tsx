@@ -8,8 +8,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
+import type { Route } from "next";
 
 type Props = {
   itemId: string;
@@ -26,8 +26,6 @@ export const DataTableActions = ({
   currentlyProcessing,
   detailsLink,
 }: Props) => {
-  const tc = useTranslations("Common");
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,7 +37,7 @@ export const DataTableActions = ({
         <DropdownMenuGroup>
           {detailsLink && (
             <DropdownMenuItem asChild>
-              <Link href={detailsLink}>{tc("view")}</Link>
+              <Link href={detailsLink as Route}>View</Link>
             </DropdownMenuItem>
           )}
 
@@ -47,7 +45,7 @@ export const DataTableActions = ({
             disabled={currentlyProcessing.has(itemId)}
             onClick={() => handleUpdate(itemId)}
           >
-            {tc("edit")}
+            Edit
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
@@ -59,7 +57,7 @@ export const DataTableActions = ({
             disabled={currentlyProcessing.has(itemId)}
             onClick={() => handleDelete(itemId)}
           >
-            {tc("delete")}
+            Delete
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

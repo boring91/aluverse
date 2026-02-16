@@ -2,18 +2,15 @@
 
 import { PageContainer } from "@/components/page-container";
 import { LoansList } from "@/features/loans/components/loans-list";
-import { useTranslations } from "next-intl";
 import { useTitle } from "@/hooks/use-title";
 
 export const LoansListView = () => {
-  const tc = useTranslations("Common");
-
-  useTitle(tc("loans"));
+  useTitle("Loans");
 
   return (
     <PageContainer>
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-2xl">{tc("loans")}</h1>
+        <h1 className="font-bold text-2xl">Loans</h1>
       </div>
 
       <LoansList />

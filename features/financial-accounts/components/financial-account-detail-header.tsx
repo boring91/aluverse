@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";

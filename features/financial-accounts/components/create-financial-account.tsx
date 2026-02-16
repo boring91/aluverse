@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useAppForm } from "@/components/form/form-context";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import {
@@ -10,23 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createFinancialAccountSchema } from "../schemas/financial-accounts.schema";
-import { fillForm } from "@/lib/client-utils";
-import { formQueryOptions } from "@/lib/query-utils";
+import { formQueryOptions } from "@/lib/client-utils";
+import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
+import { createFinancialAccountSchema } from "../schemas/financial-accounts.schema";
 import { banks } from "../lib/bank-syncer/constants";
-import { SelectInput } from "@/components/form/select-input";
-import { TextInput } from "@/components/form/text-input";
-import { useForm } from "react-hook-form";
-
-type SchemaType = z.infer<typeof createFinancialAccountSchema>;
 
 type Props = {
   open: boolean;
@@ -34,14 +26,7 @@ type Props = {
   itemId?: string;
 };
 
-export const CreateFinancialAccount = ({
-  open,
-  onOpenChange,
-  itemId,
-}: Props) => {
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
-
+export function CreateFinancialAccount({ open, onOpenChange, itemId }: Props) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const isUpdate = !!itemId;
@@ -53,55 +38,61 @@ export const CreateFinancialAccount = ({
     )
   );
 
-  const form = useForm<SchemaType>({
-    resolver: zodResolver(createFinancialAccountSchema),
-    defaultValues: {
-      name: "",
-      syncWithBank: undefined,
+  const createMutation = useMutation(
+    trpc.financialAccounts.create.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.financialAccounts.list.queryOptions()
+        );
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.financialAccounts.get.queryOptions({ id: itemId })
+          );
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
+  );
+
+  const updateMutation = useMutation(
+    trpc.financialAccounts.update.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.financialAccounts.list.queryOptions()
+        );
+        if (isUpdate) {
+          queryClient.invalidateQueries(
+            trpc.financialAccounts.get.queryOptions({ id: itemId })
+          );
+        }
+        onOpenChange(false);
+        toast.success("Saved successfully");
+      },
+      onError: (error) => toast.error(error.message),
+    })
+  );
+
+  const form = useAppForm({
+    defaultValues: getFormDefaults(createFinancialAccountSchema, data),
+    validators: {
+      onChange: createFinancialAccountSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (isUpdate && itemId) {
+        await updateMutation.mutateAsync({ id: itemId, ...value });
+      } else {
+        await createMutation.mutateAsync(value);
+      }
     },
   });
 
-  const onSuccess = () => {
-    queryClient.invalidateQueries(trpc.financialAccounts.list.queryOptions());
-    if (isUpdate) {
-      queryClient.invalidateQueries(
-        trpc.financialAccounts.get.queryOptions({ id: itemId })
-      );
-    }
-    onOpenChange(false);
-    toast.success(tc("savedSuccessfully"));
-  };
-
-  const onError = (error: { message: string }) => {
-    toast.error(error.message);
-  };
-
-  const createMutation = useMutation(
-    trpc.financialAccounts.create.mutationOptions({ onSuccess, onError })
-  );
-  const updateMutation = useMutation(
-    trpc.financialAccounts.update.mutationOptions({ onSuccess, onError })
-  );
-  const isPending = createMutation.isPending || updateMutation.isPending;
-
-  const handleSubmit = (data: SchemaType) => {
-    if (isUpdate && itemId) {
-      updateMutation.mutate({ id: itemId, ...data });
-    } else {
-      createMutation.mutate(data);
-    }
-  };
-
   useEffect(() => {
-    if (!open) {
-      form.reset();
-      return;
-    }
+    form.reset(getFormDefaults(createFinancialAccountSchema, data));
+  }, [form, open, data]);
 
-    if (!isUpdate || !data) return;
-
-    fillForm(form, data);
-  }, [isUpdate, data, form, open]);
+  const isPending = form.state.isSubmitting;
 
   return (
     <Dialog
@@ -114,32 +105,42 @@ export const CreateFinancialAccount = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-bold text-xl">
-            {tc("financialAccounts")}
+            Financial accounts
           </DialogTitle>
           <DialogDescription>
             {isUpdate
-              ? t("updateExistingFinancialAccount")
-              : t("createNewFinancialAccount")}
+              ? "Update existing financial account"
+              : "Create new financial account"}
           </DialogDescription>
         </DialogHeader>
 
         <form
           id="create-financial-account"
-          onSubmit={form.handleSubmit(handleSubmit)}
           className="flex flex-col gap-8 px-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
         >
-          <FieldGroup>
-            {/* Name */}
-            <TextInput name="name" label={tc("name")} control={form.control} />
+          <form.AppForm>
+            <FieldGroup>
+              <form.AppField
+                name="name"
+                children={(field) => <field.TextField label="Name" />}
+              />
 
-            {/* Sync with bank */}
-            <SelectInput
-              name="syncWithBank"
-              label={t("syncWithBank")}
-              control={form.control}
-              items={banks.map((bank) => ({ value: bank, label: t(bank) }))}
-            />
-          </FieldGroup>
+              <form.AppField
+                name="syncWithBank"
+                children={(field) => (
+                  <field.SelectField
+                    label="Sync with bank"
+                    items={banks.map((bank) => ({ value: bank, label: bank }))}
+                  />
+                )}
+              />
+            </FieldGroup>
+          </form.AppForm>
         </form>
         <DialogFooter>
           <Button
@@ -147,11 +148,10 @@ export const CreateFinancialAccount = ({
             disabled={isPending}
             type="submit"
           >
-            {isPending && <Loader2 className="animate-spin" />}
-            <span>{tc("save")}</span>
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-};
+}

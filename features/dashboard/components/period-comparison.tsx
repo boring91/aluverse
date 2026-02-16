@@ -9,7 +9,6 @@ import { DashboardDateRange } from "../schemas/dashboard.schema";
 import { cn } from "@/lib/client-utils";
 import { formatPercent, formatCurrency } from "@/lib/utils";
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@/trpc/routers/_app";
 
@@ -56,19 +55,17 @@ type PeriodComparisonChartProps = {
 };
 
 const PeriodComparisonChart = ({ data }: PeriodComparisonChartProps) => {
-  const t = useTranslations("Dashboard");
-
   const metrics = [
-    { label: t("revenue"), ...data.revenue },
-    { label: t("cost"), ...data.cost },
-    { label: t("operatingProfit"), ...data.operatingProfit },
-    { label: t("netProfit"), ...data.netProfit },
+    { label: "Revenue", ...data.revenue },
+    { label: "Cost", ...data.cost },
+    { label: "Operating profit", ...data.operatingProfit },
+    { label: "Net profit", ...data.netProfit },
   ];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("periodComparison")}</CardTitle>
+        <CardTitle>Period Comparison</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {metrics.map((metric) => {
@@ -114,7 +111,7 @@ const PeriodComparisonChart = ({ data }: PeriodComparisonChartProps) => {
                     {formatCurrency(metric.current)}
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
-                    <span>{t("previous")}:</span>{" "}
+                    <span>Previous:</span>
                     <span className="font-mono">
                       {formatCurrency(metric.previous)}
                     </span>

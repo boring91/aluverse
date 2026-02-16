@@ -1,3 +1,7 @@
+import { useMemo, useRef } from "react";
+import { useStore } from "@tanstack/react-form";
+import { inferRouterOutputs } from "@trpc/server";
+import { AppRouter } from "@/trpc/routers/_app";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,24 +12,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useConsolidationForm } from "../hooks/use-consolidation-form";
 import {
-  DescriptionField,
   AmountField,
-  ConsolidationGroupField,
   BudgetCategoryField,
-  ProjectFields,
-  LoanFields,
+  ConsolidationGroupField,
+  DescriptionField,
   IsGstField,
-  ProjectFieldsHandle,
+  LoanFields,
   LoanFieldsHandle,
+  ProjectFields,
+  ProjectFieldsHandle,
 } from "./consolidation-form-fields";
-import { useRef, useMemo } from "react";
 import type { ConsolidationPrefillData } from "./consolidation-form-fields";
-import { AppRouter } from "@/trpc/routers/_app";
-import { inferRouterOutputs } from "@trpc/server";
 
 type Transaction =
   inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
@@ -37,25 +36,31 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
-export const CreateConsolidation = ({
+export function CreateConsolidation({
   transaction,
   itemId,
   open,
   onOpenChange,
-}: Props) => {
-  const t = useTranslations("FinancialAccounts");
-  const tc = useTranslations("Common");
-
-  const { form, handleSubmit, isPending } = useConsolidationForm({
+}: Props) {
+  const { form, isPending } = useConsolidationForm({
     transactionId: transaction.id,
     itemId,
     open,
     onOpenChange,
   });
 
-  const selectedGroup = form.watch("consolidationGroup");
-  const consolidationAmount = form.watch("amount");
-  const consolidationDescription = form.watch("description");
+  const selectedGroup = useStore(
+    form.store,
+    (state) => state.values.consolidationGroup
+  );
+  const consolidationAmount = useStore(
+    form.store,
+    (state) => state.values.amount
+  );
+  const consolidationDescription = useStore(
+    form.store,
+    (state) => state.values.description
+  );
 
   const prefillData = useMemo<ConsolidationPrefillData>(
     () => ({
@@ -89,50 +94,53 @@ export const CreateConsolidation = ({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("consolidateTransaction")}</DialogTitle>
+          <DialogTitle>Consolidate transaction</DialogTitle>
           <DialogDescription>
-            {t("consolidateTransactionDetails")}
+            Assign this transaction to a consolidation group and categorize it
+            accordingly.
           </DialogDescription>
         </DialogHeader>
 
         <form
           id="consolidate-transaction-form"
-          onSubmit={form.handleSubmit(handleSubmit)}
           className="flex flex-col gap-8 px-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
         >
-          <fieldset disabled={isPending}>
-            <FieldGroup>
-              <DescriptionField control={form.control} />
+          <form.AppForm>
+            <fieldset disabled={isPending}>
+              <FieldGroup>
+                <DescriptionField form={form} />
+                <AmountField form={form} />
+                <ConsolidationGroupField form={form} />
 
-              <AmountField control={form.control} />
+                {selectedGroup === "budget" && (
+                  <BudgetCategoryField form={form} />
+                )}
 
-              <ConsolidationGroupField control={form.control} form={form} />
+                {selectedGroup === "project" && (
+                  <ProjectFields
+                    ref={projectFieldsRef}
+                    form={form}
+                    prefillData={prefillData}
+                  />
+                )}
 
-              {selectedGroup === "budget" && (
-                <BudgetCategoryField control={form.control} />
-              )}
+                {selectedGroup === "loan" && (
+                  <LoanFields
+                    ref={loanFieldsRef}
+                    form={form}
+                    prefillData={prefillData}
+                  />
+                )}
 
-              {selectedGroup === "project" && (
-                <ProjectFields
-                  ref={projectFieldsRef}
-                  control={form.control}
-                  form={form}
-                  prefillData={prefillData}
-                />
-              )}
-
-              {selectedGroup === "loan" && (
-                <LoanFields
-                  ref={loanFieldsRef}
-                  control={form.control}
-                  form={form}
-                  prefillData={prefillData}
-                />
-              )}
-
-              <IsGstField control={form.control} />
-            </FieldGroup>
-          </fieldset>
+                <IsGstField form={form} />
+              </FieldGroup>
+            </fieldset>
+          </form.AppForm>
         </form>
 
         <DialogFooter>
@@ -141,11 +149,10 @@ export const CreateConsolidation = ({
             type="submit"
             form="consolidate-transaction-form"
           >
-            {isPending && <Loader2 className="animate-spin" />}
-            <span>{tc("save")}</span>
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-};
+}
