@@ -188,8 +188,8 @@ export const ProjectFields = forwardRef<
     onItemFound: useCallback(
       (id) => {
         form.setFieldValue("projectId", id);
-        form.setFieldValue("projectStream", undefined);
-        form.setFieldValue("projectItemId", undefined);
+        form.resetField("projectStream");
+        form.resetField("projectItemId");
       },
       [form]
     ),
@@ -221,12 +221,12 @@ export const ProjectFields = forwardRef<
             isSearchable
             onCreate={() => {
               setIsCreateProjectOpen(true);
-              form.setFieldValue("projectStream", undefined);
-              form.setFieldValue("projectItemId", undefined);
+              form.resetField("projectStream");
+              form.resetField("projectItemId");
             }}
             onChange={() => {
-              form.setFieldValue("projectStream", undefined);
-              form.setFieldValue("projectItemId", undefined);
+              form.resetField("projectStream");
+              form.resetField("projectItemId");
             }}
           />
         )}
@@ -325,8 +325,8 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
     });
     const handleLoanCreated = (createdLoanId: string) => {
       form.setFieldValue("loanId", createdLoanId);
-      form.setFieldValue("isPayoff", undefined);
-      form.setFieldValue("loanPayoffId", undefined);
+      form.resetField("isPayoff");
+      form.resetField("loanPayoffId");
     };
 
     useImperativeHandle(ref, () => {
@@ -354,12 +354,12 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
               isSearchable
               onCreate={() => {
                 setIsCreateLoanOpen(true);
-                form.setFieldValue("isPayoff", undefined);
-                form.setFieldValue("loanPayoffId", undefined);
+                form.resetField("isPayoff");
+                form.resetField("loanPayoffId");
               }}
               onChange={() => {
-                form.setFieldValue("isPayoff", undefined);
-                form.setFieldValue("loanPayoffId", undefined);
+                form.resetField("isPayoff");
+                form.resetField("loanPayoffId");
               }}
             />
           )}
@@ -372,7 +372,7 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
               label="Is payoff"
               onChange={(checked: any) => {
                 if (!checked) {
-                  form.setFieldValue("loanPayoffId", undefined);
+                  form.resetField("loanPayoffId");
                 }
               }}
             />
