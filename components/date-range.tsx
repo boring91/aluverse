@@ -278,7 +278,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange }) => {
   );
 };
 
-export interface DateRangePickerProps {
+export type DateRangePickerProps = {
   /** Click handler for applying the updates from DateRangePicker. */
   onUpdate?: (values: { range: DateRange; rangeCompare?: DateRange }) => void;
   /** Initial value for start date */
@@ -295,7 +295,7 @@ export interface DateRangePickerProps {
   locale?: string;
   /** Option for showing compare feature */
   showCompare?: boolean;
-}
+};
 
 const formatDate = (date: Date, locale: string = "en-us"): string => {
   return date.toLocaleDateString(locale, {
@@ -319,10 +319,10 @@ const getDateAdjustedForTimezone = (dateInput: Date | string): Date => {
   }
 };
 
-interface DateRange {
+type DateRange = {
   from: Date;
   to: Date | undefined;
-}
+};
 
 // Define presets
 const PRESETS = [

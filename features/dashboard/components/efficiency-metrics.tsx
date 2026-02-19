@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 import { DashboardSection } from "./dashboard-section";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 

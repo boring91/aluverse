@@ -1,9 +1,9 @@
 import { getProjects } from "./projects";
-import { createProject } from "@/features/projects/mutations/create-project";
-import { createProjectSupply } from "@/features/projects/mutations/create-project-supply";
-import { createProjectLabor } from "@/features/projects/mutations/create-project-labor";
-import { createProjectMisc } from "@/features/projects/mutations/create-project-misc";
-import { createProjectPayment } from "@/features/projects/mutations/create-project-payment";
+import { createProjectMutation } from "@/features/projects/mutations/create-project.mutation";
+import { createProjectSupplyMutation } from "@/features/projects/mutations/create-project-supply.mutation";
+import { createProjectLaborMutation } from "@/features/projects/mutations/create-project-labor.mutation";
+import { createProjectMiscMutation } from "@/features/projects/mutations/create-project-misc.mutation";
+import { createProjectPaymentMutation } from "@/features/projects/mutations/create-project-payment.mutation";
 
 // Account IDs provided by user (for future use when linking to transactions/consolidations)
 // const BANK_ACCOUNT_ID = "ea82608a-ebcb-4c9a-9bdd-8f265fa5ac6d";
@@ -73,7 +73,7 @@ export async function importProjects() {
       // Note: The schema expects dollars, but when calling the mutation directly,
       // we need to convert to cents since the DB stores cents and the API router
       // normally does this conversion. We'll pass cents and cast the type.
-      const createdProject = await createProject({
+      const createdProject = await createProjectMutation({
         client,
         title: project.title,
         visitDate: visitDate || undefined,
@@ -82,7 +82,7 @@ export async function importProjects() {
         address: project.address || undefined,
         meters: project.meters || undefined,
         price: Math.round(project.price * 100), // Convert dollars to cents and round
-      } as Parameters<typeof createProject>[0]);
+      } as Parameters<typeof createProjectMutation>[0]);
 
       const projectId = createdProject.id;
       // Store mapping from old job ID to new project UUID
@@ -93,7 +93,7 @@ export async function importProjects() {
       for (const supply of project.supplies) {
         if (supply.name && supply.units > 0 && supply.cost > 0) {
           const unitPrice = supply.cost / supply.units; // Calculate unit price
-          await createProjectSupply({
+          await createProjectSupplyMutation({
             projectId,
             name: supply.name,
             quantity: Math.round(supply.units), // Round to integer
@@ -108,7 +108,7 @@ export async function importProjects() {
       // Import labors
       for (const labor of project.labors) {
         if (labor.name && labor.hours > 0 && labor.ratePerHour > 0) {
-          await createProjectLabor({
+          await createProjectLaborMutation({
             projectId,
             name: labor.name,
             hours: Math.round(labor.hours), // Round to integer (DB column is integer)
@@ -123,7 +123,7 @@ export async function importProjects() {
       // Import misc expenses
       for (const misc of project.misc) {
         if (misc.name && misc.cost > 0) {
-          await createProjectMisc({
+          await createProjectMiscMutation({
             projectId,
             name: misc.name,
             amount: Math.round(misc.cost * 100), // Convert to cents and round
@@ -139,7 +139,7 @@ export async function importProjects() {
         if (payment.amount !== 0) {
           const paymentDate = parseDate(payment.time);
           if (paymentDate) {
-            await createProjectPayment({
+            await createProjectPaymentMutation({
               projectId,
               date: paymentDate,
               amount: Math.round(Math.abs(payment.amount) * 100), // Convert to cents, ensure positive, and round

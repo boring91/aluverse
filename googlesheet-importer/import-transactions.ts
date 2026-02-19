@@ -1,7 +1,7 @@
 import { getTransactions } from "./transactions";
-import { createTransaction } from "@/features/financial-accounts/mutations/create-transaction";
-import { createConsolidation } from "@/features/consolidations/mutations/create-consolidation";
-import { createProjectMisc } from "@/features/projects/mutations/create-project-misc";
+import { createTransactionMutation } from "@/features/financial-accounts/mutations/create-transaction.mutation";
+import { createConsolidationMutation } from "@/features/consolidations/mutations/create-consolidation.mutation";
+import { createProjectMiscMutation } from "@/features/projects/mutations/create-project-misc.mutation";
 import { db } from "@/db";
 import {
   transactionConsolidationGroups,
@@ -9,7 +9,7 @@ import {
   projectStreams,
 } from "@/lib/constants";
 import z from "zod";
-import { createConsolidationWithTransactionIdSchema } from "@/features/consolidations";
+import { createConsolidationWithTransactionIdSchema } from "@/features/consolidations/schemas/consolidations.shared-schema";
 
 // Account IDs
 const BANK_ACCOUNT_ID = "ea82608a-ebcb-4c9a-9bdd-8f265fa5ac6d";
@@ -199,7 +199,7 @@ export async function importTransactions(projectMapping: Map<string, string>) {
       const amountCents = Math.round(Math.abs(cashTx.amount) * 100);
 
       // Create transaction
-      const transaction = await createTransaction({
+      const transaction = await createTransactionMutation({
         accountId: CASH_ACCOUNT_ID,
         date: txDate,
         description: cashTx.description,
@@ -266,7 +266,7 @@ export async function importTransactions(projectMapping: Map<string, string>) {
                   Math.abs(consolidation.amount) * 100
                 );
                 try {
-                  const createdMisc = await createProjectMisc({
+                  const createdMisc = await createProjectMiscMutation({
                     projectId,
                     name: miscName,
                     amount: miscAmount,
@@ -331,7 +331,7 @@ export async function importTransactions(projectMapping: Map<string, string>) {
             consolidationData.projectItemId = projectItemId;
           }
 
-          await createConsolidation(consolidationData);
+          await createConsolidationMutation(consolidationData);
           consolidationCount++;
         } catch (error) {
           errorCount++;
@@ -374,7 +374,7 @@ export async function importTransactions(projectMapping: Map<string, string>) {
       const amountCents = Math.round(Math.abs(bankTx.amount) * 100);
 
       // Create transaction
-      const transaction = await createTransaction({
+      const transaction = await createTransactionMutation({
         accountId: BANK_ACCOUNT_ID,
         date: txDate,
         description: bankTx.description,
@@ -438,7 +438,7 @@ export async function importTransactions(projectMapping: Map<string, string>) {
                 Math.abs(consolidation.amount) * 100
               );
               try {
-                const createdMisc = await createProjectMisc({
+                const createdMisc = await createProjectMiscMutation({
                   projectId,
                   name: miscName,
                   amount: miscAmount,
@@ -505,7 +505,7 @@ export async function importTransactions(projectMapping: Map<string, string>) {
           consolidationData.projectItemId = projectItemId;
         }
 
-        await createConsolidation(consolidationData);
+        await createConsolidationMutation(consolidationData);
         consolidationCount++;
       } catch (error) {
         errorCount++;

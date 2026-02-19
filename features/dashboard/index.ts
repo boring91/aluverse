@@ -1,2 +1,2 @@
-export { dashboardRouter } from "./api/router";
-export type { DashboardDateRange } from "./schemas/dashboard.schema";
+export { dashboardRouter } from "./api/dashboard.router";
+export type { DashboardDateRange } from "./schemas/dashboard.shared-schema";

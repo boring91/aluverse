@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
-import { resolveUserAccess } from "@/features/rbac/queries/resolve-user-access";
-import { type Permission } from "@/features/rbac/schemas/rbac.schema";
+import { resolveUserAccessQuery } from "@/features/rbac/queries/resolve-user-access.query";
+import { type Permission } from "@/features/rbac/schemas/rbac.shared-schema";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -24,7 +24,7 @@ export const createTRPCContext = cache(async () => {
     };
   }
 
-  const access = await resolveUserAccess(authData.user.id);
+  const access = await resolveUserAccessQuery(authData.user.id);
 
   return {
     authData,

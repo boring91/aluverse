@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   projectStreams,
   transactionBudgetCategories,
@@ -25,8 +24,9 @@ import { CreateLoanPayoff, CreateLoanPayoffHandle } from "./create-loan-payoff";
 import { useLoanPayoffs } from "../hooks/use-loan-payoffs";
 import { formatCurrency } from "@/lib/utils";
 import { useStore } from "@tanstack/react-form";
+import type { useConsolidationForm } from "../hooks/use-consolidation-form";
 
-type FormApi = any;
+type FormApi = ReturnType<typeof useConsolidationForm>["form"];
 
 export type ConsolidationPrefillData = {
   date: Date;
@@ -71,7 +71,7 @@ export function DescriptionField({ form }: { form: FormApi }) {
   return (
     <form.AppField
       name="description"
-      children={(field: any) => <field.TextField label="Description" />}
+      children={(field) => <field.TextField label="Description" />}
     />
   );
 }
@@ -80,7 +80,7 @@ export function AmountField({ form }: { form: FormApi }) {
   return (
     <form.AppField
       name="amount"
-      children={(field: any) => <field.NumberField label="Amount" />}
+      children={(field) => <field.NumberField label="Amount" />}
     />
   );
 }
@@ -89,7 +89,7 @@ export function ConsolidationGroupField({ form }: { form: FormApi }) {
   return (
     <form.AppField
       name="consolidationGroup"
-      children={(field: any) => (
+      children={(field) => (
         <field.SelectField
           label="Consolidation group"
           items={transactionConsolidationGroups
@@ -98,7 +98,7 @@ export function ConsolidationGroupField({ form }: { form: FormApi }) {
               label: GROUP_LABELS[group],
             }))
             .sort((a, b) => a.label.localeCompare(b.label))}
-          onChange={(value: string) => {
+          onChange={(value) => {
             if (value !== "budget")
               form.setFieldValue("budgetCategory", undefined);
 
@@ -124,7 +124,7 @@ export function BudgetCategoryField({ form }: { form: FormApi }) {
   return (
     <form.AppField
       name="budgetCategory"
-      children={(field: any) => (
+      children={(field) => (
         <field.SelectField
           label="Budget category"
           items={transactionBudgetCategories.map((category) => ({
@@ -150,13 +150,10 @@ export const ProjectFields = forwardRef<
   ProjectFieldsHandle,
   ProjectFieldsProps
 >(({ form, prefillData }, ref) => {
-  const projectId = useStore(
-    form.store,
-    (state: any) => state.values.projectId
-  );
+  const projectId = useStore(form.store, (state) => state.values.projectId);
   const projectStream = useStore(
     form.store,
-    (state: any) => state.values.projectStream
+    (state) => state.values.projectStream
   );
 
   const trpc = useTRPC();
@@ -209,7 +206,7 @@ export const ProjectFields = forwardRef<
     <>
       <form.AppField
         name="projectId"
-        children={(field: any) => (
+        children={(field) => (
           <field.SelectField
             label="Project"
             items={
@@ -234,7 +231,7 @@ export const ProjectFields = forwardRef<
 
       <form.AppField
         name="projectStream"
-        children={(field: any) => (
+        children={(field) => (
           <field.SelectField
             label="Project stream"
             items={projectStreams.map((stream) => ({
@@ -247,11 +244,11 @@ export const ProjectFields = forwardRef<
 
       <form.AppField
         name="projectItemId"
-        children={(field: any) => (
+        children={(field) => (
           <field.SelectField
             label="Project item"
             items={
-              projectItems?.map((item: any) => ({
+              projectItems?.map((item) => ({
                 value: item.id,
                 label:
                   ("name" in item
@@ -296,11 +293,8 @@ export type LoanFieldsHandle = {
 
 export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
   ({ form, prefillData }, ref) => {
-    const loanId = useStore(form.store, (state: any) => state.values.loanId);
-    const isPayoff = useStore(
-      form.store,
-      (state: any) => state.values.isPayoff
-    );
+    const loanId = useStore(form.store, (state) => state.values.loanId);
+    const isPayoff = useStore(form.store, (state) => state.values.isPayoff);
 
     const trpc = useTRPC();
 
@@ -342,7 +336,7 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
       <>
         <form.AppField
           name="loanId"
-          children={(field: any) => (
+          children={(field) => (
             <field.SelectField
               label="Loan"
               items={
@@ -367,11 +361,11 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
 
         <form.AppField
           name="isPayoff"
-          children={(field: any) => (
+          children={(field) => (
             <field.CheckboxField
               label="Is payoff"
-              onChange={(checked: any) => {
-                if (!checked) {
+              onChange={(checked) => {
+                if (checked !== true) {
                   form.resetField("loanPayoffId");
                 }
               }}
@@ -382,7 +376,7 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
         {isPayoff && (
           <form.AppField
             name="loanPayoffId"
-            children={(field: any) => (
+            children={(field) => (
               <field.SelectField
                 label="Loan payoff"
                 items={
@@ -427,7 +421,7 @@ export function IsGstField({ form }: { form: FormApi }) {
   return (
     <form.AppField
       name="isGst"
-      children={(field: any) => <field.CheckboxField label="Is GST" />}
+      children={(field) => <field.CheckboxField label="Is GST" />}
     />
   );
 }

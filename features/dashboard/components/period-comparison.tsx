@@ -5,7 +5,7 @@ import { useTRPC } from "@/trpc/client";
 import { DashboardSection } from "./dashboard-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 import { cn } from "@/lib/client-utils";
 import { formatPercent, formatCurrency } from "@/lib/utils";
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";

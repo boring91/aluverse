@@ -12,7 +12,7 @@ import { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@/trpc/routers/_app";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
-import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 
 type Props = {
   dateRange: DashboardDateRange;

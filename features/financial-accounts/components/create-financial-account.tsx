@@ -17,7 +17,7 @@ import {
 import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { createFinancialAccountSchema } from "../schemas/financial-accounts.schema";
+import { createFinancialAccountSchema } from "../schemas/financial-accounts.shared-schema";
 import { banks } from "../lib/bank-syncer/constants";
 
 type Props = {

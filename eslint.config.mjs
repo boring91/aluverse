@@ -17,12 +17,49 @@ const eslintConfig = defineConfig([
     rules: {
       "prettier/prettier": "error",
       "react/no-children-prop": "off",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/consistent-type-definitions": ["error", "type"],
       "react/jsx-curly-brace-presence": [
         "error",
         {
           props: "never",
           children: "never",
           propElementValues: "always",
+        },
+      ],
+    },
+  },
+  {
+    files: ["db/types.d.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/consistent-type-definitions": "off",
+    },
+  },
+  {
+    files: ["features/**/queries/*.query.ts"],
+    rules: {
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: "function",
+          modifiers: ["exported"],
+          format: ["camelCase"],
+          custom: { regex: "Query$", match: true },
+        },
+      ],
+    },
+  },
+  {
+    files: ["features/**/mutations/*.mutation.ts"],
+    rules: {
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: "function",
+          modifiers: ["exported"],
+          format: ["camelCase"],
+          custom: { regex: "Mutation$", match: true },
         },
       ],
     },

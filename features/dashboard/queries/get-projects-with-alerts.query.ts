@@ -1,0 +1,35 @@
+import { db } from "@/db";
+import {
+  isProjectWithinRange,
+  projectAllocationOverrun,
+  projectCost,
+  projectDaysOverdue,
+} from "@/db/expressions";
+import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
+
+export async function getProjectsWithAlertsQuery(from?: Date, to?: Date) {
+  let query = db.selectFrom("projects");
+
+  query = query.where((eb) => isProjectWithinRange(eb, from, to));
+
+  return query
+    .where((eb) =>
+      eb.or([
+        eb(projectCost, ">", eb.ref("price")),
+        eb(projectDaysOverdue, ">", 1),
+        eb(projectAllocationOverrun, ">", 0),
+      ])
+    )
+    .select(projectListMapper)
+    .orderBy((eb) =>
+      eb
+        .case()
+        .when(projectCost, ">", eb.ref("price"))
+        .then(0)
+        .when(eb(projectDaysOverdue, ">", 0))
+        .then(1)
+        .else(2)
+        .end()
+    )
+    .execute();
+}

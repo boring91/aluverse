@@ -18,7 +18,7 @@ import {
 import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { createProjectSchema } from "../schemas/projects.schema";
+import { createProjectSchema } from "../schemas/projects.shared-schema";
 
 type SchemaType = z.infer<typeof createProjectSchema>;
 

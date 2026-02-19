@@ -19,7 +19,7 @@ import { loanTypes } from "@/lib/constants";
 import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { createLoanSchema } from "../schemas/loan.schemas";
+import { createLoanSchema } from "../schemas/loans.shared-schema";
 
 type SchemaType = z.infer<typeof createLoanSchema>;
 

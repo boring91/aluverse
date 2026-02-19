@@ -6,7 +6,7 @@ import { OverviewCard } from "./overview-card";
 import { DashboardSection } from "./dashboard-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 
 type Props = {
   dateRange: DashboardDateRange;

@@ -1,11 +1,11 @@
 import { ExpressionBuilder, Transaction } from "kysely";
 import { DB } from "@/db/types";
 import { InferMapper } from "@/lib/type";
-import { consolidationMapper } from "@/db/mappers";
+import { consolidationListMapper } from "@/shared/mappers/consolidations/consolidation-list.mapper";
 
 export async function updateConsolidationWithRelatedItem(
   tx: Transaction<DB>,
-  consolidation: InferMapper<typeof consolidationMapper>
+  consolidation: InferMapper<typeof consolidationListMapper>
 ) {
   const { projectStream, projectItemId } = consolidation;
 

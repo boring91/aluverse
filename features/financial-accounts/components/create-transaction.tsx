@@ -17,7 +17,7 @@ import {
 import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { createTransactionSchema } from "../schemas/transactions.schema";
+import { createTransactionSchema } from "../schemas/transactions.shared-schema";
 
 type Props = {
   open: boolean;

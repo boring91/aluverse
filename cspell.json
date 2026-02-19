@@ -28,7 +28,7 @@
     "frollo",
     "uuidv"
   ],
-  "ignoreWords": [],
+  "ignoreWords": ["idx"],
   "ignorePaths": [
     "node_modules/**",
     ".next/**",

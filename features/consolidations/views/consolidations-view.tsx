@@ -25,7 +25,7 @@ export const ConsolidationsView = () => {
           <AlertCircleIcon />
           <AlertTitle>Pending consolidations</AlertTitle>
           <AlertDescription>
-            {`You have \${statistics.pendingConsolidationCount} pending consolidations`}
+            {`You have ${statistics.pendingConsolidationCount} pending consolidations`}
           </AlertDescription>
         </Alert>
       )}

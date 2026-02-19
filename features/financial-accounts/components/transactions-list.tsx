@@ -22,7 +22,7 @@ import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
 import { useTransactionsColumns } from "../hooks/use-transactions-columns";
 import { ConsolidationsList } from "@/features/consolidations/components/consolidations-list";
-import { transactionFiltersSchema } from "../schemas/transactions.schema";
+import { transactionFiltersSchema } from "../schemas/transactions.shared-schema";
 import { NumberFilter } from "@/components/data-table/filters/number-filter";
 import {
   transactionBudgetCategories,

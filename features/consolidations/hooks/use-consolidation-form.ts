@@ -5,7 +5,7 @@ import { useAppForm } from "@/components/form/form-context";
 import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { createConsolidationSchema } from "../schemas/consolidations.schema";
+import { createConsolidationSchema } from "../schemas/consolidations.shared-schema";
 import { z } from "zod";
 
 type Props = {

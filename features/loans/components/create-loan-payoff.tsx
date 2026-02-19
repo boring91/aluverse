@@ -16,7 +16,7 @@ import {
 import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
-import { createLoanPayoffSchema } from "../schemas/loan-payoffs.schema";
+import { createLoanPayoffSchema } from "../schemas/loan-payoffs.shared-schema";
 
 type SchemaType = z.infer<typeof createLoanPayoffSchema>;
 

@@ -1,2 +1,2 @@
-export { rbacRouter } from "./api/router";
-export * from "./schemas/rbac.schema";
+export { rbacRouter } from "./api/rbac.router";
+export * from "./schemas/rbac.shared-schema";

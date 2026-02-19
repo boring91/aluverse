@@ -11,7 +11,7 @@ import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSection } from "./dashboard-section";
-import { DashboardDateRange } from "../schemas/dashboard.schema";
+import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 import { formatCurrency, stringsToNeutralColors } from "@/lib/utils";
 
 type Props = {
