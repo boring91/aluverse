@@ -226,7 +226,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange }) => {
     };
 
   return (
-    <div className="flex border rounded-lg items-center text-sm px-1">
+    <div className="flex border items-center text-sm px-1">
       <input
         type="text"
         ref={monthRef}
@@ -791,7 +791,9 @@ export const DateRange: FC<DateRangePickerProps> = ({
                 <Select
                   defaultValue={selectedPreset}
                   onValueChange={(value) => {
-                    setPreset(value);
+                    if (value) {
+                      setPreset(value);
+                    }
                   }}
                 >
                   <SelectTrigger className="w-[180px] mx-auto mb-2">

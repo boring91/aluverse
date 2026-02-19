@@ -29,6 +29,9 @@ export const EnumFilter = <T,>({
   placeholder,
 }: Props<T>) => {
   const allOptions: Option[] = [{ value: "all", label: "All" }, ...options];
+  const labelByValue = new Map(
+    allOptions.map((option) => [option.value, option.label])
+  );
 
   const value = control.value;
 
@@ -42,7 +45,13 @@ export const EnumFilter = <T,>({
         }
       >
         <SelectTrigger className="h-9 w-full">
-          <SelectValue placeholder={placeholder ?? "All"} />
+          <SelectValue placeholder={placeholder ?? "All"}>
+            {(selectedValue) =>
+              labelByValue.get((selectedValue as string) ?? "all") ??
+              placeholder ??
+              "All"
+            }
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {allOptions.map((option) => (

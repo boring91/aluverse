@@ -86,6 +86,10 @@ export function SelectField({
         <Select
           value={field.state.value ?? ""}
           onValueChange={(value) => {
+            if (value == null) {
+              return;
+            }
+
             if (value === CREATE_SENTINEL && onCreate) {
               onCreate();
               return;

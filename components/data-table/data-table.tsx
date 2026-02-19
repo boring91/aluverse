@@ -94,7 +94,7 @@ export const DataTable = <TData, TValue>({
     <div className="flex flex-col gap-4 h-full">
       <DataTableToolbar table={table} setOpenCreateSheet={setOpenCreateSheet} />
       {filtersSlot && <div>{filtersSlot}</div>}
-      <div className="rounded-md border h-full overflow-y-auto">
+      <div className="border h-full overflow-y-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

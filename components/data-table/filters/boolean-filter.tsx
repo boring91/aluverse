@@ -37,6 +37,9 @@ export const BooleanFilter = ({
     { value: "true", label: trueLabel ?? "Yes" },
     { value: "false", label: falseLabel ?? "No" },
   ];
+  const labelByValue = new Map(
+    options.map((option) => [option.value, option.label])
+  );
 
   const value = control.value;
 
@@ -50,7 +53,13 @@ export const BooleanFilter = ({
         }
       >
         <SelectTrigger className="h-9 w-full">
-          <SelectValue placeholder={placeholder ?? "All"} />
+          <SelectValue placeholder={placeholder ?? "All"}>
+            {(selectedValue) =>
+              labelByValue.get((selectedValue as string) ?? "all") ??
+              placeholder ??
+              "All"
+            }
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (

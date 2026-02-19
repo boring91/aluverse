@@ -1,11 +1,10 @@
-import { CheckedState } from "@radix-ui/react-checkbox";
 import { Checkbox } from "../ui/checkbox";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { useFieldContext } from "./form-context";
 
 type Props = {
   label: string;
-  onChange?: (checked: CheckedState) => void;
+  onChange?: (checked: boolean) => void;
 };
 
 export function CheckboxField({ label, onChange }: Props) {

@@ -171,10 +171,7 @@ export function AddressField({ label, placeholder }: Props) {
               onKeyDown={handleKeyDown}
             />
           </PopoverAnchor>
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] p-0"
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
+          <PopoverContent className="w-(--anchor-width) p-0">
             <Command>
               <CommandList>
                 {isLoading ? (
