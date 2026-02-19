@@ -37,6 +37,7 @@ import {
   ReceiptIcon,
   ShieldCheckIcon,
   UsersIcon,
+  WalletIcon,
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -77,6 +78,13 @@ const mainItems = [
     link: "/loans",
     icon: ReceiptIcon,
     permission: "loans.read" satisfies Permission,
+  },
+  {
+    id: "budget",
+    label: "Budget",
+    link: "/budgets",
+    icon: WalletIcon,
+    permission: "budgetCategories.read" satisfies Permission,
   },
 ] as const;
 

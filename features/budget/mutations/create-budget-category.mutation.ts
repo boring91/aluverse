@@ -10,5 +10,5 @@ export async function createBudgetCategoryMutation(
     .insertInto("budgetCategories")
     .values(budget)
     .returning(budgetCategoryListMapper)
-    .execute();
+    .executeTakeFirstOrThrow();
 }

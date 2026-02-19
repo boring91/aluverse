@@ -1,4 +1,6 @@
 import { createTRPCRouter } from "../init";
+import { budgetCategoriesRouter } from "@/features/budget/api/budget-categories.router";
+import { budgetCategoryAllocationsRouter } from "@/features/budget/api/budget-category-allocations.router";
 import { financialAccountsRouter } from "@/features/financial-accounts/api/financial-accounts.router";
 import { transactionsRouter } from "@/features/financial-accounts/api/transactions.router";
 import { consolidationsRouter } from "@/features/consolidations/api/consolidations.router";
@@ -14,6 +16,8 @@ import { rbacRouter } from "@/features/rbac/api/rbac.router";
 import { usersRouter } from "@/features/users/api/users.router";
 
 export const appRouter = createTRPCRouter({
+  budgetCategories: budgetCategoriesRouter,
+  budgetCategoryAllocations: budgetCategoryAllocationsRouter,
   financialAccounts: financialAccountsRouter,
   transactions: transactionsRouter,
   consolidations: consolidationsRouter,

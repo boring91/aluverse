@@ -19,6 +19,16 @@ export const permissions = [
   "consolidations.update",
   "consolidations.delete",
 
+  "budgetCategories.read",
+  "budgetCategories.create",
+  "budgetCategories.update",
+  "budgetCategories.delete",
+
+  "budgetCategoryAllocations.read",
+  "budgetCategoryAllocations.create",
+  "budgetCategoryAllocations.update",
+  "budgetCategoryAllocations.delete",
+
   "projects.read",
   "projects.create",
   "projects.update",

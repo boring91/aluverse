@@ -1,0 +1,54 @@
+import { db } from "@/db";
+import {
+  budgetCategoryAllocationCountMapper,
+  budgetCategoryAllocationListMapper,
+} from "@/shared/mappers/budget/budget-category-allocation-list.mapper";
+import { z } from "zod";
+import { listBudgetCategoryAllocationSchema } from "../schemas/budgets.shared-schema";
+
+export async function listBudgetCategoryAllocationsQuery(
+  input: z.infer<typeof listBudgetCategoryAllocationSchema>
+) {
+  const { budgetCategoryId, pagination, sorting } = input;
+
+  const baseQuery = db
+    .selectFrom("budgetCategoryAllocations")
+    .where("budgetCategoryId", "=", budgetCategoryId);
+  let query = baseQuery;
+
+  const [count, filteredCount] = await Promise.all([
+    baseQuery
+      .select(budgetCategoryAllocationCountMapper)
+      .executeTakeFirstOrThrow()
+      .then((x) => x.count),
+    query
+      .select(budgetCategoryAllocationCountMapper)
+      .executeTakeFirstOrThrow()
+      .then((x) => x.count),
+  ]);
+
+  sorting?.forEach((sort) => {
+    const dir = sort.desc ? "desc" : "asc";
+    switch (sort.id) {
+      case "effectiveDate":
+        query = query.orderBy("effectiveDate", dir);
+        break;
+      case "amount":
+        query = query.orderBy("amount", dir);
+        break;
+    }
+  });
+
+  query =
+    pagination.pageSize === -1
+      ? query
+      : query
+          .offset(pagination.pageIndex * pagination.pageSize)
+          .limit(pagination.pageSize);
+
+  const items = await query
+    .select(budgetCategoryAllocationListMapper)
+    .execute();
+
+  return { items, count, filteredCount };
+}

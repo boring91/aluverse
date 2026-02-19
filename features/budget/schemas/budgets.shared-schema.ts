@@ -1,6 +1,11 @@
-import { db } from "@/db";
 import { booleanFilterSchema, listSchema } from "@/lib/shared-schemas";
 import { z } from "zod";
+
+const budgetCategorySchema = z.object({
+  name: z.string().min(1),
+  humanId: z.string().min(1),
+  includingGst: z.boolean(),
+});
 
 export const budgetCategoryFiltersSchema = z.object({
   keyword: z.string().optional(),
@@ -11,46 +16,25 @@ export const listBudgetCategorySchema = listSchema.safeExtend({
   filters: budgetCategoryFiltersSchema.optional(),
 });
 
-export const createBudgetCategorySchema = z
-  .object({
-    name: z.string().min(1),
-    humanId: z.string().min(1),
-    includingGst: z.boolean(),
-  })
-  .superRefine(async (data, ctx) => {
-    const existingCategory = await db
-      .selectFrom("budgetCategories")
-      .where("humanId", "=", data.humanId)
-      .select(["id"])
-      .executeTakeFirst();
+export const createBudgetCategorySchema = budgetCategorySchema;
 
-    if (existingCategory) {
-      ctx.addIssue({
-        code: "custom",
-        params: {
-          code: "HUMAN_ID_NOT_AVAILABLE",
-        },
-        message: "HUMAN_ID_NOT_AVAILABLE",
-        path: ["humanId"],
-      });
-    }
-  });
-
-export const updateBudgetCategorySchema = createBudgetCategorySchema.safeExtend(
-  {
-    id: z.uuid(),
-  }
-);
+export const updateBudgetCategorySchema = budgetCategorySchema.safeExtend({
+  id: z.uuid(),
+});
 
 export const listBudgetCategoryAllocationSchema = listSchema.safeExtend({
   budgetCategoryId: z.uuid(),
 });
 
 export const createBudgetCategoryAllocationSchema = z.object({
-  budgetCategoryId: z.uuid(),
   amount: z.number().min(1),
   effectiveDate: z.date(),
 });
+
+export const createBudgetCategoryAllocationWithBudgetCategoryIdSchema =
+  createBudgetCategoryAllocationSchema.safeExtend({
+    budgetCategoryId: z.uuid(),
+  });
 
 export const updateBudgetCategoryAllocationSchema =
   createBudgetCategoryAllocationSchema.safeExtend({
