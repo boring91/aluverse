@@ -5,7 +5,7 @@ import {
   projectCompleted,
   projectInPlanning,
   projectInProgress,
-  unconsolidatedItemsCount,
+  unreconciledItemsCount,
 } from "@/shared/expressions/projects/project.expression";
 import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
 import { z } from "zod";
@@ -36,12 +36,12 @@ export async function listProjectsQuery(
     query = query.where("startDate", "<", filters.to);
   }
 
-  if (filters?.isConsolidated !== undefined && filters.isConsolidated) {
-    query = query.where((eb) => eb(unconsolidatedItemsCount, "=", 0));
+  if (filters?.isReconciled !== undefined && filters.isReconciled) {
+    query = query.where((eb) => eb(unreconciledItemsCount, "=", 0));
   }
 
-  if (filters?.isConsolidated !== undefined && !filters.isConsolidated) {
-    query = query.where((eb) => eb(unconsolidatedItemsCount, ">", 0));
+  if (filters?.isReconciled !== undefined && !filters.isReconciled) {
+    query = query.where((eb) => eb(unreconciledItemsCount, ">", 0));
   }
 
   switch (filters?.status) {

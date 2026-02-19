@@ -12,11 +12,11 @@ export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
   const [{ categories, allocatedByCategoryId }, spentRows] = await Promise.all([
     getBudgetAllocatedAmountByDateRangeQuery(from, to),
     db
-      .selectFrom("consolidations")
+      .selectFrom("reconciliations")
       .innerJoin("transactions", "transactions.id", "transactionId")
       .where((eb) =>
         eb.and([
-          eb("consolidationGroup", "=", "budget"),
+          eb("reconciliationGroup", "=", "budget"),
           eb("transactions.date", ">=", from),
           eb("transactions.date", "<", to),
         ])
@@ -25,7 +25,7 @@ export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
       .groupBy("budgetCategoryId")
       .select((eb) => [
         "budgetCategoryId",
-        eb.fn.sum<number>("consolidations.amount").as("spent"),
+        eb.fn.sum<number>("reconciliations.amount").as("spent"),
       ])
       .execute(),
   ]);

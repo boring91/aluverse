@@ -14,10 +14,10 @@ export const permissions = [
   "transactions.update",
   "transactions.delete",
 
-  "consolidations.read",
-  "consolidations.create",
-  "consolidations.update",
-  "consolidations.delete",
+  "reconciliations.read",
+  "reconciliations.create",
+  "reconciliations.update",
+  "reconciliations.delete",
 
   "budgetCategories.read",
   "budgetCategories.create",

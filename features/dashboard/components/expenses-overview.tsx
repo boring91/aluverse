@@ -69,13 +69,13 @@ export const ExpensesOverviewChart = ({ data }: ExpensesOverviewChartProps) => {
   const totalExpenses = (data || []).reduce((sum, item) => sum + item.total, 0);
 
   const colors = useMemo(() => {
-    return stringsToNeutralColors(data.map((x) => x.consolidationGroup));
+    return stringsToNeutralColors(data.map((x) => x.reconciliationGroup));
   }, [data]);
 
   const chartData = (data || []).map((item, index) => {
     const percent = totalExpenses > 0 ? (item.total / totalExpenses) * 100 : 0;
     return {
-      name: item.consolidationGroup,
+      name: item.reconciliationGroup,
       value: item.total,
       percent,
       fill: colors[index],

@@ -21,25 +21,25 @@ import {
 import { useConfirm } from "@/lib/confirm-context";
 import { parseAsString, useQueryState } from "nuqs";
 import { useTransactionsColumns } from "../hooks/use-transactions-columns";
-import { ConsolidationsList } from "@/features/consolidations/components/consolidations-list";
+import { ReconciliationsList } from "@/features/reconciliations/components/reconciliations-list";
 import { transactionFiltersSchema } from "../schemas/transactions.shared-schema";
 import { NumberFilter } from "@/components/data-table/filters/number-filter";
-import { transactionConsolidationGroups } from "@/lib/constants";
+import { transactionReconciliationGroups } from "@/lib/constants";
 import type { AppRouter } from "@/trpc/routers/_app";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 import { PageLoader } from "@/components/page-loader";
 
 type Props = {
-  mode: "account" | "consolidation";
+  mode: "account" | "reconciliation";
   accountId?: string;
 };
 
 type Transaction =
   inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
 
-const CONSOLIDATION_GROUP_LABELS: Record<
-  (typeof transactionConsolidationGroups)[number],
+const RECONCILIATION_GROUP_LABELS: Record<
+  (typeof transactionReconciliationGroups)[number],
   string
 > = {
   budget: "Budget",
@@ -61,23 +61,23 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const canDelete = hasPermission("transactions.delete");
   const canReadProjects = hasPermission("projects.read");
   const canReadBudgetCategories = hasPermission("budgetCategories.read");
-  const canManageConsolidations =
-    hasPermission("consolidations.read") ||
-    hasPermission("consolidations.create") ||
-    hasPermission("consolidations.update") ||
-    hasPermission("consolidations.delete");
+  const canManageReconciliations =
+    hasPermission("reconciliations.read") ||
+    hasPermission("reconciliations.create") ||
+    hasPermission("reconciliations.update") ||
+    hasPermission("reconciliations.delete");
 
   const [itemId, setItemId] = useQueryState("itemId", parseAsString);
-  const [consolidateId, setConsolidateId] = useQueryState(
-    "consolidateId",
+  const [reconcileId, setReconcileId] = useQueryState(
+    "reconcileId",
     parseAsString
   );
   const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
     new Set()
   );
   const [
-    selectedConsolidationTransaction,
-    setSelectedConsolidationTransaction,
+    selectedReconciliationTransaction,
+    setSelectedReconciliationTransaction,
   ] = useState<Transaction | null>(null);
 
   const handleDelete = (itemId: string) => {
@@ -157,16 +157,16 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const columns = useTransactionsColumns(
     canUpdate ? setItemId : undefined,
     canDelete ? handleDelete : undefined,
-    canManageConsolidations ? setConsolidateId : undefined,
+    canManageReconciliations ? setReconcileId : undefined,
     currentlyProcessing,
-    mode === "consolidation"
+    mode === "reconciliation"
   );
 
   const { data: projects } = useQuery(
     trpc.projects.list.queryOptions(
       {},
       {
-        enabled: canReadProjects && mode === "consolidation",
+        enabled: canReadProjects && mode === "reconciliation",
       }
     )
   );
@@ -177,16 +177,16 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         pagination: { pageSize: -1, pageIndex: 0 },
       },
       {
-        enabled: canReadBudgetCategories && mode === "consolidation",
+        enabled: canReadBudgetCategories && mode === "reconciliation",
       }
     )
   );
-  const resolvedConsolidationTransaction =
-    mode === "consolidation" && consolidateId
-      ? (data?.items.find((item) => item.id === consolidateId) ?? null)
+  const resolvedReconciliationTransaction =
+    mode === "reconciliation" && reconcileId
+      ? (data?.items.find((item) => item.id === reconcileId) ?? null)
       : null;
-  const consolidationTransaction =
-    resolvedConsolidationTransaction ?? selectedConsolidationTransaction;
+  const reconciliationTransaction =
+    resolvedReconciliationTransaction ?? selectedReconciliationTransaction;
 
   if (isPending) {
     return <PageLoader variant="inline" />;
@@ -228,22 +228,20 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         />
       )}
 
-      {mode === "consolidation" &&
-      canManageConsolidations &&
-      consolidationTransaction ? (
-        <ConsolidationsList
-          transaction={consolidationTransaction}
-          open={
-            !!consolidateId && consolidationTransaction.id === consolidateId
-          }
+      {mode === "reconciliation" &&
+      canManageReconciliations &&
+      reconciliationTransaction ? (
+        <ReconciliationsList
+          transaction={reconciliationTransaction}
+          open={!!reconcileId && reconciliationTransaction.id === reconcileId}
           onOpenChange={(open) => {
             if (!open) {
-              if (resolvedConsolidationTransaction) {
-                setSelectedConsolidationTransaction(
-                  resolvedConsolidationTransaction
+              if (resolvedReconciliationTransaction) {
+                setSelectedReconciliationTransaction(
+                  resolvedReconciliationTransaction
                 );
               }
-              setConsolidateId(null);
+              setReconcileId(null);
             }
           }}
         />
@@ -258,10 +256,10 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         }
         columnVisibility={{
           actions: mode === "account" && (canUpdate || canDelete),
-          consolidationActions:
-            mode === "consolidation" && canManageConsolidations,
-          isConsolidated: mode === "consolidation",
-          consolidationGroup: mode === "consolidation",
+          reconciliationActions:
+            mode === "reconciliation" && canManageReconciliations,
+          isReconciled: mode === "reconciliation",
+          reconciliationGroup: mode === "reconciliation",
         }}
         filtersSlot={
           <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
@@ -275,13 +273,13 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
 
             <NumberFilter label="To amount" control={filter.toAmount} />
 
-            {mode === "consolidation" && (
+            {mode === "reconciliation" && (
               <>
                 <BooleanFilter
-                  label="Consolidated"
-                  control={filter.isConsolidated}
-                  trueLabel="Consolidated"
-                  falseLabel="Not consolidated"
+                  label="Reconciled"
+                  control={filter.isReconciled}
+                  trueLabel="Reconciled"
+                  falseLabel="Not reconciled"
                 />
 
                 <BooleanFilter
@@ -292,11 +290,11 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                 />
 
                 <EnumFilter
-                  label="Consolidation group"
-                  control={filter.consolidationGroup}
-                  options={transactionConsolidationGroups.map((group) => ({
+                  label="Reconciliation group"
+                  control={filter.reconciliationGroup}
+                  options={transactionReconciliationGroups.map((group) => ({
                     value: group,
-                    label: CONSOLIDATION_GROUP_LABELS[group],
+                    label: RECONCILIATION_GROUP_LABELS[group],
                   }))}
                 />
 

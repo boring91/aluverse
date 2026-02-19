@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { pgEnum } from "drizzle-orm/pg-core";
 import { loanTypes } from "@/lib/constants";
-import { consolidations } from "./consolidations.schema";
+import { reconciliations } from "./reconciliations.schema";
 import { auditColumns } from "../utils";
 
 export const loanType = pgEnum("loan_type", loanTypes);
@@ -23,7 +23,7 @@ export const loans = pgTable("loans", {
   date: date({ mode: "date" }).notNull(),
   dueDate: date({ mode: "date" }),
   notes: text(),
-  consolidationId: uuid().references((): AnyPgColumn => consolidations.id, {
+  reconciliationId: uuid().references((): AnyPgColumn => reconciliations.id, {
     onDelete: "set null",
   }),
   ...auditColumns,
@@ -37,7 +37,7 @@ export const loanPayoffs = pgTable("loan_payoffs", {
   amount: integer().notNull(), // in cents
   date: date({ mode: "date" }).notNull(),
   notes: text(),
-  consolidationId: uuid().references((): AnyPgColumn => consolidations.id, {
+  reconciliationId: uuid().references((): AnyPgColumn => reconciliations.id, {
     onDelete: "set null",
   }),
   ...auditColumns,

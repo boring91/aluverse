@@ -1,4 +1,4 @@
-export const transactionConsolidationGroups = [
+export const transactionReconciliationGroups = [
   "budget",
   "project",
   "loan",

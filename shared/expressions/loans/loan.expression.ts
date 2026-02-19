@@ -14,24 +14,20 @@ export const loanPaid = (eb: ExpressionBuilder<DB, "loans">) => {
 export const loanRemaining = (eb: ExpressionBuilder<DB, "loans">) =>
   eb("amount", "-", loanPaid(eb)).$notNull();
 
-export const isLoanConsolidated = (eb: ExpressionBuilder<DB, "loans">) => {
-  return eb("consolidationId", "is not", null).$notNull();
+export const isLoanReconciled = (eb: ExpressionBuilder<DB, "loans">) => {
+  return eb("reconciliationId", "is not", null).$notNull();
 };
 
-export const isLoanPayoffConsolidated = (
+export const isLoanPayoffReconciled = (
   eb: ExpressionBuilder<DB, "loanPayoffs">
 ) => {
-  return eb("consolidationId", "is not", null).$notNull();
+  return eb("reconciliationId", "is not", null).$notNull();
 };
 
-export const unconsolidatedPayoffsCount = (
-  eb: ExpressionBuilder<DB, "loans">
-) =>
+export const unreconciledPayoffsCount = (eb: ExpressionBuilder<DB, "loans">) =>
   eb
     .selectFrom("loanPayoffs")
     .whereRef("loanPayoffs.loanId", "=", "loans.id")
-    .where("consolidationId", "is", null)
-    .select((sub) =>
-      sub.fn.count<number>("id").as("unconsolidatedPayoffsCount")
-    )
+    .where("reconciliationId", "is", null)
+    .select((sub) => sub.fn.count<number>("id").as("unreconciledPayoffsCount"))
     .$asScalar();

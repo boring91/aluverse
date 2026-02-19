@@ -51,7 +51,7 @@ export function CreateTransaction({
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
         queryClient.invalidateQueries(
-          trpc.consolidations.statistics.queryOptions()
+          trpc.reconciliations.statistics.queryOptions()
         );
         queryClient.invalidateQueries(
           trpc.financialAccounts.list.queryOptions()
@@ -78,7 +78,7 @@ export function CreateTransaction({
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.transactions.list.queryOptions({}));
         queryClient.invalidateQueries(
-          trpc.consolidations.statistics.queryOptions()
+          trpc.reconciliations.statistics.queryOptions()
         );
         queryClient.invalidateQueries(
           trpc.financialAccounts.list.queryOptions()

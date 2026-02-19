@@ -3,7 +3,7 @@ import {
   DataTableActions,
 } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
-import { ConsolidationGroupBadge } from "@/features/consolidations/components/consolidation-group-badge";
+import { ReconciliationGroupBadge } from "@/features/reconciliations/components/reconciliation-group-badge";
 import { cn } from "@/lib/client-utils";
 import { formatCurrency } from "@/lib/utils";
 import type { AppRouter } from "@/trpc/routers/_app";
@@ -18,9 +18,9 @@ type Transaction =
 export const useTransactionsColumns = (
   handleUpdate: ((itemId: string) => void) | undefined,
   handleDelete: ((itemId: string) => void) | undefined,
-  handleConsolidation: ((itemId: string) => void) | undefined,
+  handleReconciliation: ((itemId: string) => void) | undefined,
   currentlyProcessing: Set<string>,
-  isConsolidationMode: boolean
+  isReconciliationMode: boolean
 ) => {
   return useMemo<ColumnDef<Transaction>[]>(() => {
     return [
@@ -44,7 +44,7 @@ export const useTransactionsColumns = (
               <p className="wrap-break-word whitespace-normal">
                 {item.description}
               </p>
-              {isConsolidationMode && (
+              {isReconciliationMode && (
                 <p className="text-muted-foreground text-xs">
                   {item.account.name}
                 </p>
@@ -90,13 +90,13 @@ export const useTransactionsColumns = (
         },
       },
 
-      // Consolidation-specific columns:
+      // Reconciliation-specific columns:
       {
-        id: "isConsolidated",
+        id: "isReconciled",
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Is consolidated"
+            title="Is reconciled"
             className="text-center"
           />
         ),
@@ -104,17 +104,17 @@ export const useTransactionsColumns = (
           const item = row.original;
           return (
             <div className="flex items-center justify-center flex-col gap-2">
-              {item.isConsolidated ? (
+              {item.isReconciled ? (
                 <CheckIcon className="text-emerald-500" size={16} />
               ) : (
                 <XIcon className="text-rose-500" size={16} />
               )}
 
-              {item.amount !== item.consolidatedAmount && (
+              {item.amount !== item.reconciledAmount && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <HourglassIcon size={10} />
                   <span className="font-mono">
-                    {formatCurrency(item.amount - item.consolidatedAmount)}
+                    {formatCurrency(item.amount - item.reconciledAmount)}
                   </span>
                 </p>
               )}
@@ -123,52 +123,52 @@ export const useTransactionsColumns = (
         },
       },
       {
-        id: "consolidationGroup",
+        id: "reconciliationGroup",
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
             className="text-center"
-            title="Consolidation group"
+            title="Reconciliation group"
           />
         ),
         cell: ({ row }) => {
           const item = row.original;
-          return item.consolidations.length === 1 ? (
+          return item.reconciliations.length === 1 ? (
             <div className="flex flex-col gap-1 items-center">
               {/* Group */}
-              <ConsolidationGroupBadge
-                group={item.consolidations[0].consolidationGroup}
+              <ReconciliationGroupBadge
+                group={item.reconciliations[0].reconciliationGroup}
               />
 
               {/* Extra details */}
               <div className="text-xs text-muted-foreground flex gap-2">
-                {item.consolidations[0].project && (
-                  <span>{item.consolidations[0].project.humanId}</span>
+                {item.reconciliations[0].project && (
+                  <span>{item.reconciliations[0].project.humanId}</span>
                 )}
-                {item.consolidations[0].budgetCategory && (
-                  <span>{item.consolidations[0].budgetCategory.name}</span>
+                {item.reconciliations[0].budgetCategory && (
+                  <span>{item.reconciliations[0].budgetCategory.name}</span>
                 )}
-                {item.consolidations[0].isGst && <span>with GST</span>}
+                {item.reconciliations[0].isGst && <span>with GST</span>}
               </div>
             </div>
-          ) : item.consolidations.length > 1 ? (
+          ) : item.reconciliations.length > 1 ? (
             <p className="text-xs text-muted-foreground flex items-center justify-center">
-              {`${item.consolidations.length} consolidations`}
+              {`${item.reconciliations.length} reconciliations`}
             </p>
           ) : null;
         },
       },
       {
-        id: "consolidationActions",
+        id: "reconciliationActions",
         cell: ({ row }) => {
           const item = row.original;
           return (
             <div className="flex items-center gap-2">
-              {handleConsolidation ? (
+              {handleReconciliation ? (
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={() => handleConsolidation(item.id)}
+                  onClick={() => handleReconciliation(item.id)}
                 >
                   <ChartPie />
                 </Button>
@@ -181,8 +181,8 @@ export const useTransactionsColumns = (
   }, [
     currentlyProcessing,
     handleDelete,
-    handleConsolidation,
+    handleReconciliation,
     handleUpdate,
-    isConsolidationMode,
+    isReconciliationMode,
   ]);
 };

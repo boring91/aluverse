@@ -11,13 +11,13 @@ export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
   to = to ?? nextMonth;
 
   const query = db
-    .selectFrom("consolidations")
+    .selectFrom("reconciliations")
     .innerJoin("transactions", "transactions.id", "transactionId")
     .where((eb) =>
       eb.and([
         eb("transactions.date", ">=", from),
         eb("transactions.date", "<", to),
-        eb("consolidationGroup", "=", "budget"),
+        eb("reconciliationGroup", "=", "budget"),
       ])
     );
 
@@ -25,7 +25,7 @@ export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
     await query
       .select((eb) => [
         eb.fn
-          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
           .as("total"),
       ])
       .executeTakeFirstOrThrow()

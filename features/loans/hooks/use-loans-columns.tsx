@@ -93,11 +93,11 @@ export const useLoansColumns = (
         },
       },
       {
-        id: "isConsolidated",
+        id: "isReconciled",
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Is consolidated"
+            title="Is reconciled"
             className="text-center"
           />
         ),
@@ -105,7 +105,7 @@ export const useLoansColumns = (
           const loan = row.original;
           return (
             <div className="flex items-center justify-center">
-              {loan.isConsolidated ? (
+              {loan.isReconciled ? (
                 <CheckIcon className="text-emerald-500" />
               ) : (
                 <XIcon className="text-rose-500" />
@@ -115,11 +115,11 @@ export const useLoansColumns = (
         },
       },
       {
-        id: "unconsolidatedPayoffCount",
+        id: "unreconciledPayoffCount",
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Unconsolidated payoffs"
+            title="Unreconciled payoffs"
             className="text-center"
           />
         ),
@@ -127,7 +127,7 @@ export const useLoansColumns = (
           const loan = row.original;
           return (
             <p className="text-muted-foreground text-xs text-center">
-              {loan.unconsolidatedPayoffCount}
+              {loan.unreconciledPayoffCount}
             </p>
           );
         },

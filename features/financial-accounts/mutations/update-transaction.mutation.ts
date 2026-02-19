@@ -18,10 +18,10 @@ export async function updateTransactionMutation(
       throw new Error("Transaction not found");
     }
 
-    // If the amount is being updated and actually changed, remove associated consolidations
+    // If the amount is being updated and actually changed, remove associated reconciliations
     if (data.amount !== oldTransaction.amount) {
       await tx
-        .deleteFrom("consolidations")
+        .deleteFrom("reconciliations")
         .where("transactionId", "=", data.id)
         .execute();
     }

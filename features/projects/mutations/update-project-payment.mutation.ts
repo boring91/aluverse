@@ -6,20 +6,20 @@ export async function updateProjectPaymentMutation(
   data: z.infer<typeof updateProjectPaymentSchema>
 ) {
   return await db.transaction().execute(async (tx) => {
-    // Get the current payment to check for consolidationId and current amount
+    // Get the current payment to check for reconciliationId and current amount
     const payment = await tx
       .selectFrom("projectPayments")
-      .select(["consolidationId", "amount"])
+      .select(["reconciliationId", "amount"])
       .where("id", "=", data.id)
       .executeTakeFirstOrThrow();
 
-    // Only delete consolidation if amount has changed
+    // Only delete reconciliation if amount has changed
     const amountChanged = data.amount !== payment.amount;
 
-    if (payment.consolidationId && amountChanged) {
+    if (payment.reconciliationId && amountChanged) {
       await tx
-        .deleteFrom("consolidations")
-        .where("id", "=", payment.consolidationId)
+        .deleteFrom("reconciliations")
+        .where("id", "=", payment.reconciliationId)
         .execute();
     }
 

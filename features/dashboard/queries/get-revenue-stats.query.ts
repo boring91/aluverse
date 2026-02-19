@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { consolidationRevenue } from "@/shared/expressions/consolidations/consolidation.expression";
+import { reconciliationRevenue } from "@/shared/expressions/reconciliations/reconciliation.expression";
 import {
   getMonth,
   getYear,
@@ -30,11 +30,11 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
 
   const currentMonthRevenue = (
     await db
-      .selectFrom("consolidations")
+      .selectFrom("reconciliations")
       .innerJoin(
         "transactions",
         "transactions.id",
-        "consolidations.transactionId"
+        "reconciliations.transactionId"
       )
       .where((eb) =>
         eb.and([
@@ -42,10 +42,10 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
           eb("transactions.date", "<", currentPeriod.to),
         ])
       )
-      .where(consolidationRevenue)
+      .where(reconciliationRevenue)
       .select((eb) => [
         eb.fn
-          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
           .as("total"),
       ])
       .executeTakeFirstOrThrow()
@@ -53,11 +53,11 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
 
   const previousMonthRevenue = (
     await db
-      .selectFrom("consolidations")
+      .selectFrom("reconciliations")
       .innerJoin(
         "transactions",
         "transactions.id",
-        "consolidations.transactionId"
+        "reconciliations.transactionId"
       )
       .where((eb) =>
         eb.and([
@@ -65,28 +65,28 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
           eb("transactions.date", "<", previousPeriod.to),
         ])
       )
-      .where(consolidationRevenue)
+      .where(reconciliationRevenue)
       .select((eb) => [
         eb.fn
-          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
           .as("total"),
       ])
       .executeTakeFirstOrThrow()
   ).total;
 
   const revenueTrend = await db
-    .selectFrom("consolidations")
+    .selectFrom("reconciliations")
     .innerJoin(
       "transactions",
       "transactions.id",
-      "consolidations.transactionId"
+      "reconciliations.transactionId"
     )
     .where("date", ">=", oneYearAgo)
-    .where(consolidationRevenue)
+    .where(reconciliationRevenue)
     .groupBy((eb) => [getYear(eb.ref("date")), getMonth(eb.ref("date"))])
     .select((eb) => [
       eb.fn
-        .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+        .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
         .as("revenue"),
       getMonth(eb.ref("date")).as("month"),
       getYear(eb.ref("date")).as("year"),

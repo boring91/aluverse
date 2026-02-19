@@ -6,20 +6,20 @@ export async function updateLoanMutation(
   data: z.infer<typeof updateLoanSchema>
 ) {
   return await db.transaction().execute(async (tx) => {
-    // Get the current loan to check for consolidationId and current amount
+    // Get the current loan to check for reconciliationId and current amount
     const loan = await tx
       .selectFrom("loans")
-      .select(["consolidationId", "amount"])
+      .select(["reconciliationId", "amount"])
       .where("id", "=", data.id)
       .executeTakeFirstOrThrow();
 
-    // Only delete consolidation if amount has changed
+    // Only delete reconciliation if amount has changed
     const amountChanged = data.amount !== loan.amount;
 
-    if (loan.consolidationId && amountChanged) {
+    if (loan.reconciliationId && amountChanged) {
       await tx
-        .deleteFrom("consolidations")
-        .where("id", "=", loan.consolidationId)
+        .deleteFrom("reconciliations")
+        .where("id", "=", loan.reconciliationId)
         .execute();
     }
 

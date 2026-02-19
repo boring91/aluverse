@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 
 export async function deleteBudgetCategoryMutation(id: string) {
   const inUse = await db
-    .selectFrom("consolidations")
+    .selectFrom("reconciliations")
     .where("budgetCategoryId", "=", id)
     .select((eb) => eb.fn.count<number>("id").as("count"))
     .executeTakeFirstOrThrow();

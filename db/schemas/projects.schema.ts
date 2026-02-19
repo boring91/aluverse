@@ -7,7 +7,7 @@ import {
   doublePrecision,
   integer,
 } from "drizzle-orm/pg-core";
-import { consolidations } from "./consolidations.schema";
+import { reconciliations } from "./reconciliations.schema";
 import { auditColumns } from "../utils";
 
 // Projects
@@ -36,7 +36,7 @@ export const projectSupplies = pgTable("project_supplies", {
   name: varchar({ length: 1024 }).notNull(),
   quantity: integer().notNull(),
   unitPrice: integer().notNull(), // in cents
-  consolidationId: uuid().references(() => consolidations.id, {
+  reconciliationId: uuid().references(() => reconciliations.id, {
     onDelete: "set null",
   }),
   ...auditColumns,
@@ -50,7 +50,7 @@ export const projectLabors = pgTable("project_labors", {
   name: varchar({ length: 1024 }).notNull(),
   hours: integer().notNull(),
   rate: integer().notNull(), // in cents per hour
-  consolidationId: uuid().references(() => consolidations.id, {
+  reconciliationId: uuid().references(() => reconciliations.id, {
     onDelete: "set null",
   }),
   ...auditColumns,
@@ -63,7 +63,7 @@ export const projectMisc = pgTable("project_misc", {
     .notNull(),
   name: varchar({ length: 1024 }).notNull(),
   amount: integer().notNull(), // in cents
-  consolidationId: uuid().references(() => consolidations.id, {
+  reconciliationId: uuid().references(() => reconciliations.id, {
     onDelete: "set null",
   }),
   ...auditColumns,
@@ -76,7 +76,7 @@ export const projectPayments = pgTable("project_payments", {
     .notNull(),
   amount: integer().notNull(), // in cents
   date: date({ mode: "date" }).notNull(),
-  consolidationId: uuid().references(() => consolidations.id, {
+  reconciliationId: uuid().references(() => reconciliations.id, {
     onDelete: "set null",
   }),
   ...auditColumns,

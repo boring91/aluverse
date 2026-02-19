@@ -3,10 +3,10 @@ import { db } from "@/db";
 import { listTransactionSchema } from "../schemas/transactions.shared-schema";
 import {
   hasBudgetCategoryId,
-  hasConsolidationGroup,
+  hasReconciliationGroup,
   hasGst,
   hasProject,
-  isTransactionConsolidated,
+  isTransactionReconciled,
 } from "@/shared/expressions/transactions/transaction.expression";
 import { transactionListMapper } from "@/shared/mappers/transactions/transaction-list.mapper";
 
@@ -41,9 +41,9 @@ export async function listTransactionsQuery(
     query = query.where((eb) => eb("amount", "<", filters.toAmount!));
   }
 
-  if (filters?.isConsolidated !== undefined) {
+  if (filters?.isReconciled !== undefined) {
     query = query.where((eb) =>
-      eb(isTransactionConsolidated(eb), "=", filters.isConsolidated!)
+      eb(isTransactionReconciled(eb), "=", filters.isReconciled!)
     );
   }
 
@@ -51,9 +51,9 @@ export async function listTransactionsQuery(
     query = query.where((eb) => eb(hasGst(eb), "=", filters.hasGst!));
   }
 
-  if (filters?.consolidationGroup) {
+  if (filters?.reconciliationGroup) {
     query = query.where((eb) =>
-      eb(hasConsolidationGroup(eb, filters.consolidationGroup!), "=", true)
+      eb(hasReconciliationGroup(eb, filters.reconciliationGroup!), "=", true)
     );
   }
 

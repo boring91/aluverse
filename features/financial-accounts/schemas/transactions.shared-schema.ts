@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { transactionConsolidationGroups } from "@/lib/constants";
+import { transactionReconciliationGroups } from "@/lib/constants";
 import { listSchema, booleanFilterSchema } from "@/lib/shared-schemas";
 
 export const transactionFiltersSchema = z.object({
@@ -8,9 +8,9 @@ export const transactionFiltersSchema = z.object({
   to: z.date().optional(),
   fromAmount: z.number().optional(),
   toAmount: z.number().optional(),
-  isConsolidated: booleanFilterSchema.optional(),
+  isReconciled: booleanFilterSchema.optional(),
   hasGst: booleanFilterSchema.optional(),
-  consolidationGroup: z.enum(transactionConsolidationGroups).optional(),
+  reconciliationGroup: z.enum(transactionReconciliationGroups).optional(),
   budgetCategoryId: z.uuid().optional(),
   projectId: z.string().optional(),
 });

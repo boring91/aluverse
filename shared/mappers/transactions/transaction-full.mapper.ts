@@ -1,7 +1,7 @@
 import { DB } from "@/db/types";
 import {
-  consolidatedAmount,
-  isTransactionConsolidated,
+  reconciledAmount,
+  isTransactionReconciled,
 } from "@/shared/expressions/transactions/transaction.expression";
 import { jsonArrayFrom, jsonObjectFrom } from "@/db/json-helpers";
 import { ExpressionBuilder, SelectExpression } from "kysely";
@@ -14,8 +14,8 @@ export const transactionFullMapper = (
     "date",
     "amount",
     "description",
-    isTransactionConsolidated(eb).as("isConsolidated"),
-    consolidatedAmount(eb).as("consolidatedAmount"),
+    isTransactionReconciled(eb).as("isReconciled"),
+    reconciledAmount(eb).as("reconciledAmount"),
     jsonObjectFrom(
       eb
         .selectFrom("financialAccounts")
@@ -26,11 +26,11 @@ export const transactionFullMapper = (
       .as("account"),
     jsonArrayFrom(
       eb
-        .selectFrom("consolidations")
-        .whereRef("consolidations.transactionId", "=", "transactions.id")
+        .selectFrom("reconciliations")
+        .whereRef("reconciliations.transactionId", "=", "transactions.id")
         .select((y) => [
           "id",
-          "consolidationGroup",
+          "reconciliationGroup",
           "description",
           "isGst",
           "budgetCategoryId",
@@ -41,16 +41,16 @@ export const transactionFullMapper = (
               .whereRef(
                 "budgetCategories.id",
                 "=",
-                "consolidations.budgetCategoryId"
+                "reconciliations.budgetCategoryId"
               )
               .select(["id", "humanId", "name", "includingGst"])
           ).as("budgetCategory"),
           jsonObjectFrom(
             y
               .selectFrom("projects")
-              .whereRef("projects.id", "=", "consolidations.projectId")
+              .whereRef("projects.id", "=", "reconciliations.projectId")
               .select(["id", "humanId", "title"])
           ).as("project"),
         ])
-    ).as("consolidations"),
+    ).as("reconciliations"),
   ] satisfies SelectExpression<DB, "transactions">[];

@@ -79,19 +79,19 @@ const useColumns = (
       },
 
       {
-        id: "isConsolidated",
+        id: "isReconciled",
         header: ({ column }) => (
           <DataTableColumnHeader
             className="text-center"
             column={column}
-            title="Is consolidated"
+            title="Is reconciled"
           />
         ),
         cell: ({ row }) => {
           const item = row.original;
           return (
             <p className="flex items-center justify-center">
-              {item.isConsolidated ? (
+              {item.isReconciled ? (
                 <CheckIcon className="text-emerald-500" />
               ) : (
                 <XIcon className="text-rose-500" />

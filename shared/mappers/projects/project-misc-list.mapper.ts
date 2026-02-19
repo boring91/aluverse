@@ -8,5 +8,5 @@ export const projectMiscListMapper = (
     "id",
     "name",
     "amount",
-    eb("consolidationId", "is not", null).as("isConsolidated"),
+    eb("reconciliationId", "is not", null).as("isReconciled"),
   ] satisfies SelectExpression<DB, "projectMisc">[];

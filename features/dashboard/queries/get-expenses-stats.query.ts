@@ -4,16 +4,16 @@ import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 export async function getExpensesStatsQuery(input: DashboardDateRange) {
   const { from, to } = input;
 
-  // Get expenses by consolidation group
-  // Expenses are consolidations with consolidationGroup that represents expenses
+  // Get expenses by reconciliation group
+  // Expenses are reconciliations with reconciliationGroup that represents expenses
   let expensesQuery = db
-    .selectFrom("consolidations")
+    .selectFrom("reconciliations")
     .innerJoin(
       "transactions",
       "transactions.id",
-      "consolidations.transactionId"
+      "reconciliations.transactionId"
     )
-    .where((eb) => eb("consolidations.amount", "<", eb.lit(0)));
+    .where((eb) => eb("reconciliations.amount", "<", eb.lit(0)));
 
   if (from) {
     expensesQuery = expensesQuery.where("transactions.date", ">=", from);
@@ -22,17 +22,17 @@ export async function getExpensesStatsQuery(input: DashboardDateRange) {
     expensesQuery = expensesQuery.where("transactions.date", "<", to);
   }
 
-  // Group by consolidationGroup and sum amounts
+  // Group by reconciliationGroup and sum amounts
   const expensesByGroup = await expensesQuery
     .select((eb) => [
-      "consolidations.consolidationGroup",
-      eb.fn.sum<number>("consolidations.amount").as("total"),
+      "reconciliations.reconciliationGroup",
+      eb.fn.sum<number>("reconciliations.amount").as("total"),
     ])
-    .groupBy("consolidations.consolidationGroup")
+    .groupBy("reconciliations.reconciliationGroup")
     .execute();
 
   return expensesByGroup.map((item) => ({
-    consolidationGroup: item.consolidationGroup,
+    reconciliationGroup: item.reconciliationGroup,
     total: item.total ?? 0,
   }));
 }

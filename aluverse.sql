@@ -29,10 +29,10 @@ CREATE SCHEMA drizzle;
 ALTER SCHEMA drizzle OWNER TO postgres;
 
 --
--- Name: consolidation_budget_category; Type: TYPE; Schema: public; Owner: postgres
+-- Name: reconciliation_budget_category; Type: TYPE; Schema: public; Owner: postgres
 --
 
-CREATE TYPE public.consolidation_budget_category AS ENUM (
+CREATE TYPE public.reconciliation_budget_category AS ENUM (
     'subscription',
     'consumable',
     'toll',
@@ -43,13 +43,13 @@ CREATE TYPE public.consolidation_budget_category AS ENUM (
 );
 
 
-ALTER TYPE public.consolidation_budget_category OWNER TO postgres;
+ALTER TYPE public.reconciliation_budget_category OWNER TO postgres;
 
 --
--- Name: consolidation_group; Type: TYPE; Schema: public; Owner: postgres
+-- Name: reconciliation_group; Type: TYPE; Schema: public; Owner: postgres
 --
 
-CREATE TYPE public.consolidation_group AS ENUM (
+CREATE TYPE public.reconciliation_group AS ENUM (
     'budget',
     'project',
     'loan',
@@ -60,13 +60,13 @@ CREATE TYPE public.consolidation_group AS ENUM (
 );
 
 
-ALTER TYPE public.consolidation_group OWNER TO postgres;
+ALTER TYPE public.reconciliation_group OWNER TO postgres;
 
 --
--- Name: consolidation_project_stream; Type: TYPE; Schema: public; Owner: postgres
+-- Name: reconciliation_project_stream; Type: TYPE; Schema: public; Owner: postgres
 --
 
-CREATE TYPE public.consolidation_project_stream AS ENUM (
+CREATE TYPE public.reconciliation_project_stream AS ENUM (
     'supplies',
     'labors',
     'misc',
@@ -74,7 +74,7 @@ CREATE TYPE public.consolidation_project_stream AS ENUM (
 );
 
 
-ALTER TYPE public.consolidation_project_stream OWNER TO postgres;
+ALTER TYPE public.reconciliation_project_stream OWNER TO postgres;
 
 --
 -- Name: financial_account_bank_syncers; Type: TYPE; Schema: public; Owner: postgres
@@ -192,33 +192,33 @@ CREATE TABLE public.accounts (
 ALTER TABLE public.accounts OWNER TO postgres;
 
 --
--- Name: consolidations; Type: TABLE; Schema: public; Owner: postgres
+-- Name: reconciliations; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.consolidations (
+CREATE TABLE public.reconciliations (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     transaction_id uuid NOT NULL,
     amount integer NOT NULL,
     is_gst boolean NOT NULL,
-    consolidation_group public.consolidation_group NOT NULL,
-    budget_category public.consolidation_budget_category,
+    reconciliation_group public.reconciliation_group NOT NULL,
+    budget_category public.reconciliation_budget_category,
     project_id uuid,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     description character varying(1024),
-    project_stream public.consolidation_project_stream,
+    project_stream public.reconciliation_project_stream,
     project_item_id uuid,
     loan_id uuid,
     is_payoff boolean,
     loan_payoff_id uuid,
-    CONSTRAINT budget_category_check_constraint CHECK (((consolidation_group <> 'budget'::public.consolidation_group) OR (budget_category IS NOT NULL))),
-    CONSTRAINT loan_id_check_constraint CHECK (((consolidation_group <> 'loan'::public.consolidation_group) OR (loan_id IS NOT NULL))),
+    CONSTRAINT budget_category_check_constraint CHECK (((reconciliation_group <> 'budget'::public.reconciliation_group) OR (budget_category IS NOT NULL))),
+    CONSTRAINT loan_id_check_constraint CHECK (((reconciliation_group <> 'loan'::public.reconciliation_group) OR (loan_id IS NOT NULL))),
     CONSTRAINT loan_payoff_check_constraint CHECK (((is_payoff IS NOT TRUE) OR (loan_payoff_id IS NOT NULL))),
-    CONSTRAINT project_id_check_constraint CHECK (((consolidation_group <> 'project'::public.consolidation_group) OR (project_id IS NOT NULL)))
+    CONSTRAINT project_id_check_constraint CHECK (((reconciliation_group <> 'project'::public.reconciliation_group) OR (project_id IS NOT NULL)))
 );
 
 
-ALTER TABLE public.consolidations OWNER TO postgres;
+ALTER TABLE public.reconciliations OWNER TO postgres;
 
 --
 -- Name: financial_accounts; Type: TABLE; Schema: public; Owner: postgres
@@ -245,7 +245,7 @@ CREATE TABLE public.loan_payoffs (
     amount integer NOT NULL,
     date date NOT NULL,
     notes text,
-    consolidation_id uuid,
+    reconciliation_id uuid,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -265,7 +265,7 @@ CREATE TABLE public.loans (
     date date NOT NULL,
     due_date date,
     notes text,
-    consolidation_id uuid,
+    reconciliation_id uuid,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -283,7 +283,7 @@ CREATE TABLE public.project_labors (
     name character varying(1024) NOT NULL,
     hours integer NOT NULL,
     rate integer NOT NULL,
-    consolidation_id uuid,
+    reconciliation_id uuid,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -300,7 +300,7 @@ CREATE TABLE public.project_misc (
     project_id uuid NOT NULL,
     name character varying(1024) NOT NULL,
     amount integer NOT NULL,
-    consolidation_id uuid,
+    reconciliation_id uuid,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -317,7 +317,7 @@ CREATE TABLE public.project_payments (
     project_id uuid NOT NULL,
     amount integer NOT NULL,
     date date NOT NULL,
-    consolidation_id uuid,
+    reconciliation_id uuid,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -335,7 +335,7 @@ CREATE TABLE public.project_supplies (
     name character varying(1024) NOT NULL,
     quantity integer NOT NULL,
     unit_price integer NOT NULL,
-    consolidation_id uuid,
+    reconciliation_id uuid,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -492,10 +492,10 @@ YSIUWOHpekYvzMmvHpSpza8Wp0n06iIa	3NX2lECU7OVtmknBHeYAiJmwNOPN2ROf	credential	3NX
 
 
 --
--- Data for Name: consolidations; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: reconciliations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.consolidations (id, transaction_id, amount, is_gst, consolidation_group, budget_category, project_id, created_at, updated_at, description, project_stream, project_item_id, loan_id, is_payoff, loan_payoff_id) FROM stdin;
+COPY public.reconciliations (id, transaction_id, amount, is_gst, reconciliation_group, budget_category, project_id, created_at, updated_at, description, project_stream, project_item_id, loan_id, is_payoff, loan_payoff_id) FROM stdin;
 161fac6f-b40b-4460-be26-ccff0ac076e6	fc6b569c-d662-49b7-9366-da6d2de45928	120000	f	project	\N	35e96736-2752-4b0d-a07e-c25dc5b3c572	2026-01-02 12:34:58.117655	2026-01-02 12:34:58.117655	Bifold window	payments	9a287591-d106-49fb-b000-537c756abfd9	\N	\N	\N
 41530e4e-01fe-4152-8e51-752a77db2da5	c8a1748d-f3a5-4916-b35c-0e81d2429b70	210000	f	project	\N	8e08fbc4-0dd5-4b0e-992a-7ff584b3cd2b	2026-01-02 12:34:58.143463	2026-01-02 12:34:58.143463	Remove, supply, and intall doors and windows	payments	02f72e69-4a71-4774-9295-89fbe1e10541	\N	\N	\N
 bce1d6dc-7f6c-4f87-8eae-be8129ede39d	05aea2d6-4fa3-4121-92cf-b78beeacf4f6	50000	f	project	\N	bbd8274b-d1e3-48a4-806e-4b1d276e9a5f	2026-01-02 12:34:58.151469	2026-01-02 12:34:58.151469	Retractable flyscreen	payments	1376dfd5-9cf4-4670-8b3c-94f8a600a0a6	\N	\N	\N
@@ -1176,7 +1176,7 @@ ea82608a-ebcb-4c9a-9bdd-8f265fa5ac6d	Bank account	2025-11-21 23:28:50.119304	202
 -- Data for Name: loan_payoffs; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.loan_payoffs (id, loan_id, amount, date, notes, consolidation_id, created_at, updated_at) FROM stdin;
+COPY public.loan_payoffs (id, loan_id, amount, date, notes, reconciliation_id, created_at, updated_at) FROM stdin;
 1e4e62d9-dccb-49a7-8d63-38032134ea5b	70a70232-40ca-4e74-ae19-64497417cf7a	50000	2025-08-26		1f3e6b35-0a31-4617-b3ca-3c41f4404973	2026-01-02 13:09:25.419949	2026-01-02 13:09:25.419949
 b7e95ed8-1191-4eb9-abdb-b5c60c79ac9c	01820c2e-8372-4454-acc4-567e528a1928	15670	2025-09-01		c257a100-f568-4272-b54c-dfbe48f76f07	2026-01-02 13:10:00.623379	2026-01-02 13:10:00.623379
 \.
@@ -1186,7 +1186,7 @@ b7e95ed8-1191-4eb9-abdb-b5c60c79ac9c	01820c2e-8372-4454-acc4-567e528a1928	15670	
 -- Data for Name: loans; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.loans (id, type, party_name, amount, date, due_date, notes, consolidation_id, created_at, updated_at) FROM stdin;
+COPY public.loans (id, type, party_name, amount, date, due_date, notes, reconciliation_id, created_at, updated_at) FROM stdin;
 ddb9733e-826f-4be7-a5c0-a0c77f04fbf3	lent	Ahmed Almatari	1599	2025-11-13	\N	\N	a69a214d-de67-4782-ae7f-6b0c9e81f535	2026-01-02 13:10:24.791146	2026-01-02 13:10:24.791146
 127b223e-ee04-45b8-9160-c4ea5eda992f	lent	Ziad Alawalaqi	50000	2025-12-21	2025-12-18	\N	6560e0d7-56c9-4f86-9371-e4234568de47	2026-01-02 13:10:45.200153	2026-01-02 13:10:45.200153
 70a70232-40ca-4e74-ae19-64497417cf7a	lent	Ahmed Almatari	50000	2025-08-25	\N	\N	bee4cb84-66f0-4467-86e5-0db2ff327432	2026-01-02 13:09:11.532634	2026-01-02 13:09:11.532634
@@ -1201,7 +1201,7 @@ f756e0b5-e2c1-4787-9d82-b9985d3073b1	borrowed	Mohammed Nasser	300000	2026-01-20	
 -- Data for Name: project_labors; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.project_labors (id, project_id, name, hours, rate, consolidation_id, created_at, updated_at) FROM stdin;
+COPY public.project_labors (id, project_id, name, hours, rate, reconciliation_id, created_at, updated_at) FROM stdin;
 105d6a1c-f174-44c1-93b9-26feb109b754	9757617a-6853-459d-bd33-4feac0b3c5b9	Faisal Jabi	8	2500	\N	2026-01-02 12:34:56.762009	2026-01-02 12:34:56.762009
 1b40bb40-1376-4af0-baaa-bdb160bcf794	b999eb78-03af-4adc-84d6-1e0142d8d57a	Faisal Jabi	6	2500	\N	2026-01-02 12:34:56.799863	2026-01-02 12:34:56.799863
 06976e10-75b6-47cb-bc01-e258166d62db	b999eb78-03af-4adc-84d6-1e0142d8d57a	Marlon	16	2500	\N	2026-01-02 12:34:56.801133	2026-01-02 12:34:56.801133
@@ -1253,7 +1253,7 @@ b0e44ec3-aace-459b-9e2a-3ace6b61df76	e8c28b1b-e446-40b6-8a36-2d7934e193b4	Ziad	1
 -- Data for Name: project_misc; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.project_misc (id, project_id, name, amount, consolidation_id, created_at, updated_at) FROM stdin;
+COPY public.project_misc (id, project_id, name, amount, reconciliation_id, created_at, updated_at) FROM stdin;
 9cd9ef4a-589a-4398-ab88-27d25773df66	9757617a-6853-459d-bd33-4feac0b3c5b9	Fuel	10000	\N	2026-01-02 12:34:56.763883	2026-01-02 12:34:56.763883
 42451072-d2b5-4817-add8-188a65490610	c54b137c-8ed7-425c-a408-80272ba1c953	Fuel	12000	\N	2026-01-02 12:34:56.780298	2026-01-02 12:34:56.780298
 9e9db28a-f3fe-42ba-9146-adb8d14834cc	49cd8378-4481-4c2d-9e9e-268241211306	Fuel	12000	\N	2026-01-02 12:34:56.789628	2026-01-02 12:34:56.789628
@@ -1339,7 +1339,7 @@ f021a9b5-07fb-43a4-a57e-429efa87b425	ea74d278-b4c1-4f03-9ae9-426764acce85	Food	1
 -- Data for Name: project_payments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.project_payments (id, project_id, amount, date, consolidation_id, created_at, updated_at) FROM stdin;
+COPY public.project_payments (id, project_id, amount, date, reconciliation_id, created_at, updated_at) FROM stdin;
 b093880b-86f7-4ced-b7bf-d07777db6fda	9757617a-6853-459d-bd33-4feac0b3c5b9	286000	2025-05-30	\N	2026-01-02 12:34:56.767102	2026-01-02 12:34:56.767102
 025feadd-1470-4bcb-8347-d4df59a89b9a	b999eb78-03af-4adc-84d6-1e0142d8d57a	275000	2025-07-02	\N	2026-01-02 12:34:56.806138	2026-01-02 12:34:56.806138
 02a4ef83-b9e5-47ec-b1a8-d8d6e19c82fd	0cd718cd-eeb4-4f8d-b4b1-6cc7329918bd	429792	2025-07-04	\N	2026-01-02 12:34:56.818587	2026-01-02 12:34:56.818587
@@ -1445,7 +1445,7 @@ b087ea0b-dfa8-42bb-98ad-5e4a9e39b444	a6388f4f-02bf-49e0-9b74-d51628ac7b05	176000
 -- Data for Name: project_supplies; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.project_supplies (id, project_id, name, quantity, unit_price, consolidation_id, created_at, updated_at) FROM stdin;
+COPY public.project_supplies (id, project_id, name, quantity, unit_price, reconciliation_id, created_at, updated_at) FROM stdin;
 9870cf88-57b9-48a2-b9ee-2effefa0e128	9757617a-6853-459d-bd33-4feac0b3c5b9	Hinged door	1	100000	\N	2026-01-02 12:34:56.747721	2026-01-02 12:34:56.747721
 f6e8970a-be2f-4be4-afc5-902b6593503c	9757617a-6853-459d-bd33-4feac0b3c5b9	Plasterboard	1	2408	\N	2026-01-02 12:34:56.75063	2026-01-02 12:34:56.75063
 12851b18-4be2-4bdd-b8a1-320fef998222	9757617a-6853-459d-bd33-4feac0b3c5b9	Packers	1	4147	\N	2026-01-02 12:34:56.753947	2026-01-02 12:34:56.753947
@@ -2385,11 +2385,11 @@ ALTER TABLE ONLY public.accounts
 
 
 --
--- Name: consolidations consolidations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: reconciliations reconciliations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.consolidations
-    ADD CONSTRAINT consolidations_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.reconciliations
+    ADD CONSTRAINT reconciliations_pkey PRIMARY KEY (id);
 
 
 --
@@ -2513,43 +2513,43 @@ ALTER TABLE ONLY public.accounts
 
 
 --
--- Name: consolidations consolidations_loan_id_loans_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: reconciliations reconciliations_loan_id_loans_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.consolidations
-    ADD CONSTRAINT consolidations_loan_id_loans_id_fk FOREIGN KEY (loan_id) REFERENCES public.loans(id) ON DELETE SET NULL;
-
-
---
--- Name: consolidations consolidations_loan_payoff_id_loan_payoffs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.consolidations
-    ADD CONSTRAINT consolidations_loan_payoff_id_loan_payoffs_id_fk FOREIGN KEY (loan_payoff_id) REFERENCES public.loan_payoffs(id) ON DELETE SET NULL;
+ALTER TABLE ONLY public.reconciliations
+    ADD CONSTRAINT reconciliations_loan_id_loans_id_fk FOREIGN KEY (loan_id) REFERENCES public.loans(id) ON DELETE SET NULL;
 
 
 --
--- Name: consolidations consolidations_project_id_projects_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: reconciliations reconciliations_loan_payoff_id_loan_payoffs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.consolidations
-    ADD CONSTRAINT consolidations_project_id_projects_id_fk FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE SET NULL;
-
-
---
--- Name: consolidations consolidations_transaction_id_transactions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.consolidations
-    ADD CONSTRAINT consolidations_transaction_id_transactions_id_fk FOREIGN KEY (transaction_id) REFERENCES public.transactions(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.reconciliations
+    ADD CONSTRAINT reconciliations_loan_payoff_id_loan_payoffs_id_fk FOREIGN KEY (loan_payoff_id) REFERENCES public.loan_payoffs(id) ON DELETE SET NULL;
 
 
 --
--- Name: loan_payoffs loan_payoffs_consolidation_id_consolidations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: reconciliations reconciliations_project_id_projects_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reconciliations
+    ADD CONSTRAINT reconciliations_project_id_projects_id_fk FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE SET NULL;
+
+
+--
+-- Name: reconciliations reconciliations_transaction_id_transactions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reconciliations
+    ADD CONSTRAINT reconciliations_transaction_id_transactions_id_fk FOREIGN KEY (transaction_id) REFERENCES public.transactions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: loan_payoffs loan_payoffs_reconciliation_id_reconciliations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.loan_payoffs
-    ADD CONSTRAINT loan_payoffs_consolidation_id_consolidations_id_fk FOREIGN KEY (consolidation_id) REFERENCES public.consolidations(id) ON DELETE SET NULL;
+    ADD CONSTRAINT loan_payoffs_reconciliation_id_reconciliations_id_fk FOREIGN KEY (reconciliation_id) REFERENCES public.reconciliations(id) ON DELETE SET NULL;
 
 
 --
@@ -2561,19 +2561,19 @@ ALTER TABLE ONLY public.loan_payoffs
 
 
 --
--- Name: loans loans_consolidation_id_consolidations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: loans loans_reconciliation_id_reconciliations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.loans
-    ADD CONSTRAINT loans_consolidation_id_consolidations_id_fk FOREIGN KEY (consolidation_id) REFERENCES public.consolidations(id) ON DELETE SET NULL;
+    ADD CONSTRAINT loans_reconciliation_id_reconciliations_id_fk FOREIGN KEY (reconciliation_id) REFERENCES public.reconciliations(id) ON DELETE SET NULL;
 
 
 --
--- Name: project_labors project_labors_consolidation_id_consolidations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: project_labors project_labors_reconciliation_id_reconciliations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_labors
-    ADD CONSTRAINT project_labors_consolidation_id_consolidations_id_fk FOREIGN KEY (consolidation_id) REFERENCES public.consolidations(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_labors_reconciliation_id_reconciliations_id_fk FOREIGN KEY (reconciliation_id) REFERENCES public.reconciliations(id) ON DELETE SET NULL;
 
 
 --
@@ -2585,11 +2585,11 @@ ALTER TABLE ONLY public.project_labors
 
 
 --
--- Name: project_misc project_misc_consolidation_id_consolidations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: project_misc project_misc_reconciliation_id_reconciliations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_misc
-    ADD CONSTRAINT project_misc_consolidation_id_consolidations_id_fk FOREIGN KEY (consolidation_id) REFERENCES public.consolidations(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_misc_reconciliation_id_reconciliations_id_fk FOREIGN KEY (reconciliation_id) REFERENCES public.reconciliations(id) ON DELETE SET NULL;
 
 
 --
@@ -2601,11 +2601,11 @@ ALTER TABLE ONLY public.project_misc
 
 
 --
--- Name: project_payments project_payments_consolidation_id_consolidations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: project_payments project_payments_reconciliation_id_reconciliations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_payments
-    ADD CONSTRAINT project_payments_consolidation_id_consolidations_id_fk FOREIGN KEY (consolidation_id) REFERENCES public.consolidations(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_payments_reconciliation_id_reconciliations_id_fk FOREIGN KEY (reconciliation_id) REFERENCES public.reconciliations(id) ON DELETE SET NULL;
 
 
 --
@@ -2617,11 +2617,11 @@ ALTER TABLE ONLY public.project_payments
 
 
 --
--- Name: project_supplies project_supplies_consolidation_id_consolidations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: project_supplies project_supplies_reconciliation_id_reconciliations_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_supplies
-    ADD CONSTRAINT project_supplies_consolidation_id_consolidations_id_fk FOREIGN KEY (consolidation_id) REFERENCES public.consolidations(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_supplies_reconciliation_id_reconciliations_id_fk FOREIGN KEY (reconciliation_id) REFERENCES public.reconciliations(id) ON DELETE SET NULL;
 
 
 --

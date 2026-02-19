@@ -9,5 +9,5 @@ export const projectSupplyFullMapper = (
     "name",
     "quantity",
     "unitPrice",
-    eb("consolidationId", "is not", null).as("isConsolidated"),
+    eb("reconciliationId", "is not", null).as("isReconciled"),
   ] satisfies SelectExpression<DB, "projectSupplies">[];

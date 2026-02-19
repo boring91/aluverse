@@ -5,21 +5,6 @@
 
 import type { ColumnType } from "kysely";
 
-export type ConsolidationGroup =
-  | "budget"
-  | "loan"
-  | "project"
-  | "refund"
-  | "refunded"
-  | "tax"
-  | "unclassified";
-
-export type ConsolidationProjectStream =
-  | "labors"
-  | "misc"
-  | "payments"
-  | "supplies";
-
 export type FinancialAccountBankSyncers = "westpac";
 
 export type Generated<T> =
@@ -34,6 +19,21 @@ export type Int8 = ColumnType<
 >;
 
 export type LoanType = "borrowed" | "lent";
+
+export type ReconciliationGroup =
+  | "budget"
+  | "loan"
+  | "project"
+  | "refund"
+  | "refunded"
+  | "tax"
+  | "unclassified";
+
+export type ReconciliationProjectStream =
+  | "labors"
+  | "misc"
+  | "payments"
+  | "supplies";
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -82,24 +82,6 @@ export interface BudgetCategoryAllocations {
   updatedAt: Generated<Timestamp>;
 }
 
-export interface Consolidations {
-  amount: number;
-  budgetCategoryId: string | null;
-  consolidationGroup: ConsolidationGroup;
-  createdAt: Generated<Timestamp>;
-  description: string | null;
-  id: Generated<string>;
-  isGst: boolean;
-  isPayoff: boolean | null;
-  loanId: string | null;
-  loanPayoffId: string | null;
-  projectId: string | null;
-  projectItemId: string | null;
-  projectStream: ConsolidationProjectStream | null;
-  transactionId: string;
-  updatedAt: Generated<Timestamp>;
-}
-
 export interface DrizzleDrizzleMigrations {
   createdAt: Int8 | null;
   hash: string;
@@ -116,56 +98,56 @@ export interface FinancialAccounts {
 
 export interface LoanPayoffs {
   amount: number;
-  consolidationId: string | null;
   createdAt: Generated<Timestamp>;
   date: Timestamp;
   id: Generated<string>;
   loanId: string;
   notes: string | null;
+  reconciliationId: string | null;
   updatedAt: Generated<Timestamp>;
 }
 
 export interface Loans {
   amount: number;
-  consolidationId: string | null;
   createdAt: Generated<Timestamp>;
   date: Timestamp;
   dueDate: Timestamp | null;
   id: Generated<string>;
   notes: string | null;
   partyName: string;
+  reconciliationId: string | null;
   type: LoanType;
   updatedAt: Generated<Timestamp>;
 }
 
 export interface ProjectLabors {
-  consolidationId: string | null;
   createdAt: Generated<Timestamp>;
   hours: number;
   id: Generated<string>;
   name: string;
   projectId: string;
   rate: number;
+  reconciliationId: string | null;
   updatedAt: Generated<Timestamp>;
 }
 
 export interface ProjectMisc {
   amount: number;
-  consolidationId: string | null;
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
   name: string;
   projectId: string;
+  reconciliationId: string | null;
   updatedAt: Generated<Timestamp>;
 }
 
 export interface ProjectPayments {
   amount: number;
-  consolidationId: string | null;
   createdAt: Generated<Timestamp>;
   date: Timestamp;
   id: Generated<string>;
   projectId: string;
+  reconciliationId: string | null;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -188,13 +170,31 @@ export interface Projects {
 }
 
 export interface ProjectSupplies {
-  consolidationId: string | null;
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
   name: string;
   projectId: string;
   quantity: number;
+  reconciliationId: string | null;
   unitPrice: number;
+  updatedAt: Generated<Timestamp>;
+}
+
+export interface Reconciliations {
+  amount: number;
+  budgetCategoryId: string | null;
+  createdAt: Generated<Timestamp>;
+  description: string | null;
+  id: Generated<string>;
+  isGst: boolean;
+  isPayoff: boolean | null;
+  loanId: string | null;
+  loanPayoffId: string | null;
+  projectId: string | null;
+  projectItemId: string | null;
+  projectStream: ReconciliationProjectStream | null;
+  reconciliationGroup: ReconciliationGroup;
+  transactionId: string;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -269,7 +269,6 @@ export interface DB {
   accounts: Accounts;
   budgetCategories: BudgetCategories;
   budgetCategoryAllocations: BudgetCategoryAllocations;
-  consolidations: Consolidations;
   "drizzle.DrizzleMigrations": DrizzleDrizzleMigrations;
   financialAccounts: FinancialAccounts;
   loanPayoffs: LoanPayoffs;
@@ -279,6 +278,7 @@ export interface DB {
   projectPayments: ProjectPayments;
   projects: Projects;
   projectSupplies: ProjectSupplies;
+  reconciliations: Reconciliations;
   rolePermissions: RolePermissions;
   roles: Roles;
   sessions: Sessions;

@@ -66,11 +66,11 @@ const mainItems = [
     permission: "financialAccounts.read" satisfies Permission,
   },
   {
-    id: "consolidations",
-    label: "Consolidations",
-    link: "/consolidations",
+    id: "reconciliations",
+    label: "Reconciliations",
+    link: "/reconciliations",
     icon: ChartPieIcon,
-    permission: "consolidations.read" satisfies Permission,
+    permission: "reconciliations.read" satisfies Permission,
   },
   {
     id: "loans",

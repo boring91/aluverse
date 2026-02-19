@@ -1,19 +1,19 @@
 import { db } from "@/db";
 import {
-  consolidationCost,
-  consolidationRevenue,
-} from "@/shared/expressions/consolidations/consolidation.expression";
+  reconciliationCost,
+  reconciliationRevenue,
+} from "@/shared/expressions/reconciliations/reconciliation.expression";
 import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 
 export async function getGeneralStatsQuery(input: DashboardDateRange) {
   const { from, to } = input;
 
   let query = db
-    .selectFrom("consolidations")
+    .selectFrom("reconciliations")
     .innerJoin(
       "transactions",
       "transactions.id",
-      "consolidations.transactionId"
+      "reconciliations.transactionId"
     );
 
   if (from) {
@@ -26,10 +26,10 @@ export async function getGeneralStatsQuery(input: DashboardDateRange) {
 
   const revenue = (
     await query
-      .where(consolidationRevenue)
+      .where(reconciliationRevenue)
       .select((eb) => [
         eb.fn
-          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
           .as("total"),
       ])
       .executeTakeFirstOrThrow()
@@ -37,10 +37,10 @@ export async function getGeneralStatsQuery(input: DashboardDateRange) {
 
   const cost = (
     await query
-      .where(consolidationCost)
+      .where(reconciliationCost)
       .select((eb) => [
         eb.fn
-          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
           .as("total"),
       ])
       .executeTakeFirstOrThrow()
@@ -48,10 +48,10 @@ export async function getGeneralStatsQuery(input: DashboardDateRange) {
 
   const taxes = (
     await query
-      .where("consolidationGroup", "=", "tax")
+      .where("reconciliationGroup", "=", "tax")
       .select((eb) => [
         eb.fn
-          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
           .as("total"),
       ])
       .executeTakeFirstOrThrow()

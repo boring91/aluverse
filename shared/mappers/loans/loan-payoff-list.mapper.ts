@@ -1,5 +1,5 @@
 import { DB } from "@/db/types";
-import { isLoanPayoffConsolidated } from "@/shared/expressions/loans/loan.expression";
+import { isLoanPayoffReconciled } from "@/shared/expressions/loans/loan.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 
 export const loanPayoffListMapper = (
@@ -10,5 +10,5 @@ export const loanPayoffListMapper = (
     "date",
     "amount",
     "notes",
-    isLoanPayoffConsolidated(eb).as("isConsolidated"),
+    isLoanPayoffReconciled(eb).as("isReconciled"),
   ] satisfies SelectExpression<DB, "loanPayoffs">[];

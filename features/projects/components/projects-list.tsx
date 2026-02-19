@@ -177,10 +177,10 @@ export const ProjectsList = () => {
             <DateFilter label="To date" control={filter.to} />
 
             <BooleanFilter
-              label="Consolidated"
-              control={filter.isConsolidated}
-              trueLabel="Consolidated"
-              falseLabel="Not consolidated"
+              label="Reconciled"
+              control={filter.isReconciled}
+              trueLabel="Reconciled"
+              falseLabel="Not reconciled"
             />
           </DataTableFilters>
         }

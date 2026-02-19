@@ -7,28 +7,28 @@ export async function deleteLoanMutation(id: string) {
       .selectFrom("loans")
       .where("id", "=", id)
       .select((eb) => [
-        "consolidationId",
+        "reconciliationId",
         jsonArrayFrom(
           eb
             .selectFrom("loanPayoffs")
             .whereRef("loanId", "=", "loans.id")
-            .select(["loanPayoffs.id", "loanPayoffs.consolidationId"])
+            .select(["loanPayoffs.id", "loanPayoffs.reconciliationId"])
         ).as("payoffs"),
       ])
       .executeTakeFirst();
 
     if (!loan) return;
 
-    // Remove all consolidations if any
-    const consolidationIds = [
-      loan.consolidationId,
-      ...loan.payoffs.map((x) => x.consolidationId),
+    // Remove all reconciliations if any
+    const reconciliationIds = [
+      loan.reconciliationId,
+      ...loan.payoffs.map((x) => x.reconciliationId),
     ].filter((id): id is string => !!id);
 
-    if (consolidationIds.length) {
+    if (reconciliationIds.length) {
       await tx
-        .deleteFrom("consolidations")
-        .where("id", "in", consolidationIds)
+        .deleteFrom("reconciliations")
+        .where("id", "in", reconciliationIds)
         .execute();
     }
 

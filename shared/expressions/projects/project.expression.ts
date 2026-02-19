@@ -10,11 +10,15 @@ export const projectPaid = (
   let exp = eb
     .selectFrom("projectPayments")
     .leftJoin(
-      "consolidations",
-      "consolidations.id",
-      "projectPayments.consolidationId"
+      "reconciliations",
+      "reconciliations.id",
+      "projectPayments.reconciliationId"
     )
-    .leftJoin("transactions", "transactions.id", "consolidations.transactionId")
+    .leftJoin(
+      "transactions",
+      "transactions.id",
+      "reconciliations.transactionId"
+    )
     .whereRef("projectPayments.projectId", "=", "projects.id");
 
   if (from) {
@@ -27,7 +31,7 @@ export const projectPaid = (
   return exp
     .select((sub) =>
       sub.fn
-        .coalesce(sub.fn.sum<number>("projectPayments.amount"), sub.lit(0)) // XXX: We're taking the amounts from the project payments as opposed to the consolidation because some of the payments don't have consolidations.
+        .coalesce(sub.fn.sum<number>("projectPayments.amount"), sub.lit(0)) // XXX: We're taking the amounts from the project payments as opposed to the reconciliation because some of the payments don't have reconciliations.
         .as("paid")
     )
     .$asScalar();
@@ -41,14 +45,14 @@ export const suppliesCost = (
   let exp = eb
     .selectFrom("projectSupplies")
     .innerJoin(
-      "consolidations",
-      "consolidations.id",
-      "projectSupplies.consolidationId"
+      "reconciliations",
+      "reconciliations.id",
+      "projectSupplies.reconciliationId"
     )
     .innerJoin(
       "transactions",
       "transactions.id",
-      "consolidations.transactionId"
+      "reconciliations.transactionId"
     )
     .whereRef("projectSupplies.projectId", "=", "projects.id");
 
@@ -79,14 +83,14 @@ export const laborCost = (
   let exp = eb
     .selectFrom("projectLabors")
     .innerJoin(
-      "consolidations",
-      "consolidations.id",
-      "projectLabors.consolidationId"
+      "reconciliations",
+      "reconciliations.id",
+      "projectLabors.reconciliationId"
     )
     .innerJoin(
       "transactions",
       "transactions.id",
-      "consolidations.transactionId"
+      "reconciliations.transactionId"
     )
     .whereRef("projectLabors.projectId", "=", "projects.id");
 
@@ -117,14 +121,14 @@ export const miscCost = (
   let exp = eb
     .selectFrom("projectMisc")
     .innerJoin(
-      "consolidations",
-      "consolidations.id",
-      "projectMisc.consolidationId"
+      "reconciliations",
+      "reconciliations.id",
+      "projectMisc.reconciliationId"
     )
     .innerJoin(
       "transactions",
       "transactions.id",
-      "consolidations.transactionId"
+      "reconciliations.transactionId"
     )
     .whereRef("projectMisc.projectId", "=", "projects.id");
 
@@ -204,61 +208,53 @@ export const projectMargin = (eb: ExpressionBuilder<DB, "projects">) =>
     .else(null)
     .end();
 
-export const unconsolidatedSuppliesCount = (
+export const unreconciledSuppliesCount = (
   eb: ExpressionBuilder<DB, "projects">
 ) =>
   eb
     .selectFrom("projectSupplies")
     .whereRef("projectSupplies.projectId", "=", "projects.id")
-    .where("consolidationId", "is", null)
-    .select((sub) =>
-      sub.fn.count<number>("id").as("unconsolidatedSuppliesCount")
-    )
+    .where("reconciliationId", "is", null)
+    .select((sub) => sub.fn.count<number>("id").as("unreconciledSuppliesCount"))
     .$asScalar();
 
-export const unconsolidatedLaborsCount = (
+export const unreconciledLaborsCount = (
   eb: ExpressionBuilder<DB, "projects">
 ) =>
   eb
     .selectFrom("projectLabors")
     .whereRef("projectLabors.projectId", "=", "projects.id")
-    .where("consolidationId", "is", null)
-    .select((sub) => sub.fn.count<number>("id").as("unconsolidatedLaborsCount"))
+    .where("reconciliationId", "is", null)
+    .select((sub) => sub.fn.count<number>("id").as("unreconciledLaborsCount"))
     .$asScalar();
 
-export const unconsolidatedMiscCount = (
-  eb: ExpressionBuilder<DB, "projects">
-) =>
+export const unreconciledMiscCount = (eb: ExpressionBuilder<DB, "projects">) =>
   eb
     .selectFrom("projectMisc")
     .whereRef("projectMisc.projectId", "=", "projects.id")
-    .where("consolidationId", "is", null)
-    .select((sub) => sub.fn.count<number>("id").as("unconsolidatedMiscCount"))
+    .where("reconciliationId", "is", null)
+    .select((sub) => sub.fn.count<number>("id").as("unreconciledMiscCount"))
     .$asScalar();
 
-export const unconsolidatedPaymentsCount = (
+export const unreconciledPaymentsCount = (
   eb: ExpressionBuilder<DB, "projects">
 ) =>
   eb
     .selectFrom("projectPayments")
     .whereRef("projectPayments.projectId", "=", "projects.id")
-    .where("consolidationId", "is", null)
-    .select((sub) =>
-      sub.fn.count<number>("id").as("unconsolidatedPaymentsCount")
-    )
+    .where("reconciliationId", "is", null)
+    .select((sub) => sub.fn.count<number>("id").as("unreconciledPaymentsCount"))
     .$asScalar();
 
-export const unconsolidatedItemsCount = (
-  eb: ExpressionBuilder<DB, "projects">
-) =>
+export const unreconciledItemsCount = (eb: ExpressionBuilder<DB, "projects">) =>
   eb(
     eb(
-      eb(unconsolidatedSuppliesCount, "+", unconsolidatedLaborsCount),
+      eb(unreconciledSuppliesCount, "+", unreconciledLaborsCount),
       "+",
-      unconsolidatedMiscCount
+      unreconciledMiscCount
     ),
     "+",
-    unconsolidatedPaymentsCount
+    unreconciledPaymentsCount
   ).$notNull();
 
 export const projectInPlanning = (eb: ExpressionBuilder<DB, "projects">) =>

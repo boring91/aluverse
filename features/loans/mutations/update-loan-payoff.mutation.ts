@@ -6,20 +6,20 @@ export async function updateLoanPayoffMutation(
   data: z.infer<typeof updateLoanPayoffSchema>
 ) {
   return await db.transaction().execute(async (tx) => {
-    // Get the current loan payoff to check for consolidationId and amount
+    // Get the current loan payoff to check for reconciliationId and amount
     const payoff = await tx
       .selectFrom("loanPayoffs")
-      .select(["consolidationId", "amount"])
+      .select(["reconciliationId", "amount"])
       .where("id", "=", data.id)
       .executeTakeFirstOrThrow();
 
-    // Only delete consolidation if amount has changed
+    // Only delete reconciliation if amount has changed
     const amountChanged = data.amount !== payoff.amount;
 
-    if (payoff.consolidationId && amountChanged) {
+    if (payoff.reconciliationId && amountChanged) {
       await tx
-        .deleteFrom("consolidations")
-        .where("id", "=", payoff.consolidationId)
+        .deleteFrom("reconciliations")
+        .where("id", "=", payoff.reconciliationId)
         .execute();
     }
 

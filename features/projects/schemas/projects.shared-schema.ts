@@ -29,7 +29,7 @@ export const projectStatusFilterSchema = z
 export const projectFiltersSchema = z.object({
   keyword: z.string().optional(),
   status: projectStatusFilterSchema.optional(),
-  isConsolidated: booleanFilterSchema.optional(),
+  isReconciled: booleanFilterSchema.optional(),
   from: z.date().optional(),
   to: z.date().optional(),
 });

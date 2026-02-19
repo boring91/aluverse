@@ -5,14 +5,14 @@ export async function deleteLoanPayoffMutation(id: string) {
     const payoff = await db
       .deleteFrom("loanPayoffs")
       .where("id", "=", id)
-      .returning(["id", "consolidationId"])
+      .returning(["id", "reconciliationId"])
       .executeTakeFirstOrThrow();
 
-    if (!payoff.consolidationId) return payoff;
+    if (!payoff.reconciliationId) return payoff;
 
     await tx
-      .deleteFrom("consolidations")
-      .where("id", "=", payoff.consolidationId)
+      .deleteFrom("reconciliations")
+      .where("id", "=", payoff.reconciliationId)
       .execute();
 
     return payoff;

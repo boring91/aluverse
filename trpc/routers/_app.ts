@@ -3,7 +3,7 @@ import { budgetCategoriesRouter } from "@/features/budget/api/budget-categories.
 import { budgetCategoryAllocationsRouter } from "@/features/budget/api/budget-category-allocations.router";
 import { financialAccountsRouter } from "@/features/financial-accounts/api/financial-accounts.router";
 import { transactionsRouter } from "@/features/financial-accounts/api/transactions.router";
-import { consolidationsRouter } from "@/features/consolidations/api/consolidations.router";
+import { reconciliationsRouter } from "@/features/reconciliations/api/reconciliations.router";
 import { projectsRouter } from "@/features/projects/api/projects.router";
 import { projectSuppliesRouter } from "@/features/projects/api/project-supplies.router";
 import { projectLaborsRouter } from "@/features/projects/api/project-labors.router";
@@ -20,7 +20,7 @@ export const appRouter = createTRPCRouter({
   budgetCategoryAllocations: budgetCategoryAllocationsRouter,
   financialAccounts: financialAccountsRouter,
   transactions: transactionsRouter,
-  consolidations: consolidationsRouter,
+  reconciliations: reconciliationsRouter,
   projects: projectsRouter,
   projectSupplies: projectSuppliesRouter,
   projectLabors: projectLaborsRouter,

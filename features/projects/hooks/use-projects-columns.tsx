@@ -122,20 +122,20 @@ export const useProjectsColumns = (
                 </span>
               </p>
 
-              {/* Cost & unconsolidated items */}
+              {/* Cost & unreconciled items */}
               <div className="flex items-center gap-2">
                 <span className="font-mono text-rose-500">
                   {formatCurrency(project.cost)}
                 </span>
-                {project.unconsolidatedItemsCount > 0 && (
+                {project.unreconciledItemsCount > 0 && (
                   <Tooltip>
                     <TooltipTrigger>
                       <span className="text-xs rounded-full bg-amber-100 dark:bg-amber-900 px-2 text-amber-600 dark:text-amber-200">
-                        {project.unconsolidatedItemsCount}
+                        {project.unreconciledItemsCount}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Total pending consolidation items
+                      Total pending reconciliation items
                     </TooltipContent>
                   </Tooltip>
                 )}

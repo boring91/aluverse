@@ -1,9 +1,9 @@
 import { DB } from "@/db/types";
 import {
-  isLoanConsolidated,
+  isLoanReconciled,
   loanPaid,
   loanRemaining,
-  unconsolidatedPayoffsCount as unconsolidatedPayoffCount,
+  unreconciledPayoffsCount as unreconciledPayoffCount,
 } from "@/shared/expressions/loans/loan.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 
@@ -18,6 +18,6 @@ export const loanFullMapper = (eb: ExpressionBuilder<DB, "loans">) =>
     "notes",
     loanPaid(eb).as("paid"),
     loanRemaining(eb).as("remaining"),
-    isLoanConsolidated(eb).as("isConsolidated"),
-    unconsolidatedPayoffCount(eb).as("unconsolidatedPayoffCount"),
+    isLoanReconciled(eb).as("isReconciled"),
+    unreconciledPayoffCount(eb).as("unreconciledPayoffCount"),
   ] satisfies SelectExpression<DB, "loans">[];

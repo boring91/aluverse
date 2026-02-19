@@ -6,21 +6,21 @@ export async function updateProjectSupplyMutation(
   data: z.infer<typeof updateProjectSupplySchema>
 ) {
   return await db.transaction().execute(async (tx) => {
-    // Get the current supply to check for consolidationId and current amount fields
+    // Get the current supply to check for reconciliationId and current amount fields
     const supply = await tx
       .selectFrom("projectSupplies")
-      .select(["consolidationId", "quantity", "unitPrice"])
+      .select(["reconciliationId", "quantity", "unitPrice"])
       .where("id", "=", data.id)
       .executeTakeFirstOrThrow();
 
-    // Only delete consolidation if amount is changed (quantity or unitPrice has changed)
+    // Only delete reconciliation if amount is changed (quantity or unitPrice has changed)
     const quantityChanged = data.quantity !== supply.quantity;
     const unitPriceChanged = data.unitPrice !== supply.unitPrice;
 
-    if (supply.consolidationId && (quantityChanged || unitPriceChanged)) {
+    if (supply.reconciliationId && (quantityChanged || unitPriceChanged)) {
       await tx
-        .deleteFrom("consolidations")
-        .where("id", "=", supply.consolidationId)
+        .deleteFrom("reconciliations")
+        .where("id", "=", supply.reconciliationId)
         .execute();
     }
 

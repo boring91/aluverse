@@ -6,20 +6,20 @@ export async function updateProjectMiscMutation(
   data: z.infer<typeof updateProjectMiscSchema>
 ) {
   return await db.transaction().execute(async (tx) => {
-    // Get the current misc to check for consolidationId and current amount
+    // Get the current misc to check for reconciliationId and current amount
     const misc = await tx
       .selectFrom("projectMisc")
-      .select(["consolidationId", "amount"])
+      .select(["reconciliationId", "amount"])
       .where("id", "=", data.id)
       .executeTakeFirstOrThrow();
 
-    // Only delete consolidation if amount has changed
+    // Only delete reconciliation if amount has changed
     const amountChanged = data.amount !== misc.amount;
 
-    if (misc.consolidationId && amountChanged) {
+    if (misc.reconciliationId && amountChanged) {
       await tx
-        .deleteFrom("consolidations")
-        .where("id", "=", misc.consolidationId)
+        .deleteFrom("reconciliations")
+        .where("id", "=", misc.reconciliationId)
         .execute();
     }
 

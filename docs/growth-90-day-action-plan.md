@@ -161,7 +161,7 @@ This 90-day plan focuses on three strategic priorities:
 
 ---
 
-## Phase 3: Consolidation (Weeks 9-12)
+## Phase 3: Reconciliation (Weeks 9-12)
 
 ### Week 9: Push to Target
 

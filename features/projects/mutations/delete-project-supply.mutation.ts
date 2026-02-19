@@ -5,14 +5,14 @@ export async function deleteProjectSupplyMutation(id: string) {
     const supply = await db
       .deleteFrom("projectSupplies")
       .where("id", "=", id)
-      .returning(["id", "consolidationId"])
+      .returning(["id", "reconciliationId"])
       .executeTakeFirstOrThrow();
 
-    if (!supply.consolidationId) return supply;
+    if (!supply.reconciliationId) return supply;
 
     await tx
-      .deleteFrom("consolidations")
-      .where("id", "=", supply.consolidationId)
+      .deleteFrom("reconciliations")
+      .where("id", "=", supply.reconciliationId)
       .execute();
 
     return supply;
