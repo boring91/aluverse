@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import {
   createConsolidationWithTransactionIdSchema,
   listConsolidationSchema,
@@ -15,13 +15,13 @@ import { getConsolidationStatistics } from "../queries/get-consolidation-statist
 import { TRPCError } from "@trpc/server";
 
 export const consolidationsRouter = createTRPCRouter({
-  list: protectedProcedure
+  list: permissionProcedure("consolidations.read")
     .input(listConsolidationSchema)
     .query(async ({ input }) => {
       return await listConsolidations(input);
     }),
 
-  get: protectedProcedure
+  get: permissionProcedure("consolidations.read")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ input }) => {
       const item = await getConsolidationById(input.id);
@@ -33,7 +33,7 @@ export const consolidationsRouter = createTRPCRouter({
       return item;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("consolidations.create")
     .input(
       createConsolidationWithTransactionIdSchema.transform((v) => ({
         ...v,
@@ -44,7 +44,7 @@ export const consolidationsRouter = createTRPCRouter({
       return await createConsolidation(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("consolidations.update")
     .input(
       updateConsolidationSchema.transform((v) => ({
         ...v,
@@ -55,19 +55,19 @@ export const consolidationsRouter = createTRPCRouter({
       return await updateConsolidation(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("consolidations.delete")
     .input(z.object({ id: z.uuid() }))
     .mutation(async ({ input }) => {
       return await deleteConsolidation(input.id);
     }),
 
-  getDefault: protectedProcedure
+  getDefault: permissionProcedure("consolidations.read")
     .input(z.object({ transactionId: z.uuid() }))
     .query(async ({ input }) => {
       return await getConsolidationDefaults(input.transactionId);
     }),
 
-  statistics: protectedProcedure.query(async () => {
+  statistics: permissionProcedure("consolidations.read").query(async () => {
     return await getConsolidationStatistics();
   }),
 });

@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth";
+import { resolveUserAccess } from "@/features/rbac/queries/resolve-user-access";
+import { type Permission } from "@/features/rbac/schemas/rbac.schema";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -8,7 +10,27 @@ export const createTRPCContext = cache(async () => {
   const authData = await auth.api.getSession({
     headers: await headers(),
   });
-  return { authData };
+
+  if (!authData?.user) {
+    return {
+      authData,
+      permissions: [] as Permission[],
+      roles: [] as {
+        id: string;
+        humanId: string | null;
+        name: string;
+        isBuiltIn: boolean;
+      }[],
+    };
+  }
+
+  const access = await resolveUserAccess(authData.user.id);
+
+  return {
+    authData,
+    permissions: access.permissions,
+    roles: access.roles,
+  };
 });
 
 type Context = Awaited<ReturnType<typeof createTRPCContext>>;
@@ -33,3 +55,12 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   }
   return next({ ctx });
 });
+
+export const permissionProcedure = (permission: Permission) =>
+  protectedProcedure.use(async ({ ctx, next }) => {
+    if (!ctx.permissions.includes(permission)) {
+      throw new TRPCError({ code: "FORBIDDEN" });
+    }
+
+    return next({ ctx });
+  });

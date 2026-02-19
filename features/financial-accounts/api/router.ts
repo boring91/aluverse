@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import {
   createFinancialAccountSchema,
   updateFinancialAccountSchema,
@@ -23,11 +23,11 @@ import { updateTransaction } from "../mutations/update-transaction";
 import { syncFinancialAccountWithBank } from "../mutations/sync-financial-account-with-bank";
 
 export const financialAccountsRouter = createTRPCRouter({
-  list: protectedProcedure.query(async () => {
+  list: permissionProcedure("financialAccounts.read").query(async () => {
     return await listFinancialAccounts();
   }),
 
-  get: protectedProcedure
+  get: permissionProcedure("financialAccounts.read")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ input }) => {
       const item = await getFinancialAccountById(input.id);
@@ -39,25 +39,25 @@ export const financialAccountsRouter = createTRPCRouter({
       return item;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("financialAccounts.create")
     .input(createFinancialAccountSchema)
     .mutation(async ({ input }) => {
       return await createFinancialAccount(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("financialAccounts.update")
     .input(updateFinancialAccountSchema)
     .mutation(async ({ input }) => {
       return await updateFinancialAccount(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("financialAccounts.delete")
     .input(z.object({ id: z.uuid() }))
     .mutation(async ({ input }) => {
       return await deleteFinancialAccount(input.id);
     }),
 
-  syncWithBank: protectedProcedure
+  syncWithBank: permissionProcedure("financialAccounts.update")
     .input(z.object({ id: z.uuid() }))
     .mutation(async ({ input }) => {
       return await syncFinancialAccountWithBank(input.id);
@@ -65,13 +65,13 @@ export const financialAccountsRouter = createTRPCRouter({
 });
 
 export const transactionsRouter = createTRPCRouter({
-  list: protectedProcedure
+  list: permissionProcedure("transactions.read")
     .input(listTransactionSchema)
     .query(async ({ input }) => {
       return await listTransactions(input);
     }),
 
-  get: protectedProcedure
+  get: permissionProcedure("transactions.read")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ input }) => {
       const items = await getTransactionById(input.id);
@@ -83,7 +83,7 @@ export const transactionsRouter = createTRPCRouter({
       return items;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("transactions.create")
     .input(
       createTransactionWithAccountIdSchema.transform((v) => ({
         ...v,
@@ -94,7 +94,7 @@ export const transactionsRouter = createTRPCRouter({
       return await createTransaction(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("transactions.update")
     .input(
       updateTransactionSchema.transform((v) => ({
         ...v,
@@ -105,7 +105,7 @@ export const transactionsRouter = createTRPCRouter({
       return await updateTransaction(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("transactions.delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       return await deleteTransaction(input.id);

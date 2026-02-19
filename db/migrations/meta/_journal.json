@@ -169,6 +169,20 @@
       "when": 1770167421712,
       "tag": "0023_steep_naoko",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1771460637000,
+      "tag": "0024_colorful_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1771461042943,
+      "tag": "0025_careless_felicia_hardy",
+      "breakpoints": true
     }
   ]
 }

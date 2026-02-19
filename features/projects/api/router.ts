@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -44,11 +44,13 @@ import { getProjectPaymentById } from "../queries/get-project-payment-by-id";
 import { TRPCError } from "@trpc/server";
 
 export const projectsRouter = createTRPCRouter({
-  list: protectedProcedure.input(listProjectSchema).query(async ({ input }) => {
-    return await listProjects(input);
-  }),
+  list: permissionProcedure("projects.read")
+    .input(listProjectSchema)
+    .query(async ({ input }) => {
+      return await listProjects(input);
+    }),
 
-  get: protectedProcedure
+  get: permissionProcedure("projects.read")
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       const item = await getProjectById(input.id);
@@ -60,7 +62,7 @@ export const projectsRouter = createTRPCRouter({
       return item;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("projects.create")
     .input(
       createProjectSchema.transform((v) => ({
         ...v,
@@ -71,7 +73,7 @@ export const projectsRouter = createTRPCRouter({
       return await createProject(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("projects.update")
     .input(
       updateProjectSchema.transform((v) => ({
         ...v,
@@ -82,7 +84,7 @@ export const projectsRouter = createTRPCRouter({
       return await updateProject(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("projects.delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       return await deleteProject(input.id);
@@ -90,13 +92,13 @@ export const projectsRouter = createTRPCRouter({
 });
 
 export const projectSuppliesRouter = createTRPCRouter({
-  list: protectedProcedure
+  list: permissionProcedure("projectItems.read")
     .input(listProjectItemSchema)
     .query(async ({ input }) => {
       return await listProjectSupplies(input);
     }),
 
-  get: protectedProcedure
+  get: permissionProcedure("projectItems.read")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ input }) => {
       const item = await getProjectSupplyById(input.id);
@@ -108,7 +110,7 @@ export const projectSuppliesRouter = createTRPCRouter({
       return item;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("projectItems.create")
     .input(
       createProjectSupplyWithProjectIdSchema.transform((v) => ({
         ...v,
@@ -119,7 +121,7 @@ export const projectSuppliesRouter = createTRPCRouter({
       return await createProjectSupply(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("projectItems.update")
     .input(
       updateProjectSupplySchema.transform((v) => ({
         ...v,
@@ -130,7 +132,7 @@ export const projectSuppliesRouter = createTRPCRouter({
       return await updateProjectSupply(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("projectItems.delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       return await deleteProjectSupply(input.id);
@@ -138,13 +140,13 @@ export const projectSuppliesRouter = createTRPCRouter({
 });
 
 export const projectLaborsRouter = createTRPCRouter({
-  list: protectedProcedure
+  list: permissionProcedure("projectItems.read")
     .input(listProjectItemSchema)
     .query(async ({ input }) => {
       return await listProjectLabors(input);
     }),
 
-  get: protectedProcedure
+  get: permissionProcedure("projectItems.read")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ input }) => {
       const item = await getProjectLaborById(input.id);
@@ -156,7 +158,7 @@ export const projectLaborsRouter = createTRPCRouter({
       return item;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("projectItems.create")
     .input(
       createProjectLaborWithProjectIdSchema.transform((v) => ({
         ...v,
@@ -167,7 +169,7 @@ export const projectLaborsRouter = createTRPCRouter({
       return await createProjectLabor(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("projectItems.update")
     .input(
       updateProjectLaborSchema.transform((v) => ({
         ...v,
@@ -178,7 +180,7 @@ export const projectLaborsRouter = createTRPCRouter({
       return await updateProjectLabor(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("projectItems.delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       return await deleteProjectLabor(input.id);
@@ -186,13 +188,13 @@ export const projectLaborsRouter = createTRPCRouter({
 });
 
 export const projectMiscRouter = createTRPCRouter({
-  list: protectedProcedure
+  list: permissionProcedure("projectItems.read")
     .input(listProjectItemSchema)
     .query(async ({ input }) => {
       return await listProjectMisc(input);
     }),
 
-  get: protectedProcedure
+  get: permissionProcedure("projectItems.read")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ input }) => {
       const item = await getProjectMiscById(input.id);
@@ -204,7 +206,7 @@ export const projectMiscRouter = createTRPCRouter({
       return item;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("projectItems.create")
     .input(
       createProjectMiscWithProjectIdSchema.transform((v) => ({
         ...v,
@@ -215,7 +217,7 @@ export const projectMiscRouter = createTRPCRouter({
       return await createProjectMisc(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("projectItems.update")
     .input(
       updateProjectMiscSchema.transform((v) => ({
         ...v,
@@ -226,7 +228,7 @@ export const projectMiscRouter = createTRPCRouter({
       return await updateProjectMisc(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("projectItems.delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       return await deleteProjectMisc(input.id);
@@ -234,13 +236,13 @@ export const projectMiscRouter = createTRPCRouter({
 });
 
 export const projectPaymentsRouter = createTRPCRouter({
-  list: protectedProcedure
+  list: permissionProcedure("projectItems.read")
     .input(listProjectItemSchema)
     .query(async ({ input }) => {
       return await listProjectPayments(input);
     }),
 
-  get: protectedProcedure
+  get: permissionProcedure("projectItems.read")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ input }) => {
       const item = await getProjectPaymentById(input.id);
@@ -252,7 +254,7 @@ export const projectPaymentsRouter = createTRPCRouter({
       return item;
     }),
 
-  create: protectedProcedure
+  create: permissionProcedure("projectItems.create")
     .input(
       createProjectPaymentWithProjectIdSchema.transform((v) => ({
         ...v,
@@ -263,7 +265,7 @@ export const projectPaymentsRouter = createTRPCRouter({
       return await createProjectPayment(input);
     }),
 
-  update: protectedProcedure
+  update: permissionProcedure("projectItems.update")
     .input(
       updateProjectPaymentSchema.transform((v) => ({
         ...v,
@@ -274,7 +276,7 @@ export const projectPaymentsRouter = createTRPCRouter({
       return await updateProjectPayment(input);
     }),
 
-  delete: protectedProcedure
+  delete: permissionProcedure("projectItems.delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       return await deleteProjectPayment(input.id);

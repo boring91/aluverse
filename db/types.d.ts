@@ -207,6 +207,24 @@ export interface ProjectSupplies {
   updatedAt: Generated<Timestamp>;
 }
 
+export interface RolePermissions {
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  permission: string;
+  roleId: string;
+  updatedAt: Generated<Timestamp>;
+}
+
+export interface Roles {
+  createdAt: Generated<Timestamp>;
+  description: string | null;
+  humanId: string | null;
+  id: Generated<string>;
+  isBuiltIn: Generated<boolean>;
+  name: string;
+  updatedAt: Generated<Timestamp>;
+}
+
 export interface Sessions {
   createdAt: Generated<Timestamp>;
   expiresAt: Timestamp;
@@ -226,6 +244,14 @@ export interface Transactions {
   description: string;
   id: Generated<string>;
   updatedAt: Generated<Timestamp>;
+}
+
+export interface UserRoles {
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  roleId: string;
+  updatedAt: Generated<Timestamp>;
+  userId: string;
 }
 
 export interface Users {
@@ -262,8 +288,11 @@ export interface DB {
   projectPayments: ProjectPayments;
   projects: Projects;
   projectSupplies: ProjectSupplies;
+  rolePermissions: RolePermissions;
+  roles: Roles;
   sessions: Sessions;
   transactions: Transactions;
+  userRoles: UserRoles;
   users: Users;
   verifications: Verifications;
 }

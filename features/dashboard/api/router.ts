@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import { dashboardDateRangeSchema } from "../schemas/dashboard.schema";
 import { getGeneralStats } from "../queries/get-general-stats";
 import { getPeriodComparison } from "../queries/get-period-comparison";
@@ -17,85 +17,85 @@ import { getPaymentStatus } from "../queries/get-payment-status";
 import { getBudgetItemsSpending } from "../queries/get-budget-items-spending";
 
 export const dashboardRouter = createTRPCRouter({
-  generalStats: protectedProcedure
+  generalStats: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getGeneralStats(input);
     }),
 
-  periodComparison: protectedProcedure
+  periodComparison: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getPeriodComparison(input);
     }),
 
-  projectsChart: protectedProcedure
+  projectsChart: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getProjectsInOutStats(input);
     }),
 
-  expensesStats: protectedProcedure
+  expensesStats: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getExpensesStats(input);
     }),
 
-  projectProfitStats: protectedProcedure
+  projectProfitStats: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getProjectProfitStats(input);
     }),
 
-  cashFlow: protectedProcedure.query(async () => {
+  cashFlow: permissionProcedure("dashboard.read").query(async () => {
     return await getCashFlow();
   }),
 
-  revenueStats: protectedProcedure
+  revenueStats: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getRevenueStats(input);
     }),
 
-  outstandingProjects: protectedProcedure.query(async () => {
+  outstandingProjects: permissionProcedure("dashboard.read").query(async () => {
     return await getOutstandingProjects();
   }),
 
-  projectsWithAlerts: protectedProcedure
+  projectsWithAlerts: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getProjectsWithAlerts(input.from, input.to);
     }),
 
-  topAndWorstPerformers: protectedProcedure
+  topAndWorstPerformers: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getTopAndWorstPerformers(input.from, input.to);
     }),
 
-  budgetBurnRate: protectedProcedure
+  budgetBurnRate: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getBudgetBurnRate(input.from, input.to);
     }),
 
-  projectPipeline: protectedProcedure.query(async () => {
+  projectPipeline: permissionProcedure("dashboard.read").query(async () => {
     return await getProjectPipeline();
   }),
 
-  efficiencyMetrics: protectedProcedure
+  efficiencyMetrics: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getEfficiencyMetrics(input.from, input.to);
     }),
 
-  paymentStatus: protectedProcedure
+  paymentStatus: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getPaymentStatus(input.from, input.to);
     }),
 
-  budgetItemsSpending: protectedProcedure
+  budgetItemsSpending: permissionProcedure("dashboard.read")
     .input(dashboardDateRangeSchema)
     .query(async ({ input }) => {
       return await getBudgetItemsSpending(input.from, input.to);

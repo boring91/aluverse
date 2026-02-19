@@ -13,6 +13,7 @@ import {
 } from "@/features/projects";
 import { loansRouter, loanPayoffsRouter } from "@/features/loans";
 import { dashboardRouter } from "@/features/dashboard";
+import { rbacRouter } from "@/features/rbac";
 
 export const appRouter = createTRPCRouter({
   financialAccounts: financialAccountsRouter,
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
   loans: loansRouter,
   loanPayoffs: loanPayoffsRouter,
   dashboard: dashboardRouter,
+  rbac: rbacRouter,
 });
 
 export type AppRouter = typeof appRouter;
