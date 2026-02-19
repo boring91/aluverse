@@ -60,7 +60,7 @@ export const FinancialAccountsListView = () => {
     trpc.financialAccounts.syncWithBank.mutationOptions({
       onSuccess: (syncedTransactionCount, { id }) => {
         toast.success(
-          `Successfully synced \${syncedTransactionCount?.toString() ?? 0} transactions`
+          `Successfully synced ${syncedTransactionCount?.toString() ?? 0} transactions`
         );
 
         queryClient.invalidateQueries(
