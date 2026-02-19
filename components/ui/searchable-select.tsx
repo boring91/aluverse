@@ -187,7 +187,7 @@ function SearchableSelectContent({
 
   return (
     <PopoverContent
-      className={cn("w-(--radix-popover-trigger-width) p-0", className)}
+      className={cn("w-(--anchor-width) p-0", className)}
       align="start"
     >
       <Command>
