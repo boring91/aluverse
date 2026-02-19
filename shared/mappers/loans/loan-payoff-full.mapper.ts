@@ -1,5 +1,5 @@
 import { DB } from "@/db/types";
-import { isLoanPayoffConsolidated } from "@/db/expressions";
+import { isLoanPayoffConsolidated } from "@/shared/expressions/loans/loan.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 
 export const loanPayoffFullMapper = (

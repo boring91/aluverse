@@ -3,7 +3,7 @@ import {
   projectAwaitingPayment,
   projectDaysOverdue,
   projectOutstanding,
-} from "@/db/expressions";
+} from "@/shared/expressions/projects/project.expression";
 import {
   outstandingProjectTopMapper,
   outstandingProjectsSummaryMapper,

@@ -1,5 +1,5 @@
 import { ExpressionBuilder } from "kysely";
-import { DB } from "../types";
+import { DB } from "@/db/types";
 
 export const balance = (eb: ExpressionBuilder<DB, "financialAccounts">) => {
   return eb

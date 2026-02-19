@@ -1,5 +1,5 @@
 import { DB } from "@/db/types";
-import { balance } from "@/db/expressions";
+import { balance } from "@/shared/expressions/financial-accounts/financial-account.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 
 export const financialAccountListMapper = (

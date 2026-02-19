@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
-import { isProjectWithinRange } from "@/db/expressions/projects.expression";
+import { isProjectWithinRange } from "@/shared/expressions/projects/project.expression";
 import { projectProfitStatsMapper } from "@/shared/mappers/dashboard/project-profit-stats.mapper";
 
 export async function getProjectProfitStatsQuery(input: DashboardDateRange) {

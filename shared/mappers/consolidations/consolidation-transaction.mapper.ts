@@ -1,4 +1,4 @@
-import { consolidatedAmount } from "@/db/expressions";
+import { consolidatedAmount } from "@/shared/expressions/transactions/transaction.expression";
 import { DB } from "@/db/types";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 

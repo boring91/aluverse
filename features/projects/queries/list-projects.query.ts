@@ -6,7 +6,7 @@ import {
   projectInPlanning,
   projectInProgress,
   unconsolidatedItemsCount,
-} from "@/db/expressions";
+} from "@/shared/expressions/projects/project.expression";
 import {
   projectCountMapper,
   projectListMapper,

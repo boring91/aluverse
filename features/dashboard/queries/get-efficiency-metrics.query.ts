@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { isProjectWithinRange } from "@/db/expressions";
+import { isProjectWithinRange } from "@/shared/expressions/projects/project.expression";
 import { efficiencyMetricsMapper } from "@/shared/mappers/dashboard/efficiency-metrics.mapper";
 
 export async function getEfficiencyMetricsQuery(from?: Date, to?: Date) {

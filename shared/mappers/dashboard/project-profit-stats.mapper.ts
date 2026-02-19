@@ -1,4 +1,4 @@
-import { projectCost } from "@/db/expressions/projects.expression";
+import { projectCost } from "@/shared/expressions/projects/project.expression";
 import { DB } from "@/db/types";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 

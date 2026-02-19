@@ -1,5 +1,8 @@
 import { db } from "@/db";
-import { getMonth, getYear } from "@/db/expressions/generic";
+import {
+  getMonth,
+  getYear,
+} from "@/shared/expressions/generic/date.expression";
 import { getCurrentTime } from "@/lib/utils";
 import { cashFlowMapper } from "@/shared/mappers/dashboard/cash-flow.mapper";
 

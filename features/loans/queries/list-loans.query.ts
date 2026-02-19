@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { listLoanSchema } from "../schemas/loans.shared-schema";
 import { db } from "@/db";
-import { loanRemaining } from "@/db/expressions";
+import { loanRemaining } from "@/shared/expressions/loans/loan.expression";
 import {
   loanCountMapper,
   loanListMapper,

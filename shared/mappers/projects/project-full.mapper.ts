@@ -8,7 +8,7 @@ import {
   projectMarkup,
   projectPaid,
   unconsolidatedItemsCount,
-} from "@/db/expressions";
+} from "@/shared/expressions/projects/project.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 
 export const projectFullMapper = (eb: ExpressionBuilder<DB, "projects">) =>

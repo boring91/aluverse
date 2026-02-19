@@ -2,7 +2,7 @@ import { db } from "@/db";
 import {
   consolidationCost,
   consolidationRevenue,
-} from "@/db/expressions/consolidations.expression";
+} from "@/shared/expressions/consolidations/consolidation.expression";
 import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 import { generalStatsTotalMapper } from "@/shared/mappers/dashboard/general-stats.mapper";
 

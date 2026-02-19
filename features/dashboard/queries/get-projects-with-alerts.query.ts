@@ -4,7 +4,7 @@ import {
   projectAllocationOverrun,
   projectCost,
   projectDaysOverdue,
-} from "@/db/expressions";
+} from "@/shared/expressions/projects/project.expression";
 import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
 
 export async function getProjectsWithAlertsQuery(from?: Date, to?: Date) {

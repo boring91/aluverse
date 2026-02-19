@@ -7,7 +7,7 @@ import {
   hasGst,
   hasProject,
   isTransactionConsolidated,
-} from "@/db/expressions";
+} from "@/shared/expressions/transactions/transaction.expression";
 import {
   transactionCountMapper,
   transactionListMapper,

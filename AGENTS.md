@@ -40,6 +40,8 @@ When working with entities, always infer types from existing sources rather than
 - Shared list/filter schema utilities must live in `@/lib/shared-schemas.ts`
 - All select expressions (columns, computed fields, subqueries) must live in mapper files, not inline query files
 - Mappers must live under `@/shared/mappers/<feature>/` and follow `*-full.mapper.ts` / `*-list.mapper.ts`
+- Query/filter/computed DB expressions must live under `@/shared/expressions/<feature>/` and use `*.expression.ts` files
+- Import expressions directly from their feature expression file (avoid cross-feature expression barrels)
 - Query files must use `*.query.ts` and export `...Query` functions
 - Mutation files must use `*.mutation.ts` and export `...Mutation` functions
 - API router files must use `*.router.ts`

@@ -1,6 +1,9 @@
 import { db } from "@/db";
-import { consolidationRevenue } from "@/db/expressions/consolidations.expression";
-import { getMonth, getYear } from "@/db/expressions/generic";
+import { consolidationRevenue } from "@/shared/expressions/consolidations/consolidation.expression";
+import {
+  getMonth,
+  getYear,
+} from "@/shared/expressions/generic/date.expression";
 import { getCurrentTime } from "@/lib/utils";
 import {
   revenueStatsTotalMapper,

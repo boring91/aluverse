@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { consolidatedAmount } from "@/db/expressions";
+import { consolidatedAmount } from "@/shared/expressions/transactions/transaction.expression";
 import { pendingConsolidationCountMapper } from "@/shared/mappers/consolidations/consolidation-transaction.mapper";
 
 export async function getConsolidationStatisticsQuery() {

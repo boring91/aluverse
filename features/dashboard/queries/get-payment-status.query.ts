@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { isProjectWithinRange } from "@/db/expressions";
+import { isProjectWithinRange } from "@/shared/expressions/projects/project.expression";
 import {
   paymentStatusSummaryMapper,
   projectPaymentStatusRowMapper,

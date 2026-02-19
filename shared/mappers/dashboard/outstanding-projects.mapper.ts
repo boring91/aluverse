@@ -1,4 +1,7 @@
-import { projectDaysOverdue, projectOutstanding } from "@/db/expressions";
+import {
+  projectDaysOverdue,
+  projectOutstanding,
+} from "@/shared/expressions/projects/project.expression";
 import { DB } from "@/db/types";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 

@@ -1,4 +1,7 @@
-import { getMonth, getYear } from "@/db/expressions/generic";
+import {
+  getMonth,
+  getYear,
+} from "@/shared/expressions/generic/date.expression";
 import { DB } from "@/db/types";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 

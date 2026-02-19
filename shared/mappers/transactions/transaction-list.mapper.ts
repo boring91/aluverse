@@ -2,7 +2,7 @@ import { DB } from "@/db/types";
 import {
   consolidatedAmount,
   isTransactionConsolidated,
-} from "@/db/expressions";
+} from "@/shared/expressions/transactions/transaction.expression";
 import { jsonArrayFrom, jsonObjectFrom } from "@/db/json-helpers";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 

@@ -4,7 +4,7 @@ import {
   loanPaid,
   loanRemaining,
   unconsolidatedPayoffsCount as unconsolidatedPayoffCount,
-} from "@/db/expressions";
+} from "@/shared/expressions/loans/loan.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
 
 export const loanListMapper = (eb: ExpressionBuilder<DB, "loans">) =>
