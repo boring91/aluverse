@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { listBudgetCategorySchema } from "../schemas/budgets.shared-schema";
 import { db } from "@/db";
-import {
-  budgetCategoryCountMapper,
-  budgetCategoryListMapper,
-} from "@/shared/mappers/budget/budget-category-list.mapper";
+import { budgetCategoryListMapper } from "@/shared/mappers/budget/budget-category-list.mapper";
 
 export async function listBudgetCategoriesQuery(
   input: z.infer<typeof listBudgetCategorySchema>
@@ -29,11 +26,11 @@ export async function listBudgetCategoriesQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(budgetCategoryCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(budgetCategoryCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

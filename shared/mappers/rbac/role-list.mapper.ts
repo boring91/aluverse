@@ -19,9 +19,3 @@ export const roleListMapper = (eb: ExpressionBuilder<DB, "roles">) =>
         .select(["rolePermissions.permission"])
     ).as("permissions"),
   ] satisfies SelectExpression<DB, "roles">[];
-
-export const roleCountMapper = (eb: ExpressionBuilder<DB, "roles">) =>
-  [eb.fn.count<number>("roles.id").as("count")] satisfies SelectExpression<
-    DB,
-    "roles"
-  >[];

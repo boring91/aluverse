@@ -1,9 +1,6 @@
 import { db } from "@/db";
 import { z } from "zod";
-import {
-  userAccessCountMapper,
-  userAccessMapper,
-} from "@/shared/mappers/rbac/user-access.mapper";
+import { userAccessMapper } from "@/shared/mappers/rbac/user-access.mapper";
 import { listUsersAccessSchema } from "../schemas/rbac.shared-schema";
 
 export async function listUsersAccessQuery(
@@ -27,11 +24,11 @@ export async function listUsersAccessQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(userAccessCountMapper)
+      .select((eb) => eb.fn.count<number>("users.id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(userAccessCountMapper)
+      .select((eb) => eb.fn.count<number>("users.id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

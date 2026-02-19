@@ -1,9 +1,6 @@
 import { listProjectItemSchema } from "../schemas/project-items.shared-schema";
 import { db } from "@/db";
-import {
-  projectSupplyCountMapper,
-  projectSupplyListMapper,
-} from "@/shared/mappers/projects/project-supply-list.mapper";
+import { projectSupplyListMapper } from "@/shared/mappers/projects/project-supply-list.mapper";
 import { z } from "zod";
 
 export async function listProjectSuppliesQuery(
@@ -18,11 +15,11 @@ export async function listProjectSuppliesQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(projectSupplyCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(projectSupplyCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

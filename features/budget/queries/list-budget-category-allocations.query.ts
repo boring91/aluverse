@@ -1,8 +1,5 @@
 import { db } from "@/db";
-import {
-  budgetCategoryAllocationCountMapper,
-  budgetCategoryAllocationListMapper,
-} from "@/shared/mappers/budget/budget-category-allocation-list.mapper";
+import { budgetCategoryAllocationListMapper } from "@/shared/mappers/budget/budget-category-allocation-list.mapper";
 import { z } from "zod";
 import { listBudgetCategoryAllocationSchema } from "../schemas/budgets.shared-schema";
 
@@ -18,11 +15,11 @@ export async function listBudgetCategoryAllocationsQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(budgetCategoryAllocationCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(budgetCategoryAllocationCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

@@ -42,11 +42,3 @@ export const consolidationListMapper = (
       .$notNull()
       .as("transaction"),
   ] satisfies SelectExpression<DB, "consolidations">[];
-
-export const consolidationCountMapper = (
-  eb: ExpressionBuilder<DB, "consolidations">
-) =>
-  [eb.fn.count<number>("id").as("count")] satisfies SelectExpression<
-    DB,
-    "consolidations"
-  >[];

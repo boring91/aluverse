@@ -35,9 +35,3 @@ export const projectListMapper = (eb: ExpressionBuilder<DB, "projects">) =>
     projectAllocationOverrun(eb).as("allocationOverrun"),
     unconsolidatedItemsCount(eb).as("unconsolidatedItemsCount"),
   ] satisfies SelectExpression<DB, "projects">[];
-
-export const projectCountMapper = (eb: ExpressionBuilder<DB, "projects">) =>
-  [eb.fn.count<number>("id").as("count")] satisfies SelectExpression<
-    DB,
-    "projects"
-  >[];

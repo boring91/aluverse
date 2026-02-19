@@ -7,10 +7,7 @@ import {
   projectInProgress,
   unconsolidatedItemsCount,
 } from "@/shared/expressions/projects/project.expression";
-import {
-  projectCountMapper,
-  projectListMapper,
-} from "@/shared/mappers/projects/project-list.mapper";
+import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
 import { z } from "zod";
 
 export async function listProjectsQuery(
@@ -63,11 +60,11 @@ export async function listProjectsQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(projectCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(projectCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

@@ -8,10 +8,7 @@ import {
   hasProject,
   isTransactionConsolidated,
 } from "@/shared/expressions/transactions/transaction.expression";
-import {
-  transactionCountMapper,
-  transactionListMapper,
-} from "@/shared/mappers/transactions/transaction-list.mapper";
+import { transactionListMapper } from "@/shared/mappers/transactions/transaction-list.mapper";
 
 export async function listTransactionsQuery(
   input: z.infer<typeof listTransactionSchema>
@@ -74,11 +71,11 @@ export async function listTransactionsQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(transactionCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(transactionCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

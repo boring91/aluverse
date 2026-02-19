@@ -12,11 +12,3 @@ export const loanPayoffListMapper = (
     "notes",
     isLoanPayoffConsolidated(eb).as("isConsolidated"),
   ] satisfies SelectExpression<DB, "loanPayoffs">[];
-
-export const loanPayoffCountMapper = (
-  eb: ExpressionBuilder<DB, "loanPayoffs">
-) =>
-  [eb.fn.count<number>("id").as("count")] satisfies SelectExpression<
-    DB,
-    "loanPayoffs"
-  >[];

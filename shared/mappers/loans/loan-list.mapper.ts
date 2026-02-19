@@ -21,9 +21,3 @@ export const loanListMapper = (eb: ExpressionBuilder<DB, "loans">) =>
     isLoanConsolidated(eb).as("isConsolidated"),
     unconsolidatedPayoffCount(eb).as("unconsolidatedPayoffCount"),
   ] satisfies SelectExpression<DB, "loans">[];
-
-export const loanCountMapper = (eb: ExpressionBuilder<DB, "loans">) =>
-  [eb.fn.count<number>("id").as("count")] satisfies SelectExpression<
-    DB,
-    "loans"
-  >[];

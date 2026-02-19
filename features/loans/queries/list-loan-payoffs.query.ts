@@ -1,8 +1,5 @@
 import { db } from "@/db";
-import {
-  loanPayoffCountMapper,
-  loanPayoffListMapper,
-} from "@/shared/mappers/loans/loan-payoff-list.mapper";
+import { loanPayoffListMapper } from "@/shared/mappers/loans/loan-payoff-list.mapper";
 import { listLoanPayoffSchema } from "../schemas/loan-payoffs.shared-schema";
 import { z } from "zod";
 
@@ -16,11 +13,11 @@ export async function listLoanPayoffsQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(loanPayoffCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(loanPayoffCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

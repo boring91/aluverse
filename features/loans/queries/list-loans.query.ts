@@ -2,10 +2,7 @@ import { z } from "zod";
 import { listLoanSchema } from "../schemas/loans.shared-schema";
 import { db } from "@/db";
 import { loanRemaining } from "@/shared/expressions/loans/loan.expression";
-import {
-  loanCountMapper,
-  loanListMapper,
-} from "@/shared/mappers/loans/loan-list.mapper";
+import { loanListMapper } from "@/shared/mappers/loans/loan-list.mapper";
 
 export async function listLoansQuery(input: z.infer<typeof listLoanSchema>) {
   const { filters, sorting, pagination } = input;
@@ -35,11 +32,11 @@ export async function listLoansQuery(input: z.infer<typeof listLoanSchema>) {
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(loanCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(loanCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

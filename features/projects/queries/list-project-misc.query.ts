@@ -1,9 +1,6 @@
 import { listProjectItemSchema } from "../schemas/project-items.shared-schema";
 import { db } from "@/db";
-import {
-  projectMiscCountMapper,
-  projectMiscListMapper,
-} from "@/shared/mappers/projects/project-misc-list.mapper";
+import { projectMiscListMapper } from "@/shared/mappers/projects/project-misc-list.mapper";
 import { z } from "zod";
 
 export async function listProjectMiscQuery(
@@ -18,11 +15,11 @@ export async function listProjectMiscQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(projectMiscCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(projectMiscCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

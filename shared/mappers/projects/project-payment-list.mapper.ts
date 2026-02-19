@@ -10,11 +10,3 @@ export const projectPaymentListMapper = (
     "amount",
     eb("consolidationId", "is not", null).as("isConsolidated"),
   ] satisfies SelectExpression<DB, "projectPayments">[];
-
-export const projectPaymentCountMapper = (
-  eb: ExpressionBuilder<DB, "projectPayments">
-) =>
-  [eb.fn.count<number>("id").as("count")] satisfies SelectExpression<
-    DB,
-    "projectPayments"
-  >[];

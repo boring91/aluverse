@@ -44,11 +44,3 @@ export const transactionListMapper = (
         ])
     ).as("consolidations"),
   ] satisfies SelectExpression<DB, "transactions">[];
-
-export const transactionCountMapper = (
-  eb: ExpressionBuilder<DB, "transactions">
-) =>
-  [eb.fn.count<number>("id").as("count")] satisfies SelectExpression<
-    DB,
-    "transactions"
-  >[];

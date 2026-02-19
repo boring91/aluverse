@@ -1,9 +1,6 @@
 import { db } from "@/db";
 import { z } from "zod";
-import {
-  roleCountMapper,
-  roleListMapper,
-} from "@/shared/mappers/rbac/role-list.mapper";
+import { roleListMapper } from "@/shared/mappers/rbac/role-list.mapper";
 import { listRolesSchema } from "../schemas/rbac.shared-schema";
 
 export async function listRolesQuery(data: z.infer<typeof listRolesSchema>) {
@@ -26,11 +23,11 @@ export async function listRolesQuery(data: z.infer<typeof listRolesSchema>) {
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(roleCountMapper)
+      .select((eb) => eb.fn.count<number>("roles.id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(roleCountMapper)
+      .select((eb) => eb.fn.count<number>("roles.id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);

@@ -1,10 +1,7 @@
 import { listConsolidationSchema } from "../schemas/consolidations.shared-schema";
 import { z } from "zod";
 import { db } from "@/db";
-import {
-  consolidationCountMapper,
-  consolidationListMapper,
-} from "@/shared/mappers/consolidations/consolidation-list.mapper";
+import { consolidationListMapper } from "@/shared/mappers/consolidations/consolidation-list.mapper";
 
 export async function listConsolidationsQuery(
   input: z.infer<typeof listConsolidationSchema>
@@ -19,11 +16,11 @@ export async function listConsolidationsQuery(
 
   const [count, filteredCount] = await Promise.all([
     baseQuery
-      .select(consolidationCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
     query
-      .select(consolidationCountMapper)
+      .select((eb) => eb.fn.count<number>("id").as("count"))
       .executeTakeFirstOrThrow()
       .then((x) => x.count),
   ]);
