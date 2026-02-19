@@ -18,7 +18,13 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { ChevronUpIcon, ChevronDownIcon, CheckIcon } from "lucide-react";
+import {
+  ChevronUpIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CheckIcon,
+} from "lucide-react";
 import { cn } from "@/lib/client-utils";
 type DateInputProps = {
   value?: Date;
@@ -324,6 +330,13 @@ type DateRange = {
   to: Date | undefined;
 };
 
+const getMonthRange = (monthDate: Date): DateRange => {
+  const from = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+  const to = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1);
+
+  return { from, to };
+};
+
 // Define presets
 const PRESETS = [
   "today",
@@ -449,42 +462,52 @@ export const DateRange: FC<DateRangePickerProps> = ({
         to.setHours(23, 59, 59, 999);
         break;
       case "thisMonth":
-        from.setDate(1);
-        from.setHours(0, 0, 0, 0);
-        to.setHours(23, 59, 59, 999);
-        break;
+        return getMonthRange(from);
       case "lastMonth":
         from.setMonth(from.getMonth() - 1);
-        from.setDate(1);
-        from.setHours(0, 0, 0, 0);
-        to.setDate(0);
-        to.setHours(23, 59, 59, 999);
-        break;
+        return getMonthRange(from);
     }
 
     return { from, to };
   };
 
-  const setPreset = (preset: string): void => {
-    const range = getPresetRange(preset);
-    setRange(range);
-    if (rangeCompare) {
-      const rangeCompare = {
-        from: new Date(
-          range.from.getFullYear() - 1,
-          range.from.getMonth(),
-          range.from.getDate()
-        ),
-        to: range.to
-          ? new Date(
-              range.to.getFullYear() - 1,
-              range.to.getMonth(),
-              range.to.getDate()
-            )
-          : undefined,
-      };
-      setRangeCompare(rangeCompare);
+  const applyRange = (nextRange: DateRange) => {
+    setRange(nextRange);
+
+    if (!rangeCompare) {
+      return { range: nextRange, rangeCompare: undefined };
     }
+
+    const nextRangeCompare = {
+      from: new Date(
+        nextRange.from.getFullYear() - 1,
+        nextRange.from.getMonth(),
+        nextRange.from.getDate()
+      ),
+      to: nextRange.to
+        ? new Date(
+            nextRange.to.getFullYear() - 1,
+            nextRange.to.getMonth(),
+            nextRange.to.getDate()
+          )
+        : undefined,
+    };
+    setRangeCompare(nextRangeCompare);
+
+    return { range: nextRange, rangeCompare: nextRangeCompare };
+  };
+
+  const setPreset = (preset: string): void => {
+    const nextRange = getPresetRange(preset);
+    applyRange(nextRange);
+  };
+
+  const setRelativeMonthRange = (monthOffset: number) => {
+    const monthDate = new Date(range.from);
+    monthDate.setMonth(monthDate.getMonth() + monthOffset);
+
+    const monthRange = getMonthRange(monthDate);
+    return applyRange(monthRange);
   };
 
   const checkPreset = useCallback((): void => {
@@ -597,34 +620,58 @@ export const DateRange: FC<DateRangePickerProps> = ({
         setIsOpen(open);
       }}
     >
-      <PopoverTrigger asChild>
-        <Button size="lg" variant="outline">
-          <div className="text-right">
-            <div className="py-1">
-              <div>{`${formatDate(range.from, locale)}${
-                range.to != null ? " - " + formatDate(range.to, locale) : ""
-              }`}</div>
-            </div>
-            {rangeCompare != null && (
-              <div className="opacity-60 text-xs -mt-1">
-                <>
-                  vs. {formatDate(rangeCompare.from, locale)}
-                  {rangeCompare.to != null
-                    ? ` - ${formatDate(rangeCompare.to, locale)}`
-                    : ""}
-                </>
-              </div>
-            )}
-          </div>
-          <div className="pl-1 opacity-60 -mr-2 scale-125">
-            {isOpen ? (
-              <ChevronUpIcon width={24} />
-            ) : (
-              <ChevronDownIcon width={24} />
-            )}
-          </div>
+      <div className="flex items-center gap-2">
+        <Button
+          size="icon"
+          variant="outline"
+          aria-label="Select previous month"
+          onClick={() => {
+            const values = setRelativeMonthRange(-1);
+            onUpdate?.(values);
+          }}
+        >
+          <ChevronLeftIcon className="size-4" />
         </Button>
-      </PopoverTrigger>
+        <PopoverTrigger asChild>
+          <Button size="lg" variant="outline">
+            <div className="text-right">
+              <div className="py-1">
+                <div>{`${formatDate(range.from, locale)}${
+                  range.to != null ? " - " + formatDate(range.to, locale) : ""
+                }`}</div>
+              </div>
+              {rangeCompare != null && (
+                <div className="opacity-60 text-xs -mt-1">
+                  <>
+                    vs. {formatDate(rangeCompare.from, locale)}
+                    {rangeCompare.to != null
+                      ? ` - ${formatDate(rangeCompare.to, locale)}`
+                      : ""}
+                  </>
+                </div>
+              )}
+            </div>
+            <div className="pl-1 opacity-60 -mr-2 scale-125">
+              {isOpen ? (
+                <ChevronUpIcon width={24} />
+              ) : (
+                <ChevronDownIcon width={24} />
+              )}
+            </div>
+          </Button>
+        </PopoverTrigger>
+        <Button
+          size="icon"
+          variant="outline"
+          aria-label="Select next month"
+          onClick={() => {
+            const values = setRelativeMonthRange(1);
+            onUpdate?.(values);
+          }}
+        >
+          <ChevronRightIcon className="size-4" />
+        </Button>
+      </div>
       <PopoverContent align={align} className="w-auto">
         <div className="flex py-2">
           <div className="flex">

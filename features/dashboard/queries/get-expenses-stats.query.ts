@@ -19,7 +19,7 @@ export async function getExpensesStatsQuery(input: DashboardDateRange) {
     expensesQuery = expensesQuery.where("transactions.date", ">=", from);
   }
   if (to) {
-    expensesQuery = expensesQuery.where("transactions.date", "<=", to);
+    expensesQuery = expensesQuery.where("transactions.date", "<", to);
   }
 
   // Group by consolidationGroup and sum amounts

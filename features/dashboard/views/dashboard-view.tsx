@@ -24,6 +24,7 @@ import { PageLoader } from "@/components/page-loader";
 
 const startCurrentMonth = new Date();
 startCurrentMonth.setDate(1);
+startCurrentMonth.setHours(0, 0, 0, 0);
 
 const now = new Date();
 
@@ -60,8 +61,8 @@ export const DashboardView = () => {
     <PageContainer>
       <div className="flex items-center justify-end">
         <DateRange
-          initialDateFrom={startCurrentMonth}
-          initialDateTo={now}
+          initialDateFrom={fromDate ?? startCurrentMonth}
+          initialDateTo={toDate}
           onUpdate={({ range }) => {
             setFromDate(range.from);
             setToDate(range.to);

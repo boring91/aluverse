@@ -323,7 +323,7 @@ export const isProjectWithinRange = (
   }
 
   if (from && to) {
-    return eb.and([eb("startDate", ">=", from), eb("startDate", "<=", to)]);
+    return eb.and([eb("startDate", ">=", from), eb("startDate", "<", to)]);
   }
 
   if (from) {
@@ -331,7 +331,7 @@ export const isProjectWithinRange = (
   }
 
   if (to) {
-    return eb("startDate", "<=", to);
+    return eb("startDate", "<", to);
   }
 
   return eb.lit(false);
