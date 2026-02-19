@@ -72,6 +72,7 @@ export const ConsolidationsList = ({
       },
       {
         placeholderData: keepPreviousData,
+        enabled: open,
       }
     )
   );
@@ -115,22 +116,20 @@ export const ConsolidationsList = ({
 
   return (
     <>
-      {(dataTable.openCreateSheet || itemId) && (
-        <CreateConsolidation
-          transaction={transaction}
-          itemId={itemId}
-          open={dataTable.openCreateSheet || !!itemId}
-          onOpenChange={(value) => {
-            if (value) {
-              dataTable.setOpenCreateSheet(true);
-              return;
-            }
+      <CreateConsolidation
+        transaction={transaction}
+        itemId={itemId}
+        open={dataTable.openCreateSheet || !!itemId}
+        onOpenChange={(value) => {
+          if (value) {
+            dataTable.setOpenCreateSheet(true);
+            return;
+          }
 
-            setItemId(null);
-            dataTable.setOpenCreateSheet(false);
-          }}
-        />
-      )}
+          setItemId(null);
+          dataTable.setOpenCreateSheet(false);
+        }}
+      />
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>

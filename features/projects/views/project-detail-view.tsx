@@ -43,13 +43,11 @@ export const ProjectDetailView = () => {
 
   return (
     <>
-      {openCreateSheet && (
-        <CreateProject
-          open={openCreateSheet}
-          onOpenChange={setOpenCreateSheet}
-          itemId={data.id}
-        />
-      )}
+      <CreateProject
+        open={openCreateSheet}
+        onOpenChange={setOpenCreateSheet}
+        itemId={data.id}
+      />
       <PageContainer>
         <div className="flex flex-col gap-6">
           <ProjectDetailHeader

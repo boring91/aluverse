@@ -28,11 +28,16 @@ import {
   transactionBudgetCategories,
   transactionConsolidationGroups,
 } from "@/lib/constants";
+import type { AppRouter } from "@/trpc/routers/_app";
+import type { inferRouterOutputs } from "@trpc/server";
 
 type Props = {
   mode: "account" | "consolidation";
   accountId?: string;
 };
+
+type Transaction =
+  inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
 
 const CONSOLIDATION_GROUP_LABELS: Record<
   (typeof transactionConsolidationGroups)[number],
@@ -71,6 +76,10 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
     new Set()
   );
+  const [
+    selectedConsolidationTransaction,
+    setSelectedConsolidationTransaction,
+  ] = useState<Transaction | null>(null);
 
   const handleDelete = (itemId: string) => {
     confirm({
@@ -150,6 +159,12 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   );
 
   const { data: projects } = useQuery(trpc.projects.list.queryOptions({}));
+  const resolvedConsolidationTransaction =
+    mode === "consolidation" && consolidateId
+      ? (data?.items.find((item) => item.id === consolidateId) ?? null)
+      : null;
+  const consolidationTransaction =
+    resolvedConsolidationTransaction ?? selectedConsolidationTransaction;
 
   return (
     <>
@@ -170,19 +185,24 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         />
       )}
 
-      {consolidateId &&
-        mode === "consolidation" &&
-        data?.items.find((item) => item.id === consolidateId) && (
-          <ConsolidationsList
-            transaction={data.items.find((item) => item.id === consolidateId)!}
-            open={!!consolidateId}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConsolidateId(null);
+      {mode === "consolidation" && consolidationTransaction && (
+        <ConsolidationsList
+          transaction={consolidationTransaction}
+          open={
+            !!consolidateId && consolidationTransaction.id === consolidateId
+          }
+          onOpenChange={(open) => {
+            if (!open) {
+              if (resolvedConsolidationTransaction) {
+                setSelectedConsolidationTransaction(
+                  resolvedConsolidationTransaction
+                );
               }
-            }}
-          />
-        )}
+              setConsolidateId(null);
+            }
+          }}
+        />
+      )}
 
       <DataTable
         columns={columns}

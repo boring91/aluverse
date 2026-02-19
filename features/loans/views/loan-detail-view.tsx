@@ -50,13 +50,11 @@ export const LoanDetailView = () => {
 
   return (
     <>
-      {openCreateSheet && (
-        <CreateLoan
-          open={openCreateSheet}
-          onOpenChange={setOpenCreateSheet}
-          itemId={data.id}
-        />
-      )}
+      <CreateLoan
+        open={openCreateSheet}
+        onOpenChange={setOpenCreateSheet}
+        itemId={data.id}
+      />
       <PageContainer>
         <div className="flex flex-col gap-6">
           <LoanDetailHeader
