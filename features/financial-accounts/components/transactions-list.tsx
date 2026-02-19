@@ -30,6 +30,8 @@ import {
 } from "@/lib/constants";
 import type { AppRouter } from "@/trpc/routers/_app";
 import type { inferRouterOutputs } from "@trpc/server";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { PageLoader } from "@/components/page-loader";
 
 type Props = {
   mode: "account" | "consolidation";
@@ -67,6 +69,18 @@ const BUDGET_CATEGORY_LABELS: Record<
 
 export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const { confirm } = useConfirm();
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const canRead = hasPermission("transactions.read");
+  const canCreate = hasPermission("transactions.create");
+  const canUpdate = hasPermission("transactions.update");
+  const canDelete = hasPermission("transactions.delete");
+  const canReadProjects = hasPermission("projects.read");
+  const canManageConsolidations =
+    hasPermission("consolidations.read") ||
+    hasPermission("consolidations.create") ||
+    hasPermission("consolidations.update") ||
+    hasPermission("consolidations.delete");
 
   const [itemId, setItemId] = useQueryState("itemId", parseAsString);
   const [consolidateId, setConsolidateId] = useQueryState(
@@ -114,6 +128,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         },
       },
       {
+        enabled: canRead,
         placeholderData: keepPreviousData,
       }
     )
@@ -151,14 +166,21 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   );
 
   const columns = useTransactionsColumns(
-    setItemId,
-    handleDelete,
-    setConsolidateId,
+    canUpdate ? setItemId : undefined,
+    canDelete ? handleDelete : undefined,
+    canManageConsolidations ? setConsolidateId : undefined,
     currentlyProcessing,
     mode === "consolidation"
   );
 
-  const { data: projects } = useQuery(trpc.projects.list.queryOptions({}));
+  const { data: projects } = useQuery(
+    trpc.projects.list.queryOptions(
+      {},
+      {
+        enabled: canReadProjects && mode === "consolidation",
+      }
+    )
+  );
   const resolvedConsolidationTransaction =
     mode === "consolidation" && consolidateId
       ? (data?.items.find((item) => item.id === consolidateId) ?? null)
@@ -166,14 +188,35 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const consolidationTransaction =
     resolvedConsolidationTransaction ?? selectedConsolidationTransaction;
 
+  if (isPending) {
+    return <PageLoader variant="inline" />;
+  }
+
+  if (!canRead) {
+    return (
+      <p className="text-muted-foreground">
+        You do not have access to transactions.
+      </p>
+    );
+  }
+
   return (
     <>
       {accountId && mode === "account" && (
         <CreateTransaction
           accountId={accountId}
-          open={dataTable.openCreateSheet || !!itemId}
+          open={
+            (canCreate && dataTable.openCreateSheet && !itemId) ||
+            (canUpdate && !!itemId)
+          }
           onOpenChange={(value) => {
             if (value) {
+              if (!itemId && !canCreate) {
+                return;
+              }
+              if (itemId && !canUpdate) {
+                return;
+              }
               setOpenCreateSheet(true);
               return;
             }
@@ -185,7 +228,9 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         />
       )}
 
-      {mode === "consolidation" && consolidationTransaction && (
+      {mode === "consolidation" &&
+      canManageConsolidations &&
+      consolidationTransaction ? (
         <ConsolidationsList
           transaction={consolidationTransaction}
           open={
@@ -202,16 +247,19 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
             }
           }}
         />
-      )}
+      ) : null}
 
       <DataTable
         columns={columns}
         data={data}
         {...dataTable}
-        setOpenCreateSheet={mode === "account" ? setOpenCreateSheet : undefined}
+        setOpenCreateSheet={
+          mode === "account" && canCreate ? setOpenCreateSheet : undefined
+        }
         columnVisibility={{
-          actions: mode === "account",
-          consolidationActions: mode === "consolidation",
+          actions: mode === "account" && (canUpdate || canDelete),
+          consolidationActions:
+            mode === "consolidation" && canManageConsolidations,
           isConsolidated: mode === "consolidation",
           consolidationGroup: mode === "consolidation",
         }}

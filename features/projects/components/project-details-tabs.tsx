@@ -12,8 +12,25 @@ import { LaborsList } from "@/features/projects/components/labors-list";
 import { MiscList } from "@/features/projects/components/misc-list";
 import { PaymentsList } from "@/features/projects/components/payments-list";
 import { SuppliesList } from "@/features/projects/components/supplies-list";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { PageLoader } from "@/components/page-loader";
 
 export const ProjectDetailsTabs = ({ projectId }: { projectId: string }) => {
+  const { hasPermission, isPending } = useRbacAccess();
+  const canReadProjectItems = hasPermission("projectItems.read");
+
+  if (isPending) {
+    return <PageLoader variant="inline" />;
+  }
+
+  if (!canReadProjectItems) {
+    return (
+      <p className="text-muted-foreground">
+        You do not have access to project items.
+      </p>
+    );
+  }
+
   return (
     <Tabs defaultValue="supplies" className="mt-2 space-y-4">
       <TabsList>

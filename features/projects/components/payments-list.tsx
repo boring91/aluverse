@@ -20,13 +20,15 @@ import { CreatePayment } from "./create-payment";
 import { formatCurrency } from "@/lib/utils";
 import { useConfirm } from "@/lib/confirm-context";
 import { CheckIcon, XIcon } from "lucide-react";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { PageLoader } from "@/components/page-loader";
 
 type ProjectPayment =
   inferRouterOutputs<AppRouter>["projectPayments"]["list"]["items"][number];
 
 const useColumns = (
-  handleUpdate: (itemId: string) => void,
-  handleDelete: (itemId: string) => void,
+  handleUpdate: ((itemId: string) => void) | undefined,
+  handleDelete: ((itemId: string) => void) | undefined,
   currentlyProcessing: Set<string>
 ) => {
   return useMemo<ColumnDef<ProjectPayment>[]>(() => {
@@ -108,6 +110,12 @@ type Props = {
 
 export const PaymentsList = ({ projectId }: Props) => {
   const { confirm } = useConfirm();
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const canRead = hasPermission("projectItems.read");
+  const canCreate = hasPermission("projectItems.create");
+  const canUpdate = hasPermission("projectItems.update");
+  const canDelete = hasPermission("projectItems.delete");
 
   const [itemId, setItemId] = useState<string | null>(null);
   const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
@@ -115,6 +123,10 @@ export const PaymentsList = ({ projectId }: Props) => {
   );
 
   const handleDelete = (itemId: string) => {
+    if (!canDelete) {
+      return;
+    }
+
     confirm({
       title: "Delete",
       description: "Are you sure you want to delete this item?",
@@ -140,6 +152,7 @@ export const PaymentsList = ({ projectId }: Props) => {
         sorting: dataTable.sorting,
       },
       {
+        enabled: canRead,
         placeholderData: keepPreviousData,
       }
     )
@@ -173,25 +186,59 @@ export const PaymentsList = ({ projectId }: Props) => {
     })
   );
 
-  const columns = useColumns(setItemId, handleDelete, currentlyProcessing);
+  const columns = useColumns(
+    canUpdate ? setItemId : undefined,
+    canDelete ? handleDelete : undefined,
+    currentlyProcessing
+  );
+
+  if (isPending) {
+    return <PageLoader variant="inline" />;
+  }
+
+  if (!canRead) {
+    return (
+      <p className="text-muted-foreground">
+        You do not have access to project items.
+      </p>
+    );
+  }
 
   return (
     <>
-      <CreatePayment
-        projectId={projectId}
-        open={dataTable.openCreateSheet || !!itemId}
-        onOpenChange={(value) => {
-          if (value) {
-            dataTable.setOpenCreateSheet(true);
-            return;
+      {canCreate || canUpdate ? (
+        <CreatePayment
+          projectId={projectId}
+          open={
+            (canCreate && dataTable.openCreateSheet && !itemId) ||
+            (canUpdate && !!itemId)
           }
+          onOpenChange={(value) => {
+            if (value) {
+              if (!itemId && !canCreate) {
+                return;
+              }
+              if (itemId && !canUpdate) {
+                return;
+              }
+              dataTable.setOpenCreateSheet(true);
+              return;
+            }
 
-          setItemId(null);
-          dataTable.setOpenCreateSheet(false);
-        }}
-        itemId={itemId}
+            setItemId(null);
+            dataTable.setOpenCreateSheet(false);
+          }}
+          itemId={itemId}
+        />
+      ) : null}
+      <DataTable
+        columns={columns}
+        data={data}
+        {...dataTable}
+        setOpenCreateSheet={
+          canCreate ? dataTable.setOpenCreateSheet : undefined
+        }
       />
-      <DataTable columns={columns} data={data} {...dataTable} />
     </>
   );
 };

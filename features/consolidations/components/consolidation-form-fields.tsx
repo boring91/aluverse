@@ -25,6 +25,7 @@ import { useLoanPayoffs } from "../hooks/use-loan-payoffs";
 import { formatCurrency } from "@/lib/utils";
 import { useStore } from "@tanstack/react-form";
 import type { useConsolidationForm } from "../hooks/use-consolidation-form";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 
 type FormApi = ReturnType<typeof useConsolidationForm>["form"];
 
@@ -155,21 +156,36 @@ export const ProjectFields = forwardRef<
     form.store,
     (state) => state.values.projectStream
   );
+  const { hasPermission } = useRbacAccess();
+
+  const canReadProjects = hasPermission("projects.read");
+  const canCreateProjects = hasPermission("projects.create");
+  const canReadProjectItems = hasPermission("projectItems.read");
+  const canCreateProjectItems = hasPermission("projectItems.create");
 
   const trpc = useTRPC();
 
   const { data: projects } = useQuery(
-    trpc.projects.list.queryOptions({
-      pagination: { pageSize: -1, pageIndex: 0 },
-    })
+    trpc.projects.list.queryOptions(
+      {
+        pagination: { pageSize: -1, pageIndex: 0 },
+      },
+      {
+        enabled: canReadProjects,
+      }
+    )
   );
 
-  const projectItems = useProjectItems(projectId, projectStream);
+  const projectItems = useProjectItems(
+    projectId,
+    projectStream,
+    canReadProjectItems
+  );
 
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
   const createProjectItemRef = useRef<CreateProjectItemHandle>(null);
 
-  const handleItemCreated = usePendingSelection({
+  const handlePendingItemCreated = usePendingSelection({
     items: projectItems,
     onItemFound: useCallback(
       (id) => {
@@ -180,7 +196,7 @@ export const ProjectFields = forwardRef<
     resetDependencies: [projectId, projectStream],
   });
 
-  const handleProjectCreated = usePendingSelection({
+  const handlePendingProjectCreated = usePendingSelection({
     items: projects?.items,
     onItemFound: useCallback(
       (id) => {
@@ -192,6 +208,24 @@ export const ProjectFields = forwardRef<
     ),
     resetDependencies: [projectStream],
   });
+
+  const handleItemCreated = useCallback(
+    (id: string) => {
+      form.setFieldValue("projectItemId", id);
+      handlePendingItemCreated(id);
+    },
+    [form, handlePendingItemCreated]
+  );
+
+  const handleProjectCreated = useCallback(
+    (id: string) => {
+      form.setFieldValue("projectId", id);
+      form.resetField("projectStream");
+      form.resetField("projectItemId");
+      handlePendingProjectCreated(id);
+    },
+    [form, handlePendingProjectCreated]
+  );
 
   useImperativeHandle(ref, () => {
     return {
@@ -216,11 +250,15 @@ export const ProjectFields = forwardRef<
               })) ?? []
             }
             isSearchable
-            onCreate={() => {
-              setIsCreateProjectOpen(true);
-              form.resetField("projectStream");
-              form.resetField("projectItemId");
-            }}
+            onCreate={
+              canCreateProjects
+                ? () => {
+                    setIsCreateProjectOpen(true);
+                    form.resetField("projectStream");
+                    form.resetField("projectItemId");
+                  }
+                : undefined
+            }
             onChange={() => {
               form.resetField("projectStream");
               form.resetField("projectItemId");
@@ -257,7 +295,11 @@ export const ProjectFields = forwardRef<
                   ` - ${item.isConsolidated ? "Consolidated" : "Not consolidated"}`,
               })) ?? []
             }
-            onCreate={() => createProjectItemRef.current?.open()}
+            onCreate={
+              canCreateProjectItems
+                ? () => createProjectItemRef.current?.open()
+                : undefined
+            }
           />
         )}
       />
@@ -269,14 +311,17 @@ export const ProjectFields = forwardRef<
           stream={projectStream}
           onItemCreated={handleItemCreated}
           prefillData={prefillData}
+          canCreate={canCreateProjectItems}
         />
       )}
-      <CreateProject
-        open={isCreateProjectOpen}
-        onOpenChange={setIsCreateProjectOpen}
-        itemId={null}
-        onCreated={handleProjectCreated}
-      />
+      {canCreateProjects ? (
+        <CreateProject
+          open={isCreateProjectOpen}
+          onOpenChange={setIsCreateProjectOpen}
+          itemId={null}
+          onCreated={handleProjectCreated}
+        />
+      ) : null}
     </>
   );
 });
@@ -295,19 +340,30 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
   ({ form, prefillData }, ref) => {
     const loanId = useStore(form.store, (state) => state.values.loanId);
     const isPayoff = useStore(form.store, (state) => state.values.isPayoff);
+    const { hasPermission } = useRbacAccess();
+
+    const canReadLoans = hasPermission("loans.read");
+    const canCreateLoans = hasPermission("loans.create");
+    const canReadLoanPayoffs = hasPermission("loanPayoffs.read");
+    const canCreateLoanPayoffs = hasPermission("loanPayoffs.create");
 
     const trpc = useTRPC();
 
     const { data: loans } = useQuery(
-      trpc.loans.list.queryOptions({
-        pagination: { pageSize: -1, pageIndex: 0 },
-      })
+      trpc.loans.list.queryOptions(
+        {
+          pagination: { pageSize: -1, pageIndex: 0 },
+        },
+        {
+          enabled: canReadLoans,
+        }
+      )
     );
-    const loanPayoffs = useLoanPayoffs(loanId);
+    const loanPayoffs = useLoanPayoffs(loanId, canReadLoanPayoffs);
 
     const [isCreateLoanOpen, setIsCreateLoanOpen] = useState(false);
     const createLoanPayoffRef = useRef<CreateLoanPayoffHandle>(null);
-    const handlePayoffCreated = usePendingSelection({
+    const handlePendingPayoffCreated = usePendingSelection({
       items: loanPayoffs,
       onItemFound: useCallback(
         (id) => {
@@ -317,6 +373,13 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
       ),
       resetDependencies: [loanId],
     });
+    const handlePayoffCreated = useCallback(
+      (id: string) => {
+        form.setFieldValue("loanPayoffId", id);
+        handlePendingPayoffCreated(id);
+      },
+      [form, handlePendingPayoffCreated]
+    );
     const handleLoanCreated = (createdLoanId: string) => {
       form.setFieldValue("loanId", createdLoanId);
       form.resetField("isPayoff");
@@ -346,11 +409,15 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
                 })) ?? []
               }
               isSearchable
-              onCreate={() => {
-                setIsCreateLoanOpen(true);
-                form.resetField("isPayoff");
-                form.resetField("loanPayoffId");
-              }}
+              onCreate={
+                canCreateLoans
+                  ? () => {
+                      setIsCreateLoanOpen(true);
+                      form.resetField("isPayoff");
+                      form.resetField("loanPayoffId");
+                    }
+                  : undefined
+              }
               onChange={() => {
                 form.resetField("isPayoff");
                 form.resetField("loanPayoffId");
@@ -386,7 +453,11 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
                   })) ?? []
                 }
                 isSearchable
-                onCreate={() => createLoanPayoffRef.current?.open()}
+                onCreate={
+                  canCreateLoanPayoffs
+                    ? () => createLoanPayoffRef.current?.open()
+                    : undefined
+                }
               />
             )}
           />
@@ -398,19 +469,22 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
             loanId={loanId}
             onPayoffCreated={handlePayoffCreated}
             prefillData={prefillData}
+            canCreate={canCreateLoanPayoffs}
           />
         )}
-        <CreateLoan
-          open={isCreateLoanOpen}
-          onOpenChange={setIsCreateLoanOpen}
-          itemId={null}
-          onCreated={handleLoanCreated}
-          prefillData={{
-            date: prefillData.date,
-            amount: prefillData.amount,
-            notes: prefillData.description,
-          }}
-        />
+        {canCreateLoans ? (
+          <CreateLoan
+            open={isCreateLoanOpen}
+            onOpenChange={setIsCreateLoanOpen}
+            itemId={null}
+            onCreated={handleLoanCreated}
+            prefillData={{
+              date: prefillData.date,
+              amount: prefillData.amount,
+              notes: prefillData.description,
+            }}
+          />
+        ) : null}
       </>
     );
   }

@@ -23,9 +23,17 @@ import { useConfirm } from "@/lib/confirm-context";
 import { useQueryState, parseAsString } from "nuqs";
 import { useProjectsColumns } from "../hooks/use-projects-columns";
 import { projectFiltersSchema } from "../schemas/projects.shared-schema";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { PageLoader } from "@/components/page-loader";
 
 export const ProjectsList = () => {
   const { confirm } = useConfirm();
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const canRead = hasPermission("projects.read");
+  const canCreate = hasPermission("projects.create");
+  const canUpdate = hasPermission("projects.update");
+  const canDelete = hasPermission("projects.delete");
 
   const [itemId, setItemId] = useQueryState("itemId", parseAsString);
 
@@ -34,6 +42,10 @@ export const ProjectsList = () => {
   );
 
   const handleDelete = (itemId: string) => {
+    if (!canDelete) {
+      return;
+    }
+
     confirm({
       title: "Delete",
       description: "Are you sure you want to delete this item?",
@@ -62,6 +74,7 @@ export const ProjectsList = () => {
         filters: raw,
       },
       {
+        enabled: canRead,
         placeholderData: keepPreviousData,
       }
     )
@@ -91,30 +104,56 @@ export const ProjectsList = () => {
   );
 
   const columns = useProjectsColumns(
-    setItemId,
-    handleDelete,
+    canUpdate ? setItemId : undefined,
+    canDelete ? handleDelete : undefined,
     currentlyProcessing
   );
 
+  if (isPending) {
+    return <PageLoader variant="inline" />;
+  }
+
+  if (!canRead) {
+    return (
+      <p className="text-muted-foreground">
+        You do not have access to projects.
+      </p>
+    );
+  }
+
   return (
     <>
-      <CreateProject
-        open={dataTable.openCreateSheet || !!itemId}
-        onOpenChange={(value) => {
-          if (value) {
-            dataTable.setOpenCreateSheet(true);
-            return;
+      {canCreate || canUpdate ? (
+        <CreateProject
+          open={
+            (canCreate && dataTable.openCreateSheet && !itemId) ||
+            (canUpdate && !!itemId)
           }
+          onOpenChange={(value) => {
+            if (value) {
+              if (!itemId && !canCreate) {
+                return;
+              }
+              if (itemId && !canUpdate) {
+                return;
+              }
+              dataTable.setOpenCreateSheet(true);
+              return;
+            }
 
-          setItemId(null);
-          dataTable.setOpenCreateSheet(false);
-        }}
-        itemId={itemId}
-      />
+            setItemId(null);
+            dataTable.setOpenCreateSheet(false);
+          }}
+          itemId={itemId}
+        />
+      ) : null}
       <DataTable
         columns={columns}
         data={data}
         {...dataTable}
+        setOpenCreateSheet={
+          canCreate ? dataTable.setOpenCreateSheet : undefined
+        }
         filtersSlot={
           <DataTableFilters onReset={reset} hasActiveFilters={isActive}>
             <StringFilter label="Keyword" control={filter.keyword} />

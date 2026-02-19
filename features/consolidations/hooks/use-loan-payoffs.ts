@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 
-export function useLoanPayoffs(loanId: string | undefined) {
+export function useLoanPayoffs(loanId: string | undefined, enabled: boolean) {
   const trpc = useTRPC();
 
   const queryInput = {
@@ -11,7 +11,7 @@ export function useLoanPayoffs(loanId: string | undefined) {
 
   const { data: payoffs } = useQuery(
     trpc.loanPayoffs.list.queryOptions(queryInput, {
-      enabled: !!loanId,
+      enabled: !!loanId && enabled,
     })
   );
 

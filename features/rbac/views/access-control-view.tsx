@@ -149,17 +149,14 @@ export function AccessControlView() {
   };
 
   const rolesColumns = useRolesColumns(
-    setSelectedRoleId,
-    handleDeleteRole,
-    currentlyProcessingRoles,
-    canManageRoles,
-    canManageRoles
+    canManageRoles ? setSelectedRoleId : undefined,
+    canManageRoles ? handleDeleteRole : undefined,
+    currentlyProcessingRoles
   );
 
   const usersColumns = useUsersAccessColumns(
-    setSelectedUserId,
-    currentlyProcessingUsers,
-    canManageAssignments
+    canManageAssignments ? setSelectedUserId : undefined,
+    currentlyProcessingUsers
   );
 
   const canSeeRolesTab = canReadRoles;

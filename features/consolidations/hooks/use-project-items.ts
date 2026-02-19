@@ -5,7 +5,11 @@ import { projectStreams } from "@/lib/constants";
 type Stream = (typeof projectStreams)[number] | undefined;
 type UnionOfArraysToArrayOfUnion<T> = T extends (infer U)[] ? U : never;
 
-export function useProjectItems(projectId: string | undefined, stream: Stream) {
+export function useProjectItems(
+  projectId: string | undefined,
+  stream: Stream,
+  enabled: boolean
+) {
   const trpc = useTRPC();
 
   const queryInput = {
@@ -20,25 +24,25 @@ export function useProjectItems(projectId: string | undefined, stream: Stream) {
   const { data: supplies } = useQuery(
     trpc.projectSupplies.list.queryOptions(
       queryInput,
-      makeOptions(stream === "supplies")
+      makeOptions(enabled && stream === "supplies")
     )
   );
   const { data: labors } = useQuery(
     trpc.projectLabors.list.queryOptions(
       queryInput,
-      makeOptions(stream === "labors")
+      makeOptions(enabled && stream === "labors")
     )
   );
   const { data: misc } = useQuery(
     trpc.projectMisc.list.queryOptions(
       queryInput,
-      makeOptions(stream === "misc")
+      makeOptions(enabled && stream === "misc")
     )
   );
   const { data: payments } = useQuery(
     trpc.projectPayments.list.queryOptions(
       queryInput,
-      makeOptions(stream === "payments")
+      makeOptions(enabled && stream === "payments")
     )
   );
 

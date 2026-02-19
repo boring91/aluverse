@@ -10,11 +10,9 @@ import { inferRouterOutputs } from "@trpc/server";
 type User = inferRouterOutputs<AppRouter>["users"]["list"]["items"][number];
 
 export function useUsersColumns(
-  handleUpdate: (itemId: string) => void,
-  handleDelete: (itemId: string) => void,
-  currentlyProcessing: Set<string>,
-  canUpdate: boolean,
-  canDelete: boolean
+  handleUpdate: ((itemId: string) => void) | undefined,
+  handleDelete: ((itemId: string) => void) | undefined,
+  currentlyProcessing: Set<string>
 ) {
   return [
     {
@@ -54,8 +52,6 @@ export function useUsersColumns(
             handleUpdate={handleUpdate}
             handleDelete={handleDelete}
             currentlyProcessing={currentlyProcessing}
-            canUpdate={canUpdate}
-            canDelete={canDelete}
           />
         );
       },

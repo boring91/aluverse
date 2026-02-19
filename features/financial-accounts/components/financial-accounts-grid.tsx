@@ -13,6 +13,9 @@ type Props = {
   onClickForSync: (itemId: string) => void;
   onClickForDelete: (itemId: string) => void;
   currentlyProcessing: Set<string>;
+  canUpdate: boolean;
+  canSync: boolean;
+  canDelete: boolean;
 };
 
 export const FinancialAccountsGrid = ({
@@ -21,6 +24,9 @@ export const FinancialAccountsGrid = ({
   onClickForSync,
   onClickForDelete,
   currentlyProcessing,
+  canUpdate,
+  canSync,
+  canDelete,
 }: Props) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -32,22 +38,24 @@ export const FinancialAccountsGrid = ({
                 <CardTitle>{account.name}</CardTitle>
                 <div className="flex items-center gap-2">
                   {/* Edit */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      event.preventDefault();
-                      onClickForUpdate(account.id);
-                    }}
-                    disabled={currentlyProcessing.has(account.id)}
-                  >
-                    <Edit3Icon />
-                  </Button>
+                  {canUpdate && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        onClickForUpdate(account.id);
+                      }}
+                      disabled={currentlyProcessing.has(account.id)}
+                    >
+                      <Edit3Icon />
+                    </Button>
+                  )}
 
                   {/* Sync */}
-                  {account.syncWithBank && (
+                  {canSync && account.syncWithBank && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -64,18 +72,20 @@ export const FinancialAccountsGrid = ({
                   )}
 
                   {/* Delete */}
-                  <Button
-                    variant="ghostDestructive"
-                    size="icon-sm"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      event.preventDefault();
-                      onClickForDelete(account.id);
-                    }}
-                    disabled={currentlyProcessing.has(account.id)}
-                  >
-                    <Trash2Icon />
-                  </Button>
+                  {canDelete && (
+                    <Button
+                      variant="ghostDestructive"
+                      size="icon-sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        onClickForDelete(account.id);
+                      }}
+                      disabled={currentlyProcessing.has(account.id)}
+                    >
+                      <Trash2Icon />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent

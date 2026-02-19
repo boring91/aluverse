@@ -17,9 +17,11 @@ const LOAN_TYPE_LABELS = {
 export const LoanDetailHeader = ({
   loan,
   onEditClick,
+  canEdit,
 }: {
   loan: Loan;
   onEditClick: () => void;
+  canEdit: boolean;
 }) => {
   return (
     <div className="flex flex-col gap-4 border-b pb-4 md:flex-row md:items-center md:justify-between">
@@ -44,12 +46,14 @@ export const LoanDetailHeader = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button variant="outline" onClick={onEditClick}>
-          <Edit3Icon className="mr-2 size-4" />
-          Edit
-        </Button>
-      </div>
+      {canEdit ? (
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={onEditClick}>
+            <Edit3Icon className="mr-2 size-4" />
+            Edit
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 };

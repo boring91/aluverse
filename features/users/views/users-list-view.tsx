@@ -98,11 +98,9 @@ export function UsersListView() {
   );
 
   const columns = useUsersColumns(
-    setItemId,
-    handleDelete,
-    currentlyProcessing,
-    canUpdate,
-    canDelete
+    canUpdate ? setItemId : undefined,
+    canDelete ? handleDelete : undefined,
+    currentlyProcessing
   );
 
   if (isPending) {

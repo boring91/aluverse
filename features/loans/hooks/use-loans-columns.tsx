@@ -18,8 +18,8 @@ const LOAN_TYPE_LABELS = {
 } as const;
 
 export const useLoansColumns = (
-  handleUpdate: (itemId: string) => void,
-  handleDelete: (itemId: string) => void,
+  handleUpdate: ((itemId: string) => void) | undefined,
+  handleDelete: ((itemId: string) => void) | undefined,
   currentlyProcessing: Set<string>
 ) => {
   return useMemo<ColumnDef<Loan>[]>(() => {

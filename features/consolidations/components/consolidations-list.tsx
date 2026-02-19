@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { useConfirm } from "@/lib/confirm-context";
 import type { AppRouter } from "@/trpc/routers/_app";
 import type { inferRouterOutputs } from "@trpc/server";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { PageLoader } from "@/components/page-loader";
 
 type Transaction =
   inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
@@ -38,6 +40,12 @@ export const ConsolidationsList = ({
 }: Props) => {
   const transactionId = transaction.id;
   const { confirm } = useConfirm();
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const canRead = hasPermission("consolidations.read");
+  const canCreate = hasPermission("consolidations.create");
+  const canUpdate = hasPermission("consolidations.update");
+  const canDelete = hasPermission("consolidations.delete");
 
   const [itemId, setItemId] = useState<string | null>(null);
   const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
@@ -45,6 +53,10 @@ export const ConsolidationsList = ({
   );
 
   const handleDelete = (itemId: string) => {
+    if (!canDelete) {
+      return;
+    }
+
     confirm({
       title: "Delete",
       description: "Are you sure you want to delete this item?",
@@ -72,7 +84,7 @@ export const ConsolidationsList = ({
       },
       {
         placeholderData: keepPreviousData,
-        enabled: open,
+        enabled: open && canRead,
       }
     )
   );
@@ -109,27 +121,38 @@ export const ConsolidationsList = ({
   );
 
   const columns = useConsolidationsColumns(
-    setItemId,
-    handleDelete,
+    canUpdate ? setItemId : undefined,
+    canDelete ? handleDelete : undefined,
     currentlyProcessing
   );
 
   return (
     <>
-      <CreateConsolidation
-        transaction={transaction}
-        itemId={itemId}
-        open={dataTable.openCreateSheet || !!itemId}
-        onOpenChange={(value) => {
-          if (value) {
-            dataTable.setOpenCreateSheet(true);
-            return;
+      {canCreate || canUpdate ? (
+        <CreateConsolidation
+          transaction={transaction}
+          itemId={itemId}
+          open={
+            (canCreate && dataTable.openCreateSheet && !itemId) ||
+            (canUpdate && !!itemId)
           }
+          onOpenChange={(value) => {
+            if (value) {
+              if (!itemId && !canCreate) {
+                return;
+              }
+              if (itemId && !canUpdate) {
+                return;
+              }
+              dataTable.setOpenCreateSheet(true);
+              return;
+            }
 
-          setItemId(null);
-          dataTable.setOpenCreateSheet(false);
-        }}
-      />
+            setItemId(null);
+            dataTable.setOpenCreateSheet(false);
+          }}
+        />
+      ) : null}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
@@ -146,7 +169,22 @@ export const ConsolidationsList = ({
           </DialogHeader>
 
           <div className="max-h-[500px]">
-            <DataTable columns={columns} data={data} {...dataTable} />
+            {isPending ? (
+              <PageLoader variant="inline" />
+            ) : !canRead ? (
+              <p className="text-muted-foreground">
+                You do not have access to consolidations.
+              </p>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={data}
+                {...dataTable}
+                setOpenCreateSheet={
+                  canCreate ? dataTable.setOpenCreateSheet : undefined
+                }
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>

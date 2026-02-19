@@ -12,26 +12,46 @@ import { ProjectDetailHeader } from "@/features/projects/components/project-deta
 import { ProjectBasicInfo } from "@/features/projects/components/project-basic-info";
 import { ProjectAccountingInfo } from "@/features/projects/components/project-accounting-info";
 import { ProjectDetailsTabs } from "@/features/projects/components/project-details-tabs";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 
 export const ProjectDetailView = () => {
   const params = useParams();
   const projectId = params["projectId"] as string;
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const canRead = hasPermission("projects.read");
+  const canUpdate = hasPermission("projects.update");
 
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(
-    trpc.projects.get.queryOptions({
-      id: projectId,
-    })
+    trpc.projects.get.queryOptions(
+      {
+        id: projectId,
+      },
+      {
+        enabled: canRead,
+      }
+    )
   );
 
   useTitle(data ? `${data.humanId} - ${data.title}` : "Loading");
 
   const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
-  if (isLoading) {
+  if (isPending || isLoading) {
     return (
       <PageContainer>
         <PageLoader />
+      </PageContainer>
+    );
+  }
+
+  if (!canRead) {
+    return (
+      <PageContainer>
+        <p className="text-muted-foreground">
+          You do not have access to projects.
+        </p>
       </PageContainer>
     );
   }
@@ -43,16 +63,19 @@ export const ProjectDetailView = () => {
 
   return (
     <>
-      <CreateProject
-        open={openCreateSheet}
-        onOpenChange={setOpenCreateSheet}
-        itemId={data.id}
-      />
+      {canUpdate ? (
+        <CreateProject
+          open={canUpdate && openCreateSheet}
+          onOpenChange={setOpenCreateSheet}
+          itemId={data.id}
+        />
+      ) : null}
       <PageContainer>
         <div className="flex flex-col gap-6">
           <ProjectDetailHeader
             project={data}
             onEditClick={() => setOpenCreateSheet(true)}
+            canEdit={canUpdate}
           />
 
           <div className="space-y-6">

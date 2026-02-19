@@ -19,6 +19,8 @@ import { GeneralOverview } from "../components/general-overview";
 import { PeriodComparisonSection } from "../components/period-comparison";
 import { useState } from "react";
 import { DateRange } from "@/components/date-range";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { PageLoader } from "@/components/page-loader";
 
 const startCurrentMonth = new Date();
 startCurrentMonth.setDate(1);
@@ -27,11 +29,32 @@ const now = new Date();
 
 export const DashboardView = () => {
   useTitle("Dashboard");
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const canRead = hasPermission("dashboard.read");
 
   const [fromDate, setFromDate] = useState<Date | undefined>(startCurrentMonth);
   const [toDate, setToDate] = useState<Date | undefined>(now);
 
   const dateRange = { from: fromDate, to: toDate };
+
+  if (isPending) {
+    return (
+      <PageContainer>
+        <PageLoader />
+      </PageContainer>
+    );
+  }
+
+  if (!canRead) {
+    return (
+      <PageContainer>
+        <p className="text-muted-foreground">
+          You do not have access to the dashboard.
+        </p>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>

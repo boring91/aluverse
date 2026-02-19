@@ -20,8 +20,8 @@ type Project =
   inferRouterOutputs<AppRouter>["projects"]["list"]["items"][number];
 
 export const useProjectsColumns = (
-  handleUpdate: (itemId: string) => void,
-  handleDelete: (itemId: string) => void,
+  handleUpdate: ((itemId: string) => void) | undefined,
+  handleDelete: ((itemId: string) => void) | undefined,
   currentlyProcessing: Set<string>
 ) => {
   return useMemo<ColumnDef<Project>[]>(() => {

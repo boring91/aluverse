@@ -18,17 +18,20 @@ type Props = {
   loanId: string;
   onPayoffCreated: (payoffId: string) => void;
   prefillData?: LoanPayoffPrefillData;
+  canCreate: boolean;
 };
 
 export const CreateLoanPayoff = forwardRef<CreateLoanPayoffHandle, Props>(
-  ({ loanId, onPayoffCreated, prefillData }, ref) => {
+  ({ loanId, onPayoffCreated, prefillData, canCreate }, ref) => {
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
     const trpc = useTRPC();
 
     useImperativeHandle(ref, () => ({
       open: () => {
-        setOpen(true);
+        if (canCreate) {
+          setOpen(true);
+        }
       },
       close: () => {
         setOpen(false);
@@ -51,7 +54,7 @@ export const CreateLoanPayoff = forwardRef<CreateLoanPayoffHandle, Props>(
       setOpen(false);
     };
 
-    return (
+    return canCreate ? (
       <BaseCreateLoanPayoff
         open={open}
         onOpenChange={setOpen}
@@ -68,7 +71,7 @@ export const CreateLoanPayoff = forwardRef<CreateLoanPayoffHandle, Props>(
             : undefined
         }
       />
-    );
+    ) : null;
   }
 );
 

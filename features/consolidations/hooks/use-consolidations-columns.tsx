@@ -28,8 +28,8 @@ const BUDGET_LABELS: Record<
 };
 
 export const useConsolidationsColumns = (
-  handleUpdate: (itemId: string) => void,
-  handleDelete: (itemId: string) => void,
+  handleUpdate: ((itemId: string) => void) | undefined,
+  handleDelete: ((itemId: string) => void) | undefined,
   currentlyProcessing: Set<string>
 ) => {
   return useMemo<ColumnDef<Consolidation>[]>(() => {

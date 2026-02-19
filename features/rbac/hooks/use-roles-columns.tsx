@@ -10,11 +10,9 @@ import { inferRouterOutputs } from "@trpc/server";
 type Role = inferRouterOutputs<AppRouter>["rbac"]["listRoles"]["items"][number];
 
 export function useRolesColumns(
-  handleUpdate: (itemId: string) => void,
-  handleDelete: (itemId: string) => void,
-  currentlyProcessing: Set<string>,
-  canUpdate: boolean,
-  canDelete: boolean
+  handleUpdate: ((itemId: string) => void) | undefined,
+  handleDelete: ((itemId: string) => void) | undefined,
+  currentlyProcessing: Set<string>
 ) {
   return [
     {
@@ -60,11 +58,9 @@ export function useRolesColumns(
         return (
           <DataTableActions
             itemId={item.id}
-            handleUpdate={handleUpdate}
-            handleDelete={handleDelete}
+            handleUpdate={item.isBuiltIn ? undefined : handleUpdate}
+            handleDelete={item.isBuiltIn ? undefined : handleDelete}
             currentlyProcessing={currentlyProcessing}
-            canUpdate={canUpdate && !item.isBuiltIn}
-            canDelete={canDelete && !item.isBuiltIn}
           />
         );
       },

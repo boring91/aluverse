@@ -25,17 +25,20 @@ type Props = {
   stream?: Stream;
   onItemCreated: (itemId: string) => void;
   prefillData?: ProjectItemPrefillData;
+  canCreate: boolean;
 };
 
 export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
-  ({ projectId, stream, onItemCreated, prefillData }, ref) => {
+  ({ projectId, stream, onItemCreated, prefillData, canCreate }, ref) => {
     const [openStream, setOpenStream] = useState<Stream | null>(null);
     const queryClient = useQueryClient();
     const trpc = useTRPC();
 
     useImperativeHandle(ref, () => ({
       open: () => {
-        if (stream) setOpenStream(stream);
+        if (stream && canCreate) {
+          setOpenStream(stream);
+        }
       },
       close: () => {
         setOpenStream(null);
@@ -74,67 +77,71 @@ export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
 
     return (
       <>
-        <CreateSupply
-          open={openStream === "supplies"}
-          onOpenChange={(open) => setOpenStream(open ? "supplies" : null)}
-          projectId={projectId}
-          itemId={null}
-          onItemCreated={handleCreated("supplies")}
-          prefillData={
-            prefillData
-              ? {
-                  name: prefillData.description,
-                  unitPrice: prefillData.amount,
-                  quantity: 1,
-                }
-              : undefined
-          }
-        />
-        <CreateLabor
-          open={openStream === "labors"}
-          onOpenChange={(open) => setOpenStream(open ? "labors" : null)}
-          projectId={projectId}
-          itemId={null}
-          onItemCreated={handleCreated("labors")}
-          prefillData={
-            prefillData
-              ? {
-                  name: prefillData.description,
-                  amount: prefillData.amount,
-                }
-              : undefined
-          }
-        />
-        <CreateMisc
-          open={openStream === "misc"}
-          onOpenChange={(open) => setOpenStream(open ? "misc" : null)}
-          projectId={projectId}
-          itemId={null}
-          onItemCreated={handleCreated("misc")}
-          prefillData={
-            prefillData
-              ? {
-                  name: prefillData.description,
-                  amount: prefillData.amount,
-                }
-              : undefined
-          }
-        />
-        <CreatePayment
-          open={openStream === "payments"}
-          onOpenChange={(open) => setOpenStream(open ? "payments" : null)}
-          projectId={projectId}
-          itemId={null}
-          onItemCreated={handleCreated("payments")}
-          prefillData={
-            prefillData
-              ? {
-                  date: prefillData.date,
-                  amount: prefillData.amount,
-                }
-              : undefined
-          }
-        />
+        {canCreate ? (
+          <>
+            <CreateSupply
+              open={openStream === "supplies"}
+              onOpenChange={(open) => setOpenStream(open ? "supplies" : null)}
+              projectId={projectId}
+              itemId={null}
+              onItemCreated={handleCreated("supplies")}
+              prefillData={
+                prefillData
+                  ? {
+                      name: prefillData.description,
+                      unitPrice: prefillData.amount,
+                      quantity: 1,
+                    }
+                  : undefined
+              }
+            />
+            <CreateLabor
+              open={openStream === "labors"}
+              onOpenChange={(open) => setOpenStream(open ? "labors" : null)}
+              projectId={projectId}
+              itemId={null}
+              onItemCreated={handleCreated("labors")}
+              prefillData={
+                prefillData
+                  ? {
+                      name: prefillData.description,
+                      amount: prefillData.amount,
+                    }
+                  : undefined
+              }
+            />
+            <CreateMisc
+              open={openStream === "misc"}
+              onOpenChange={(open) => setOpenStream(open ? "misc" : null)}
+              projectId={projectId}
+              itemId={null}
+              onItemCreated={handleCreated("misc")}
+              prefillData={
+                prefillData
+                  ? {
+                      name: prefillData.description,
+                      amount: prefillData.amount,
+                    }
+                  : undefined
+              }
+            />
+            <CreatePayment
+              open={openStream === "payments"}
+              onOpenChange={(open) => setOpenStream(open ? "payments" : null)}
+              projectId={projectId}
+              itemId={null}
+              onItemCreated={handleCreated("payments")}
+              prefillData={
+                prefillData
+                  ? {
+                      date: prefillData.date,
+                      amount: prefillData.amount,
+                    }
+                  : undefined
+              }
+            />
+          </>
+        ) : null}
       </>
     );
   }

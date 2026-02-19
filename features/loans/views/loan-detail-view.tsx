@@ -12,6 +12,7 @@ import { LoanDetailHeader } from "@/features/loans/components/loan-detail-header
 import { LoanBasicInfo } from "@/features/loans/components/loan-basic-info";
 import { LoanFinancialInfo } from "@/features/loans/components/loan-financial-info";
 import { LoanDetailsCard } from "@/features/loans/components/loan-details-card";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 
 const LOAN_TYPE_LABELS = {
   lent: "Lent",
@@ -21,12 +22,21 @@ const LOAN_TYPE_LABELS = {
 export const LoanDetailView = () => {
   const params = useParams();
   const loanId = params["loanId"] as string;
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const canRead = hasPermission("loans.read");
+  const canUpdate = hasPermission("loans.update");
 
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(
-    trpc.loans.get.queryOptions({
-      id: loanId,
-    })
+    trpc.loans.get.queryOptions(
+      {
+        id: loanId,
+      },
+      {
+        enabled: canRead,
+      }
+    )
   );
 
   useTitle(
@@ -35,10 +45,20 @@ export const LoanDetailView = () => {
 
   const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
-  if (isLoading) {
+  if (isPending || isLoading) {
     return (
       <PageContainer>
         <PageLoader />
+      </PageContainer>
+    );
+  }
+
+  if (!canRead) {
+    return (
+      <PageContainer>
+        <p className="text-muted-foreground">
+          You do not have access to loans.
+        </p>
       </PageContainer>
     );
   }
@@ -50,16 +70,19 @@ export const LoanDetailView = () => {
 
   return (
     <>
-      <CreateLoan
-        open={openCreateSheet}
-        onOpenChange={setOpenCreateSheet}
-        itemId={data.id}
-      />
+      {canUpdate ? (
+        <CreateLoan
+          open={canUpdate && openCreateSheet}
+          onOpenChange={setOpenCreateSheet}
+          itemId={data.id}
+        />
+      ) : null}
       <PageContainer>
         <div className="flex flex-col gap-6">
           <LoanDetailHeader
             loan={data}
             onEditClick={() => setOpenCreateSheet(true)}
+            canEdit={canUpdate}
           />
 
           <div className="space-y-6">

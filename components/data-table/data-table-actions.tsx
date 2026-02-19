@@ -14,14 +14,11 @@ import { ReactNode } from "react";
 
 type Props = {
   itemId: string;
-  handleUpdate: (itemId: string) => void;
-  handleDelete: (itemId: string) => void;
+  handleUpdate?: (itemId: string) => void;
+  handleDelete?: (itemId: string) => void;
   currentlyProcessing: Set<string>;
   detailsLink?: string;
   extraItems?: ReactNode;
-  canView?: boolean;
-  canUpdate?: boolean;
-  canDelete?: boolean;
 };
 
 export const DataTableActions = ({
@@ -31,12 +28,10 @@ export const DataTableActions = ({
   currentlyProcessing,
   detailsLink,
   extraItems,
-  canView = true,
-  canUpdate = true,
-  canDelete = true,
 }: Props) => {
   const hasVisibleAction =
-    (!!detailsLink && canView) || canUpdate || canDelete || !!extraItems;
+    !!detailsLink || !!handleUpdate || !!handleDelete || !!extraItems;
+  const hasPrimaryActions = !!detailsLink || !!handleUpdate || !!extraItems;
 
   if (!hasVisibleAction) {
     return null;
@@ -51,13 +46,13 @@ export const DataTableActions = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          {detailsLink && canView && (
+          {detailsLink && (
             <DropdownMenuItem asChild>
               <Link href={detailsLink as Route}>View</Link>
             </DropdownMenuItem>
           )}
 
-          {canUpdate && (
+          {handleUpdate && (
             <DropdownMenuItem
               disabled={currentlyProcessing.has(itemId)}
               onClick={() => handleUpdate(itemId)}
@@ -68,9 +63,9 @@ export const DataTableActions = ({
           {extraItems}
         </DropdownMenuGroup>
 
-        {canDelete && <DropdownMenuSeparator />}
+        {handleDelete && hasPrimaryActions && <DropdownMenuSeparator />}
 
-        {canDelete && (
+        {handleDelete && (
           <DropdownMenuGroup>
             <DropdownMenuItem
               variant="destructive"

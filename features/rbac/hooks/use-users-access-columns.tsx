@@ -11,9 +11,8 @@ type UserAccess =
   inferRouterOutputs<AppRouter>["rbac"]["listUsersAccess"]["items"][number];
 
 export function useUsersAccessColumns(
-  handleUpdate: (itemId: string) => void,
-  currentlyProcessing: Set<string>,
-  canUpdate: boolean
+  handleUpdate: ((itemId: string) => void) | undefined,
+  currentlyProcessing: Set<string>
 ) {
   return [
     {
@@ -63,10 +62,7 @@ export function useUsersAccessColumns(
           <DataTableActions
             itemId={item.id}
             handleUpdate={handleUpdate}
-            handleDelete={() => undefined}
             currentlyProcessing={currentlyProcessing}
-            canUpdate={canUpdate}
-            canDelete={false}
           />
         );
       },

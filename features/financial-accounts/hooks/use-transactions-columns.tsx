@@ -30,9 +30,9 @@ const BUDGET_CATEGORY_LABELS: Record<
 };
 
 export const useTransactionsColumns = (
-  handleUpdate: (itemId: string) => void,
-  handleDelete: (itemId: string) => void,
-  handleConsolidation: (itemId: string) => void,
+  handleUpdate: ((itemId: string) => void) | undefined,
+  handleDelete: ((itemId: string) => void) | undefined,
+  handleConsolidation: ((itemId: string) => void) | undefined,
   currentlyProcessing: Set<string>,
   isConsolidationMode: boolean
 ) => {
@@ -184,13 +184,15 @@ export const useTransactionsColumns = (
           const item = row.original;
           return (
             <div className="flex items-center gap-2">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => handleConsolidation(item.id)}
-              >
-                <ChartPie />
-              </Button>
+              {handleConsolidation ? (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleConsolidation(item.id)}
+                >
+                  <ChartPie />
+                </Button>
+              ) : null}
             </div>
           );
         },
