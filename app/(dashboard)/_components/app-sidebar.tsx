@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -14,15 +15,18 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { type Permission } from "@/features/rbac/schemas/rbac.shared-schema";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useConfirm } from "@/lib/confirm-context";
-import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 import {
   ChartPieIcon,
   ChevronsUpDown,
@@ -31,42 +35,72 @@ import {
   HomeIcon,
   LogOutIcon,
   ReceiptIcon,
+  ShieldCheckIcon,
+  UsersIcon,
 } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-const items = [
+const mainItems = [
   {
     id: "dashboard",
     label: "Dashboard",
     link: "/",
     icon: HomeIcon,
+    permission: "dashboard.read" satisfies Permission,
   },
   {
     id: "projects",
     label: "Projects",
     link: "/projects",
     icon: FolderIcon,
+    permission: "projects.read" satisfies Permission,
   },
   {
     id: "financialAccounts",
     label: "Financial accounts",
     link: "/financial-accounts",
     icon: CoinsIcon,
+    permission: "financialAccounts.read" satisfies Permission,
   },
   {
     id: "consolidations",
     label: "Consolidations",
     link: "/consolidations",
     icon: ChartPieIcon,
+    permission: "consolidations.read" satisfies Permission,
   },
   {
     id: "loans",
     label: "Loans",
     link: "/loans",
     icon: ReceiptIcon,
+    permission: "loans.read" satisfies Permission,
   },
 ] as const;
+
+const settingsItems = [
+  {
+    id: "accessControl",
+    label: "Access Control",
+    link: "/access-control",
+    icon: ShieldCheckIcon,
+    permissionsAny: [
+      "rbac.roles.read",
+      "rbac.assignments.manage",
+    ] satisfies Permission[],
+  },
+  {
+    id: "users",
+    label: "Users",
+    link: "/users",
+    icon: UsersIcon,
+    permission: "users.read" satisfies Permission,
+  },
+] as const;
+
+type SidebarItem = (typeof mainItems)[number] | (typeof settingsItems)[number];
 
 function UserNav() {
   const { confirm } = useConfirm();
@@ -142,13 +176,33 @@ function UserNav() {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { hasPermission, isPending } = useRbacAccess();
+
+  const hasItemAccess = (item: SidebarItem) => {
+    if ("permissionsAny" in item) {
+      return item.permissionsAny.some((permission) =>
+        hasPermission(permission)
+      );
+    }
+
+    return hasPermission(item.permission);
+  };
 
   const isActive = (link: string) => {
     if (pathname === "/" && link === "/") {
       return true;
     }
+
     return link !== "/" && pathname.startsWith(link);
   };
+
+  const visibleMainItems = isPending
+    ? mainItems
+    : mainItems.filter((item) => hasItemAccess(item));
+
+  const visibleSettingsItems = isPending
+    ? settingsItems
+    : settingsItems.filter((item) => hasItemAccess(item));
 
   return (
     <Sidebar>
@@ -158,24 +212,57 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => {
-                return (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton asChild isActive={isActive(item.link)}>
-                      <Link href={item.link}>
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
+        {visibleMainItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Main</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleMainItems.map((item) => (
+                  <SidebarMenuItem
+                    key={isPending ? `main-loading-${item.id}` : item.id}
+                  >
+                    {isPending ? (
+                      <SidebarMenuSkeleton showIcon />
+                    ) : (
+                      <SidebarMenuButton asChild isActive={isActive(item.link)}>
+                        <Link href={item.link as Route}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
                   </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {visibleSettingsItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Settings</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleSettingsItems.map((item) => (
+                  <SidebarMenuItem
+                    key={isPending ? `settings-loading-${item.id}` : item.id}
+                  >
+                    {isPending ? (
+                      <SidebarMenuSkeleton showIcon />
+                    ) : (
+                      <SidebarMenuButton asChild isActive={isActive(item.link)}>
+                        <Link href={item.link as Route}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
       </SidebarContent>
       <SidebarFooter>
         <SidebarGroup>

@@ -10,6 +10,7 @@ import {
 import { Button } from "../ui/button";
 import Link from "next/link";
 import type { Route } from "next";
+import { ReactNode } from "react";
 
 type Props = {
   itemId: string;
@@ -17,6 +18,10 @@ type Props = {
   handleDelete: (itemId: string) => void;
   currentlyProcessing: Set<string>;
   detailsLink?: string;
+  extraItems?: ReactNode;
+  canView?: boolean;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 };
 
 export const DataTableActions = ({
@@ -25,7 +30,18 @@ export const DataTableActions = ({
   handleDelete,
   currentlyProcessing,
   detailsLink,
+  extraItems,
+  canView = true,
+  canUpdate = true,
+  canDelete = true,
 }: Props) => {
+  const hasVisibleAction =
+    (!!detailsLink && canView) || canUpdate || canDelete || !!extraItems;
+
+  if (!hasVisibleAction) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,31 +51,36 @@ export const DataTableActions = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          {detailsLink && (
+          {detailsLink && canView && (
             <DropdownMenuItem asChild>
               <Link href={detailsLink as Route}>View</Link>
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem
-            disabled={currentlyProcessing.has(itemId)}
-            onClick={() => handleUpdate(itemId)}
-          >
-            Edit
-          </DropdownMenuItem>
+          {canUpdate && (
+            <DropdownMenuItem
+              disabled={currentlyProcessing.has(itemId)}
+              onClick={() => handleUpdate(itemId)}
+            >
+              Edit
+            </DropdownMenuItem>
+          )}
+          {extraItems}
         </DropdownMenuGroup>
 
-        <DropdownMenuSeparator />
+        {canDelete && <DropdownMenuSeparator />}
 
-        <DropdownMenuGroup>
-          <DropdownMenuItem
-            variant="destructive"
-            disabled={currentlyProcessing.has(itemId)}
-            onClick={() => handleDelete(itemId)}
-          >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+        {canDelete && (
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={currentlyProcessing.has(itemId)}
+              onClick={() => handleDelete(itemId)}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

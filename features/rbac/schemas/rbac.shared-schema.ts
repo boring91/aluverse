@@ -39,6 +39,11 @@ export const permissions = [
   "loanPayoffs.update",
   "loanPayoffs.delete",
 
+  "users.read",
+  "users.create",
+  "users.update",
+  "users.delete",
+
   "rbac.roles.read",
   "rbac.roles.manage",
   "rbac.assignments.manage",
