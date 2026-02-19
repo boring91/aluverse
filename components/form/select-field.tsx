@@ -40,6 +40,9 @@ export function SelectField({
   placeholder,
 }: Props) {
   const field = useFieldContext<string | undefined>();
+  const selectedLabel = items.find(
+    (item) => item.value === field.state.value
+  )?.label;
   const showErrors =
     !field.state.meta.isValid &&
     (field.state.meta.isTouched || field.form.state.submissionAttempts > 0);
@@ -100,7 +103,9 @@ export function SelectField({
           }}
         >
           <SelectTrigger>
-            <SelectValue placeholder={placeholder ?? "Select..."} />
+            <SelectValue placeholder={placeholder ?? "Select..."}>
+              {selectedLabel}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
