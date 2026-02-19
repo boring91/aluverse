@@ -5,7 +5,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConsolidationGroupBadge } from "@/features/consolidations/components/consolidation-group-badge";
 import { cn } from "@/lib/client-utils";
-import { transactionBudgetCategories } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import type { AppRouter } from "@/trpc/routers/_app";
 import { ColumnDef } from "@tanstack/react-table";
@@ -15,19 +14,6 @@ import { useMemo } from "react";
 
 type Transaction =
   inferRouterOutputs<AppRouter>["transactions"]["list"]["items"][number];
-
-const BUDGET_CATEGORY_LABELS: Record<
-  (typeof transactionBudgetCategories)[number],
-  string
-> = {
-  subscription: "Subscription",
-  consumable: "Consumable",
-  toll: "Toll",
-  tool: "Tool",
-  food: "Food",
-  salary: "Salary",
-  fuel: "Fuel",
-};
 
 export const useTransactionsColumns = (
   handleUpdate: ((itemId: string) => void) | undefined,
@@ -160,13 +146,7 @@ export const useTransactionsColumns = (
                   <span>{item.consolidations[0].project.humanId}</span>
                 )}
                 {item.consolidations[0].budgetCategory && (
-                  <span>
-                    {
-                      BUDGET_CATEGORY_LABELS[
-                        item.consolidations[0].budgetCategory
-                      ]
-                    }
-                  </span>
+                  <span>{item.consolidations[0].budgetCategory.name}</span>
                 )}
                 {item.consolidations[0].isGst && <span>with GST</span>}
               </div>

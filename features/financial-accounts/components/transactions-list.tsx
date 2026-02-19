@@ -24,10 +24,7 @@ import { useTransactionsColumns } from "../hooks/use-transactions-columns";
 import { ConsolidationsList } from "@/features/consolidations/components/consolidations-list";
 import { transactionFiltersSchema } from "../schemas/transactions.shared-schema";
 import { NumberFilter } from "@/components/data-table/filters/number-filter";
-import {
-  transactionBudgetCategories,
-  transactionConsolidationGroups,
-} from "@/lib/constants";
+import { transactionConsolidationGroups } from "@/lib/constants";
 import type { AppRouter } from "@/trpc/routers/_app";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
@@ -54,19 +51,6 @@ const CONSOLIDATION_GROUP_LABELS: Record<
   unclassified: "Unclassified",
 };
 
-const BUDGET_CATEGORY_LABELS: Record<
-  (typeof transactionBudgetCategories)[number],
-  string
-> = {
-  subscription: "Subscription",
-  consumable: "Consumable",
-  toll: "Toll",
-  tool: "Tool",
-  food: "Food",
-  salary: "Salary",
-  fuel: "Fuel",
-};
-
 export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const { confirm } = useConfirm();
   const { hasPermission, isPending } = useRbacAccess();
@@ -76,6 +60,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const canUpdate = hasPermission("transactions.update");
   const canDelete = hasPermission("transactions.delete");
   const canReadProjects = hasPermission("projects.read");
+  const canReadBudgetCategories = hasPermission("budgetCategories.read");
   const canManageConsolidations =
     hasPermission("consolidations.read") ||
     hasPermission("consolidations.create") ||
@@ -122,6 +107,10 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
         sorting: dataTable.sorting,
         filters: {
           ...raw,
+          budgetCategoryId:
+            typeof raw.budgetCategoryId === "string"
+              ? raw.budgetCategoryId
+              : undefined,
           fromAmount:
             raw.fromAmount === undefined ? undefined : raw.fromAmount * 100,
           toAmount: raw.toAmount === undefined ? undefined : raw.toAmount * 100,
@@ -178,6 +167,17 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
       {},
       {
         enabled: canReadProjects && mode === "consolidation",
+      }
+    )
+  );
+
+  const { data: budgetCategories } = useQuery(
+    trpc.budgetCategories.list.queryOptions(
+      {
+        pagination: { pageSize: -1, pageIndex: 0 },
+      },
+      {
+        enabled: canReadBudgetCategories && mode === "consolidation",
       }
     )
   );
@@ -300,14 +300,18 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                   }))}
                 />
 
-                <EnumFilter
-                  label="Budget Category"
-                  control={filter.budgetCategory}
-                  options={transactionBudgetCategories.map((category) => ({
-                    value: category,
-                    label: BUDGET_CATEGORY_LABELS[category],
-                  }))}
-                />
+                {canReadBudgetCategories ? (
+                  <EnumFilter
+                    label="Budget Category"
+                    control={filter.budgetCategoryId}
+                    options={
+                      budgetCategories?.items.map((category) => ({
+                        value: category.id,
+                        label: `${category.name} (${category.humanId})`,
+                      })) ?? []
+                    }
+                  />
+                ) : null}
 
                 <EnumFilter
                   label="Project"

@@ -1,6 +1,5 @@
 import {
   projectStreams,
-  transactionBudgetCategories,
   transactionConsolidationGroups,
 } from "@/lib/constants";
 import {
@@ -48,19 +47,6 @@ const GROUP_LABELS: Record<
   unclassified: "Unclassified",
 };
 
-const CATEGORY_LABELS: Record<
-  (typeof transactionBudgetCategories)[number],
-  string
-> = {
-  subscription: "Subscription",
-  consumable: "Consumable",
-  toll: "Toll",
-  tool: "Tool",
-  food: "Food",
-  salary: "Salary",
-  fuel: "Fuel",
-};
-
 const STREAM_LABELS: Record<(typeof projectStreams)[number], string> = {
   supplies: "Supplies",
   labors: "Labors",
@@ -101,7 +87,7 @@ export function ConsolidationGroupField({ form }: { form: FormApi }) {
             .sort((a, b) => a.label.localeCompare(b.label))}
           onChange={(value) => {
             if (value !== "budget")
-              form.setFieldValue("budgetCategory", undefined);
+              form.setFieldValue("budgetCategoryId", undefined);
 
             if (value !== "project") {
               form.setFieldValue("projectId", undefined);
@@ -122,16 +108,31 @@ export function ConsolidationGroupField({ form }: { form: FormApi }) {
 }
 
 export function BudgetCategoryField({ form }: { form: FormApi }) {
+  const trpc = useTRPC();
+  const { hasPermission } = useRbacAccess();
+  const canReadBudgetCategories = hasPermission("budgetCategories.read");
+
+  const { data } = useQuery(
+    trpc.budgetCategories.list.queryOptions(
+      {
+        pagination: { pageSize: -1, pageIndex: 0 },
+      },
+      { enabled: canReadBudgetCategories }
+    )
+  );
+
   return (
     <form.AppField
-      name="budgetCategory"
+      name="budgetCategoryId"
       children={(field) => (
         <field.SelectField
           label="Budget category"
-          items={transactionBudgetCategories.map((category) => ({
-            value: category,
-            label: CATEGORY_LABELS[category],
-          }))}
+          items={
+            data?.items.map((category) => ({
+              value: category.id,
+              label: `${category.name} (${category.humanId})`,
+            })) ?? []
+          }
         />
       )}
     />

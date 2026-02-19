@@ -110,7 +110,8 @@ export function useConsolidationForm({
         description: data.description ?? "",
         amount: data.amount / 100,
         consolidationGroup: data.consolidationGroup,
-        budgetCategory: data.budgetCategory ?? undefined,
+        budgetCategoryId:
+          data.budgetCategoryId ?? data.budgetCategory?.id ?? undefined,
         projectId: data.project?.id ?? undefined,
         projectStream: data.projectStream ?? undefined,
         projectItemId: data.projectItemId ?? undefined,

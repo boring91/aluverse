@@ -5,15 +5,6 @@
 
 import type { ColumnType } from "kysely";
 
-export type ConsolidationBudgetCategory =
-  | "consumable"
-  | "food"
-  | "fuel"
-  | "salary"
-  | "subscription"
-  | "toll"
-  | "tool";
-
 export type ConsolidationGroup =
   | "budget"
   | "loan"
@@ -93,7 +84,7 @@ export interface BudgetCategoryAllocations {
 
 export interface Consolidations {
   amount: number;
-  budgetCategory: ConsolidationBudgetCategory | null;
+  budgetCategoryId: string | null;
   consolidationGroup: ConsolidationGroup;
   createdAt: Generated<Timestamp>;
   description: string | null;

@@ -22,16 +22,6 @@ type Props = {
   dateRange: DashboardDateRange;
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  subscription: "Subscription",
-  consumable: "Consumable",
-  toll: "Toll",
-  tool: "Tool",
-  food: "Food",
-  salary: "Salary",
-  fuel: "Fuel",
-};
-
 export const BudgetTable = ({ dateRange }: Props) => {
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(
@@ -95,9 +85,9 @@ export const BudgetTable = ({ dateRange }: Props) => {
                       const isNegative = item.remaining < 0;
 
                       return (
-                        <TableRow key={item.category}>
+                        <TableRow key={item.categoryId}>
                           <TableCell className="font-medium">
-                            {CATEGORY_LABELS[item.category] ?? item.category}
+                            {item.categoryName}
                           </TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(item.allocated)}

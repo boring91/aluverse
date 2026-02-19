@@ -8,16 +8,6 @@ export const transactionConsolidationGroups = [
   "unclassified",
 ] as const;
 
-export const transactionBudgetCategories = [
-  "subscription",
-  "consumable",
-  "toll",
-  "tool",
-  "food",
-  "salary",
-  "fuel",
-] as const;
-
 export const projectStreams = [
   "supplies",
   "labors",

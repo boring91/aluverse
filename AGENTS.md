@@ -31,6 +31,7 @@ When working with entities, always infer types from existing sources rather than
 - Always use `type` instead of `interface`
 - Only export functions, types, constants, etc. if they are used in other files. Keep things unexported by default
 - Never use `any`
+- Never annotate function or method return types explicitly; rely on TypeScript return type inference
 
 ### Architectural Conventions
 

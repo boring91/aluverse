@@ -2,7 +2,9 @@ import { z } from "zod";
 import { db } from "@/db";
 import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
 import { createProjectSchema } from "../schemas/projects.shared-schema";
-import { budgetUnitValue } from "@/data/budget";
+import { getEffectiveBudgetCategoryAllocationsByDateQuery } from "@/features/budget/queries/get-effective-budget-category-allocations.query";
+
+const UNITS_PER_MONTH = 10;
 
 export async function createProjectMutation(
   data: z.infer<typeof createProjectSchema>
@@ -12,6 +14,14 @@ export async function createProjectMutation(
     .selectFrom("projects")
     .select(db.fn.count<number>("id").as("count"))
     .executeTakeFirstOrThrow();
+
+  const allocations = await getEffectiveBudgetCategoryAllocationsByDateQuery(
+    new Date()
+  );
+  const budgetUnitValue = Math.ceil(
+    allocations.reduce((sum, allocation) => sum + allocation.monthlyAmount, 0) /
+      UNITS_PER_MONTH
+  );
 
   const humanId = "P" + `${count + 1}`.padStart(4, "0");
 

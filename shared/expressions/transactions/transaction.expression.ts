@@ -1,9 +1,6 @@
 import { ExpressionBuilder } from "kysely";
 import { DB } from "@/db/types";
-import {
-  transactionBudgetCategories,
-  transactionConsolidationGroups,
-} from "@/lib/constants";
+import { transactionConsolidationGroups } from "@/lib/constants";
 
 export const consolidatedAmount = (
   eb: ExpressionBuilder<DB, "transactions">
@@ -62,14 +59,14 @@ export const hasConsolidationGroup = (
     .$asScalar();
 };
 
-export const hasBudgetCategory = (
+export const hasBudgetCategoryId = (
   eb: ExpressionBuilder<DB, "transactions">,
-  category: (typeof transactionBudgetCategories)[number]
+  budgetCategoryId: string
 ) => {
   return eb
     .selectFrom("consolidations")
     .whereRef("transactionId", "=", "transactions.id")
-    .where("budgetCategory", "=", category)
+    .where("budgetCategoryId", "=", budgetCategoryId)
     .select((sub) => eb(sub.fn.count("id"), ">", eb.lit(0)).as("hasCategory"))
     .$asScalar();
 };

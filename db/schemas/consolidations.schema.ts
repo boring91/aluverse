@@ -10,21 +10,17 @@ import { pgEnum } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import {
   transactionConsolidationGroups,
-  transactionBudgetCategories,
   projectStreams,
 } from "@/lib/constants";
 import { transactions } from "./transactions.schema";
 import { projects } from "./projects.schema";
 import { loans, loanPayoffs } from "./loans.schema";
+import { budgetCategories } from "./budget.schema";
 import { auditColumns } from "../utils";
 
 export const transactionConsolidatedGroup = pgEnum(
   "consolidation_group",
   transactionConsolidationGroups
-);
-export const transactionBudgetCategory = pgEnum(
-  "consolidation_budget_category",
-  transactionBudgetCategories
 );
 export const projectStream = pgEnum(
   "consolidation_project_stream",
@@ -42,7 +38,9 @@ export const consolidations = pgTable(
     amount: integer().notNull(),
     isGst: boolean().notNull(),
     consolidationGroup: transactionConsolidatedGroup().notNull(),
-    budgetCategory: transactionBudgetCategory(),
+    budgetCategoryId: uuid().references(() => budgetCategories.id, {
+      onDelete: "restrict",
+    }),
     projectId: uuid().references(() => projects.id, {
       onDelete: "set null",
     }),
@@ -62,7 +60,7 @@ export const consolidations = pgTable(
       // ensure budget category is only set if consolidation group is budget
       check(
         "budget_category_check_constraint",
-        sql`${table.consolidationGroup} <> 'budget' OR ${table.budgetCategory} IS NOT NULL`
+        sql`${table.consolidationGroup} <> 'budget' OR ${table.budgetCategoryId} IS NOT NULL`
       ),
 
       // ensure project id is only set if consolidation group is project

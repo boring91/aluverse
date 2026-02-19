@@ -12,10 +12,16 @@ export const consolidationFullMapper = (
     "description",
     "isGst",
     "consolidationGroup",
-    "budgetCategory",
+    "budgetCategoryId",
     "projectStream",
     "projectItemId",
     "isPayoff",
+    jsonObjectFrom(
+      eb
+        .selectFrom("budgetCategories")
+        .whereRef("budgetCategories.id", "=", "consolidations.budgetCategoryId")
+        .select(["id", "humanId", "name", "includingGst"])
+    ).as("budgetCategory"),
     jsonObjectFrom(
       eb
         .selectFrom("projects")

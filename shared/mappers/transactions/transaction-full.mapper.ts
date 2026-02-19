@@ -33,8 +33,18 @@ export const transactionFullMapper = (
           "consolidationGroup",
           "description",
           "isGst",
-          "budgetCategory",
+          "budgetCategoryId",
           "amount",
+          jsonObjectFrom(
+            y
+              .selectFrom("budgetCategories")
+              .whereRef(
+                "budgetCategories.id",
+                "=",
+                "consolidations.budgetCategoryId"
+              )
+              .select(["id", "humanId", "name", "includingGst"])
+          ).as("budgetCategory"),
           jsonObjectFrom(
             y
               .selectFrom("projects")

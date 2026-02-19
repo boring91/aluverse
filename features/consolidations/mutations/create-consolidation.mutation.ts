@@ -7,6 +7,13 @@ import { updateConsolidationWithRelatedItem } from "../utils";
 export async function createConsolidationMutation(
   data: z.infer<typeof createConsolidationWithTransactionIdSchema>
 ) {
+  if (data.consolidationGroup !== "budget") {
+    data = {
+      ...data,
+      budgetCategoryId: undefined,
+    };
+  }
+
   return await db.transaction().execute(async (tx) => {
     const consolidation = await tx
       .insertInto("consolidations")

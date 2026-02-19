@@ -20,20 +20,27 @@ export async function updateConsolidationMutation(
     loanPayoffId: oldLoanPayoffId,
   } = oldConsolidation;
 
+  if (data.consolidationGroup !== "budget") {
+    data = {
+      ...data,
+      budgetCategoryId: undefined,
+    };
+  }
+
   // Reset fields that are not related to the selected group using spread operator
   if (data.consolidationGroup === "project") {
     data = {
       ...data,
       loanId: undefined,
       loanPayoffId: undefined,
-      budgetCategory: undefined,
+      budgetCategoryId: undefined,
     };
   } else if (data.consolidationGroup === "loan") {
     data = {
       ...data,
       projectStream: undefined,
       projectItemId: undefined,
-      budgetCategory: undefined,
+      budgetCategoryId: undefined,
     };
   } else if (data.consolidationGroup === "budget") {
     data = {

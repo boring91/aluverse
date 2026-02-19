@@ -1,5 +1,5 @@
-import { dailyBudgetAllocation } from "@/data/budget";
 import { db } from "@/db";
+import { getBudgetAllocatedAmountByDateRangeQuery } from "@/features/budget/queries/get-effective-budget-category-allocations.query";
 import { getCurrentTime } from "@/lib/utils";
 
 export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
@@ -9,38 +9,47 @@ export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
   from = from ?? currentMonth;
   to = to ?? nextMonth;
 
-  const data = await db
-    .selectFrom("consolidations")
-    .innerJoin("transactions", "transactions.id", "transactionId")
-    .where((eb) =>
-      eb.and([
-        eb("consolidationGroup", "=", "budget"),
-        eb("transactions.date", ">=", from),
-        eb("transactions.date", "<", to),
+  const [{ categories, allocatedByCategoryId }, spentRows] = await Promise.all([
+    getBudgetAllocatedAmountByDateRangeQuery(from, to),
+    db
+      .selectFrom("consolidations")
+      .innerJoin("transactions", "transactions.id", "transactionId")
+      .where((eb) =>
+        eb.and([
+          eb("consolidationGroup", "=", "budget"),
+          eb("transactions.date", ">=", from),
+          eb("transactions.date", "<", to),
+        ])
+      )
+      .where("budgetCategoryId", "is not", null)
+      .groupBy("budgetCategoryId")
+      .select((eb) => [
+        "budgetCategoryId",
+        eb.fn.sum<number>("consolidations.amount").as("spent"),
       ])
-    )
-    .groupBy("budgetCategory")
-    .select((eb) => [
-      "budgetCategory",
-      eb.fn.sum<number>("consolidations.amount").as("spent"),
-    ])
-    .execute();
+      .execute(),
+  ]);
 
-  const period = Math.ceil(
-    (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)
+  const spentByCategoryId = new Map(
+    spentRows.map((item) => [item.budgetCategoryId!, item.spent])
   );
 
-  return data.map((item) => {
-    const allocated = dailyBudgetAllocation[item.budgetCategory!] * period;
-    const remaining = allocated - Math.abs(item.spent);
-    const remainingPercent = remaining / allocated;
+  return categories
+    .map((category) => {
+      const allocated = allocatedByCategoryId[category.id] ?? 0;
+      const spent = spentByCategoryId.get(category.id) ?? 0;
+      const remaining = allocated - Math.abs(spent);
+      const remainingPercent = allocated > 0 ? remaining / allocated : 0;
 
-    return {
-      category: item.budgetCategory!,
-      spent: item.spent,
-      allocated,
-      remaining,
-      remainingPercent,
-    };
-  });
+      return {
+        categoryId: category.id,
+        categoryHumanId: category.humanId,
+        categoryName: category.name,
+        spent,
+        allocated,
+        remaining,
+        remainingPercent,
+      };
+    })
+    .filter((item) => item.allocated > 0 || item.spent !== 0);
 }

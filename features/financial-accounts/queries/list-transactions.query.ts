@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { listTransactionSchema } from "../schemas/transactions.shared-schema";
 import {
-  hasBudgetCategory,
+  hasBudgetCategoryId,
   hasConsolidationGroup,
   hasGst,
   hasProject,
@@ -57,9 +57,9 @@ export async function listTransactionsQuery(
     );
   }
 
-  if (filters?.budgetCategory) {
+  if (filters?.budgetCategoryId) {
     query = query.where((eb) =>
-      eb(hasBudgetCategory(eb, filters.budgetCategory!), "=", true)
+      eb(hasBudgetCategoryId(eb, filters.budgetCategoryId!), "=", true)
     );
   }
 

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import {
   transactionConsolidationGroups,
-  transactionBudgetCategories,
   projectStreams,
 } from "@/lib/constants";
 import { listSchema } from "@/lib/shared-schemas";
@@ -15,7 +14,7 @@ export const createConsolidationSchema = z
     amount: z.number(),
     description: z.string().min(1).optional(),
     consolidationGroup: z.enum(transactionConsolidationGroups),
-    budgetCategory: z.enum(transactionBudgetCategories).optional(),
+    budgetCategoryId: z.uuid().optional(),
 
     /* for projects */
     projectId: z.uuid().optional(),
@@ -31,14 +30,14 @@ export const createConsolidationSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.consolidationGroup === "budget") {
-      if (!data.budgetCategory) {
+      if (!data.budgetCategoryId) {
         ctx.addIssue({
           code: "custom",
           params: {
             code: "CATEGORY_REQUIRED",
           },
           message: "CATEGORY_REQUIRED",
-          path: ["budgetCategory"],
+          path: ["budgetCategoryId"],
         });
       }
 
@@ -52,6 +51,17 @@ export const createConsolidationSchema = z
           path: ["projectId"],
         });
       }
+    }
+
+    if (data.consolidationGroup !== "budget" && data.budgetCategoryId) {
+      ctx.addIssue({
+        code: "custom",
+        params: {
+          code: "CANNOT_ASSOCIATE_CATEGORY",
+        },
+        message: "CANNOT_ASSOCIATE_CATEGORY",
+        path: ["budgetCategoryId"],
+      });
     }
 
     if (data.consolidationGroup === "project") {
@@ -87,17 +97,6 @@ export const createConsolidationSchema = z
           path: ["projectItemId"],
         });
       }
-
-      if (data.budgetCategory) {
-        ctx.addIssue({
-          code: "custom",
-          params: {
-            code: "CANNOT_ASSOCIATE_CATEGORY",
-          },
-          message: "CANNOT_ASSOCIATE_CATEGORY",
-          path: ["budgetCategory"],
-        });
-      }
     }
 
     if (data.consolidationGroup === "loan") {
@@ -120,17 +119,6 @@ export const createConsolidationSchema = z
           },
           message: "LOAN_PAYOFF_REQUIRED",
           path: ["loanPayoffId"],
-        });
-      }
-
-      if (data.budgetCategory) {
-        ctx.addIssue({
-          code: "custom",
-          params: {
-            code: "CANNOT_ASSOCIATE_CATEGORY",
-          },
-          message: "CANNOT_ASSOCIATE_CATEGORY",
-          path: ["budgetCategory"],
         });
       }
 

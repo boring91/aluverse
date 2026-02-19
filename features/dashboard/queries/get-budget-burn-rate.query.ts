@@ -1,5 +1,5 @@
-import { dailyBudgetAllocation } from "@/data/budget";
 import { db } from "@/db";
+import { getBudgetAllocatedAmountByDateRangeQuery } from "@/features/budget/queries/get-effective-budget-category-allocations.query";
 import { getCurrentTime } from "@/lib/utils";
 
 export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
@@ -31,15 +31,6 @@ export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
       .executeTakeFirstOrThrow()
   ).total;
 
-  const periodDays = Math.ceil(
-    (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  const dailyBudget = Object.values(dailyBudgetAllocation).reduce(
-    (sum, val) => sum + val,
-    0
-  );
-
   // Calculate days elapsed in the period
   const endDate = now < to ? now : to;
   const daysElapsed = Math.max(
@@ -49,10 +40,22 @@ export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
 
   // Calculate metrics
   const spent = total;
-  const budget = dailyBudget * periodDays;
+  const [budgetRange, elapsedBudgetRange] = await Promise.all([
+    getBudgetAllocatedAmountByDateRangeQuery(from, to),
+    getBudgetAllocatedAmountByDateRangeQuery(from, endDate),
+  ]);
+
+  const budget = budgetRange.totalAllocated;
+  const elapsedBudget = elapsedBudgetRange.totalAllocated;
   const dailyBurnRate = daysElapsed > 0 ? spent / daysElapsed : 0;
-  const daysRemaining = Math.max(0, periodDays - daysElapsed);
-  const projectedSpent = dailyBurnRate * periodDays;
+  const daysRemaining = Math.max(
+    0,
+    Math.ceil((to.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24))
+  );
+  const projectedSpent =
+    daysElapsed > 0 && elapsedBudget > 0
+      ? (spent / elapsedBudget) * budget
+      : dailyBurnRate * (daysElapsed + daysRemaining);
 
   return {
     spent,

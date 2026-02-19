@@ -9,23 +9,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { useMemo } from "react";
 import { ConsolidationGroupBadge } from "../components/consolidation-group-badge";
-import { transactionBudgetCategories } from "@/lib/constants";
 
 type Consolidation =
   inferRouterOutputs<AppRouter>["consolidations"]["list"]["items"][number];
-
-const BUDGET_LABELS: Record<
-  (typeof transactionBudgetCategories)[number],
-  string
-> = {
-  subscription: "Subscription",
-  consumable: "Consumable",
-  toll: "Toll",
-  tool: "Tool",
-  food: "Food",
-  salary: "Salary",
-  fuel: "Fuel",
-};
 
 export const useConsolidationsColumns = (
   handleUpdate: ((itemId: string) => void) | undefined,
@@ -90,7 +76,7 @@ export const useConsolidationsColumns = (
                 <div className="text-xs text-muted-foreground flex gap-2">
                   {item.project && <span>{item.project.humanId}</span>}
                   {item.budgetCategory && (
-                    <span>{BUDGET_LABELS[item.budgetCategory]}</span>
+                    <span>{item.budgetCategory.name}</span>
                   )}
                   {item.isGst && <span>with GST</span>}
                 </div>
