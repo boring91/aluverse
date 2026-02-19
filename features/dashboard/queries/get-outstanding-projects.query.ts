@@ -4,11 +4,6 @@ import {
   projectDaysOverdue,
   projectOutstanding,
 } from "@/shared/expressions/projects/project.expression";
-import {
-  outstandingProjectTopMapper,
-  outstandingProjectsSummaryMapper,
-  overdueProjectsSummaryMapper,
-} from "@/shared/mappers/dashboard/outstanding-projects.mapper";
 
 export async function getOutstandingProjectsQuery() {
   const query = db
@@ -17,16 +12,35 @@ export async function getOutstandingProjectsQuery() {
     .where(projectOutstanding, ">", 0);
 
   const outstanding = await query
-    .select(outstandingProjectsSummaryMapper)
+    .select((eb) => [
+      eb.fn
+        .coalesce(eb.fn.sum<number>(projectOutstanding), eb.lit(0))
+        .as("total"),
+      eb.fn.coalesce(eb.fn.count<number>("id"), eb.lit(0)).as("count"),
+    ])
     .executeTakeFirstOrThrow();
 
   const overdue = await query
     .where("endDate", "is not", null)
-    .select(overdueProjectsSummaryMapper)
+    .select((eb) => [
+      eb.fn
+        .coalesce(eb.fn.sum<number>(projectOutstanding), eb.lit(0))
+        .as("total"),
+      eb.fn.coalesce(eb.fn.count<number>("id"), eb.lit(0)).as("count"),
+      eb.fn
+        .coalesce(eb.fn.avg<number>(projectDaysOverdue), eb.lit(0))
+        .as("daysOverdueAverage"),
+    ])
     .executeTakeFirstOrThrow();
 
   const top = await query
-    .select(outstandingProjectTopMapper)
+    .select((eb) => [
+      "id",
+      "humanId",
+      "client",
+      projectOutstanding(eb).as("outstanding"),
+      projectDaysOverdue(eb).as("daysOverdue"),
+    ])
     .orderBy(
       (eb) =>
         eb

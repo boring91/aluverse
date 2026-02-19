@@ -1,6 +1,5 @@
 import { db } from "@/db";
 import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
-import { expensesStatsMapper } from "@/shared/mappers/dashboard/expenses-stats.mapper";
 
 export async function getExpensesStatsQuery(input: DashboardDateRange) {
   const { from, to } = input;
@@ -25,7 +24,10 @@ export async function getExpensesStatsQuery(input: DashboardDateRange) {
 
   // Group by consolidationGroup and sum amounts
   const expensesByGroup = await expensesQuery
-    .select(expensesStatsMapper)
+    .select((eb) => [
+      "consolidations.consolidationGroup",
+      eb.fn.sum<number>("consolidations.amount").as("total"),
+    ])
     .groupBy("consolidations.consolidationGroup")
     .execute();
 

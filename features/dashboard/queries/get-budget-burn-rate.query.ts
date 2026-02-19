@@ -1,7 +1,6 @@
 import { dailyBudgetAllocation } from "@/data/budget";
 import { db } from "@/db";
 import { getCurrentTime } from "@/lib/utils";
-import { budgetBurnRateTotalMapper } from "@/shared/mappers/dashboard/budget-burn-rate.mapper";
 
 export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
   // Set from and to to current month if not provided
@@ -23,7 +22,13 @@ export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
     );
 
   const total = (
-    await query.select(budgetBurnRateTotalMapper).executeTakeFirstOrThrow()
+    await query
+      .select((eb) => [
+        eb.fn
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .as("total"),
+      ])
+      .executeTakeFirstOrThrow()
   ).total;
 
   const periodDays = Math.ceil(

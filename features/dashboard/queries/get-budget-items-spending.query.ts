@@ -1,7 +1,6 @@
 import { dailyBudgetAllocation } from "@/data/budget";
 import { db } from "@/db";
 import { getCurrentTime } from "@/lib/utils";
-import { budgetItemsSpendingMapper } from "@/shared/mappers/dashboard/budget-items-spending.mapper";
 
 export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
   const now = getCurrentTime();
@@ -21,7 +20,10 @@ export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
       ])
     )
     .groupBy("budgetCategory")
-    .select(budgetItemsSpendingMapper)
+    .select((eb) => [
+      "budgetCategory",
+      eb.fn.sum<number>("consolidations.amount").as("spent"),
+    ])
     .execute();
 
   const period = Math.ceil(

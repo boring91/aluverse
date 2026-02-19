@@ -4,7 +4,6 @@ import {
   consolidationRevenue,
 } from "@/shared/expressions/consolidations/consolidation.expression";
 import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
-import { generalStatsTotalMapper } from "@/shared/mappers/dashboard/general-stats.mapper";
 
 export async function getGeneralStatsQuery(input: DashboardDateRange) {
   const { from, to } = input;
@@ -28,21 +27,33 @@ export async function getGeneralStatsQuery(input: DashboardDateRange) {
   const revenue = (
     await query
       .where(consolidationRevenue)
-      .select(generalStatsTotalMapper)
+      .select((eb) => [
+        eb.fn
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .as("total"),
+      ])
       .executeTakeFirstOrThrow()
   ).total;
 
   const cost = (
     await query
       .where(consolidationCost)
-      .select(generalStatsTotalMapper)
+      .select((eb) => [
+        eb.fn
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .as("total"),
+      ])
       .executeTakeFirstOrThrow()
   ).total;
 
   const taxes = (
     await query
       .where("consolidationGroup", "=", "tax")
-      .select(generalStatsTotalMapper)
+      .select((eb) => [
+        eb.fn
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .as("total"),
+      ])
       .executeTakeFirstOrThrow()
   ).total;
 

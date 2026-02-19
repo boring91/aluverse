@@ -5,10 +5,6 @@ import {
   getYear,
 } from "@/shared/expressions/generic/date.expression";
 import { getCurrentTime } from "@/lib/utils";
-import {
-  revenueStatsTotalMapper,
-  revenueTrendMapper,
-} from "@/shared/mappers/dashboard/revenue-stats.mapper";
 import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 
 export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
@@ -47,7 +43,11 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
         ])
       )
       .where(consolidationRevenue)
-      .select(revenueStatsTotalMapper)
+      .select((eb) => [
+        eb.fn
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .as("total"),
+      ])
       .executeTakeFirstOrThrow()
   ).total;
 
@@ -66,7 +66,11 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
         ])
       )
       .where(consolidationRevenue)
-      .select(revenueStatsTotalMapper)
+      .select((eb) => [
+        eb.fn
+          .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+          .as("total"),
+      ])
       .executeTakeFirstOrThrow()
   ).total;
 
@@ -80,7 +84,13 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
     .where("date", ">=", oneYearAgo)
     .where(consolidationRevenue)
     .groupBy((eb) => [getYear(eb.ref("date")), getMonth(eb.ref("date"))])
-    .select(revenueTrendMapper)
+    .select((eb) => [
+      eb.fn
+        .coalesce(eb.fn.sum<number>("consolidations.amount"), eb.lit(0))
+        .as("revenue"),
+      getMonth(eb.ref("date")).as("month"),
+      getYear(eb.ref("date")).as("year"),
+    ])
     .orderBy((eb) => getYear(eb.ref("date")), "asc")
     .orderBy((eb) => getMonth(eb.ref("date")), "asc")
     .execute();
