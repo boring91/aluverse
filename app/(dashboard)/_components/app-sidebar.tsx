@@ -29,6 +29,7 @@ import { type Permission } from "@/features/rbac/schemas/rbac.shared-schema";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useConfirm } from "@/lib/confirm-context";
 import {
+  CalculatorIcon,
   ChartPieIcon,
   ChevronsUpDown,
   CoinsIcon,
@@ -89,6 +90,16 @@ const mainItems = [
   },
 ] as const;
 
+const toolsItems = [
+  {
+    id: "priceCalculator",
+    label: "Price Calculator",
+    link: "/tools/price-calculator",
+    icon: CalculatorIcon,
+    permission: "projects.read" satisfies Permission,
+  },
+] as const;
+
 const settingsItems = [
   {
     id: "accessControl",
@@ -109,7 +120,10 @@ const settingsItems = [
   },
 ] as const;
 
-type SidebarItem = (typeof mainItems)[number] | (typeof settingsItems)[number];
+type SidebarItem =
+  | (typeof mainItems)[number]
+  | (typeof toolsItems)[number]
+  | (typeof settingsItems)[number];
 
 function UserNav() {
   const { confirm } = useConfirm();
@@ -211,6 +225,10 @@ export function AppSidebar() {
     ? mainItems
     : mainItems.filter((item) => hasItemAccess(item));
 
+  const visibleToolsItems = isPending
+    ? toolsItems
+    : toolsItems.filter((item) => hasItemAccess(item));
+
   const visibleSettingsItems = isPending
     ? settingsItems
     : settingsItems.filter((item) => hasItemAccess(item));
@@ -231,6 +249,32 @@ export function AppSidebar() {
                 {visibleMainItems.map((item) => (
                   <SidebarMenuItem
                     key={isPending ? `main-loading-${item.id}` : item.id}
+                  >
+                    {isPending ? (
+                      <SidebarMenuSkeleton showIcon />
+                    ) : (
+                      <SidebarMenuButton asChild isActive={isActive(item.link)}>
+                        <Link href={item.link as Route}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {visibleToolsItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Tools</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleToolsItems.map((item) => (
+                  <SidebarMenuItem
+                    key={isPending ? `tools-loading-${item.id}` : item.id}
                   >
                     {isPending ? (
                       <SidebarMenuSkeleton showIcon />

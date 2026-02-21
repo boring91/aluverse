@@ -11,8 +11,13 @@ import { getProjectByIdQuery } from "../queries/get-project-by-id.query";
 import { createProjectMutation } from "../mutations/create-project.mutation";
 import { updateProjectMutation } from "../mutations/update-project.mutation";
 import { deleteProjectMutation } from "../mutations/delete-project.mutation";
+import { getBudgetUnitValueQuery } from "../queries/get-budget-unit-value.query";
 
 export const projectsRouter = createTRPCRouter({
+  getBudgetUnitValue: permissionProcedure("projects.read").query(async () => {
+    return await getBudgetUnitValueQuery();
+  }),
+
   list: permissionProcedure("projects.read")
     .input(listProjectSchema)
     .query(async ({ input }) => {
