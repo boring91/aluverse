@@ -6,11 +6,17 @@ type BudgetCategoryAllocation = {
   effectiveDate: Date;
 };
 
-const monthlyToDailyAllocation = (monthlyAmount: number) =>
-  Math.round((monthlyAmount * 12) / 365.25);
-
 const startOfDay = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+const startOfNextMonth = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth() + 1, 1);
+
+const daysInMonth = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+const daysBetween = (from: Date, to: Date) =>
+  Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 
 async function listBudgetCategoriesQuery() {
   return await db
@@ -66,7 +72,6 @@ export async function getEffectiveBudgetCategoryAllocationsByDateQuery(
     return {
       ...category,
       monthlyAmount,
-      dailyAmount: monthlyToDailyAllocation(monthlyAmount),
     };
   });
 }
@@ -82,6 +87,56 @@ function groupAllocationsByCategory(allocations: BudgetCategoryAllocation[]) {
   }
 
   return allocationsByCategory;
+}
+
+function calculateProRatedAllocation(
+  rangeStart: Date,
+  rangeEnd: Date,
+  categoryAllocations: BudgetCategoryAllocation[]
+) {
+  let allocatedAmount = 0;
+  let cursor = new Date(rangeStart);
+
+  // Find initial allocation: latest with effectiveDate <= rangeStart
+  let allocationIndex = -1;
+  for (let i = 0; i < categoryAllocations.length; i++) {
+    if (categoryAllocations[i].effectiveDate <= rangeStart) {
+      allocationIndex = i;
+    }
+  }
+
+  while (cursor < rangeEnd) {
+    // Advance allocation index to cover current cursor position
+    while (
+      allocationIndex + 1 < categoryAllocations.length &&
+      categoryAllocations[allocationIndex + 1].effectiveDate <= cursor
+    ) {
+      allocationIndex++;
+    }
+
+    const monthlyAmount =
+      allocationIndex >= 0 ? categoryAllocations[allocationIndex].amount : 0;
+    const currentMonthDays = daysInMonth(cursor);
+    const monthEnd = startOfNextMonth(cursor);
+
+    // Next boundary: earliest of rangeEnd, monthEnd, or next allocation change
+    let segmentEnd = rangeEnd < monthEnd ? rangeEnd : monthEnd;
+
+    if (allocationIndex + 1 < categoryAllocations.length) {
+      const nextEffective =
+        categoryAllocations[allocationIndex + 1].effectiveDate;
+      if (nextEffective < segmentEnd) {
+        segmentEnd = nextEffective;
+      }
+    }
+
+    const days = daysBetween(cursor, segmentEnd);
+    allocatedAmount += (days / currentMonthDays) * monthlyAmount;
+
+    cursor = new Date(segmentEnd);
+  }
+
+  return Math.round(allocatedAmount);
 }
 
 export async function getBudgetAllocatedAmountByDateRangeQuery(
@@ -109,26 +164,11 @@ export async function getBudgetAllocatedAmountByDateRangeQuery(
 
   for (const category of categories) {
     const categoryAllocations = allocationsByCategory.get(category.id) ?? [];
-    let allocationIndex = -1;
-    let allocatedAmount = 0;
-
-    for (
-      const day = new Date(rangeStart);
-      day < rangeEnd;
-      day.setDate(day.getDate() + 1)
-    ) {
-      while (
-        allocationIndex + 1 < categoryAllocations.length &&
-        categoryAllocations[allocationIndex + 1].effectiveDate <= day
-      ) {
-        allocationIndex++;
-      }
-
-      const monthlyAmount =
-        allocationIndex >= 0 ? categoryAllocations[allocationIndex].amount : 0;
-      allocatedAmount += monthlyToDailyAllocation(monthlyAmount);
-    }
-
+    const allocatedAmount = calculateProRatedAllocation(
+      rangeStart,
+      rangeEnd,
+      categoryAllocations
+    );
     allocatedByCategoryMap.set(category.id, allocatedAmount);
   }
 
