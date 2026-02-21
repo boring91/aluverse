@@ -33,7 +33,12 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-lg font-semibold">
-          {`${project.startDate?.toDateString()} - ${project.endDate?.toDateString()}`}
+          {project.startDate && (
+            <p>
+              {`${project.startDate?.toDateString()} - ${project.endDate?.toDateString() ?? "N/A"}`}
+            </p>
+          )}
+          {!project.startDate && <p>Not started yet</p>}
         </CardContent>
       </Card>
 
