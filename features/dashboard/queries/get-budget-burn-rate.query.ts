@@ -21,15 +21,14 @@ export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
       ])
     );
 
-  const total = (
-    await query
-      .select((eb) => [
-        eb.fn
-          .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
-          .as("total"),
-      ])
-      .executeTakeFirstOrThrow()
-  ).total;
+  const total = await query
+    .select((eb) => [
+      eb.fn
+        .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))
+        .as("total"),
+    ])
+    .executeTakeFirstOrThrow()
+    .then((x) => x.total);
 
   // Calculate days elapsed in the period
   const endDate = now < to ? now : to;
@@ -39,7 +38,7 @@ export async function getBudgetBurnRateQuery(from?: Date, to?: Date) {
   );
 
   // Calculate metrics
-  const spent = total;
+  const spent = -total;
   const [budgetRange, elapsedBudgetRange] = await Promise.all([
     getBudgetAllocatedAmountByDateRangeQuery(from, to),
     getBudgetAllocatedAmountByDateRangeQuery(from, endDate),
