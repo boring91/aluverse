@@ -34,13 +34,13 @@ export const ProjectsInOutStats = ({ dateRange }: Props) => {
     </Card>
   );
 
-  if (!data || isLoading) {
+  if (!data && !isLoading) {
     return null;
   }
 
   return (
     <DashboardSection isLoading={isLoading} skeleton={skeleton}>
-      <ProjectsInOutStatsChart in={data.in} out={data.out} />
+      {data && <ProjectsInOutStatsChart in={data.in} out={data.out} />}
     </DashboardSection>
   );
 };

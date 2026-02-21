@@ -66,7 +66,7 @@ export const ProjectPipeline = () => {
                   {data.pipeline.map((project) => (
                     <div
                       key={project.id}
-                      className="flex items-start justify-between p-3 rounded-lg border"
+                      className="flex items-start justify-between p-3 border"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">

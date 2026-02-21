@@ -43,7 +43,7 @@ export const ExpensesOverview = ({ dateRange }: Props) => {
     <Card>
       <div className="p-6">
         <Skeleton className="h-6 w-32 mb-4" />
-        <Skeleton className="h-64 w-full rounded-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
     </Card>
   );
