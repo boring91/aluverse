@@ -6,17 +6,23 @@ type BudgetCategoryAllocation = {
   effectiveDate: Date;
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Round to nearest UTC midnight to handle timezone offsets in client-sent dates
+// (e.g. midnight UTC+11 arrives as 13:00 UTC the previous day)
 const startOfDay = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  new Date(Math.round(date.getTime() / DAY_MS) * DAY_MS);
 
 const startOfNextMonth = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1));
 
 const daysInMonth = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)
+  ).getUTCDate();
 
 const daysBetween = (from: Date, to: Date) =>
-  Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+  Math.round((to.getTime() - from.getTime()) / DAY_MS);
 
 async function listBudgetCategoriesQuery() {
   return await db
@@ -94,13 +100,19 @@ function calculateProRatedAllocation(
   rangeEnd: Date,
   categoryAllocations: BudgetCategoryAllocation[]
 ) {
+  // Normalize DB dates to UTC midnight to match the range boundaries
+  const normalized = categoryAllocations.map((a) => ({
+    ...a,
+    effectiveDate: startOfDay(a.effectiveDate),
+  }));
+
   let allocatedAmount = 0;
   let cursor = new Date(rangeStart);
 
   // Find initial allocation: latest with effectiveDate <= rangeStart
   let allocationIndex = -1;
-  for (let i = 0; i < categoryAllocations.length; i++) {
-    if (categoryAllocations[i].effectiveDate <= rangeStart) {
+  for (let i = 0; i < normalized.length; i++) {
+    if (normalized[i].effectiveDate <= rangeStart) {
       allocationIndex = i;
     }
   }
@@ -108,23 +120,22 @@ function calculateProRatedAllocation(
   while (cursor < rangeEnd) {
     // Advance allocation index to cover current cursor position
     while (
-      allocationIndex + 1 < categoryAllocations.length &&
-      categoryAllocations[allocationIndex + 1].effectiveDate <= cursor
+      allocationIndex + 1 < normalized.length &&
+      normalized[allocationIndex + 1].effectiveDate <= cursor
     ) {
       allocationIndex++;
     }
 
     const monthlyAmount =
-      allocationIndex >= 0 ? categoryAllocations[allocationIndex].amount : 0;
+      allocationIndex >= 0 ? normalized[allocationIndex].amount : 0;
     const currentMonthDays = daysInMonth(cursor);
     const monthEnd = startOfNextMonth(cursor);
 
     // Next boundary: earliest of rangeEnd, monthEnd, or next allocation change
     let segmentEnd = rangeEnd < monthEnd ? rangeEnd : monthEnd;
 
-    if (allocationIndex + 1 < categoryAllocations.length) {
-      const nextEffective =
-        categoryAllocations[allocationIndex + 1].effectiveDate;
+    if (allocationIndex + 1 < normalized.length) {
+      const nextEffective = normalized[allocationIndex + 1].effectiveDate;
       if (nextEffective < segmentEnd) {
         segmentEnd = nextEffective;
       }
