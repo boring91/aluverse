@@ -44,6 +44,7 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const mainItems = [
   {
@@ -202,6 +203,11 @@ function UserNav() {
 export function AppSidebar() {
   const pathname = usePathname();
   const { hasPermission, isPending } = useRbacAccess();
+  const { setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
 
   const hasItemAccess = (item: SidebarItem) => {
     if ("permissionsAny" in item) {
