@@ -30,9 +30,9 @@ export function DataTablePagination<TData>({
       {count !== undefined && filteredCount !== undefined ? (
         <div className="grow text-muted-foreground text-sm">
           {filteredCount === count ? (
-            <span>{`Total {count} items`}</span>
+            <span>{`Total ${count} items`}</span>
           ) : (
-            <span>{`Filtered {filteredCount} out of {count} items`}</span>
+            <span>{`Filtered ${filteredCount} out of ${count} items`}</span>
           )}
         </div>
       ) : (
