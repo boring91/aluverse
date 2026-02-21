@@ -17,16 +17,24 @@ import { ProjectPipeline } from "../components/project-pipeline";
 import { EfficiencyMetrics } from "../components/efficiency-metrics";
 import { GeneralOverview } from "../components/general-overview";
 import { PeriodComparisonSection } from "../components/period-comparison";
-import { useState } from "react";
 import { DateRange } from "@/components/date-range";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 import { PageLoader } from "@/components/page-loader";
 import { getCurrentTime } from "@/lib/utils";
+import { parseAsIsoDateTime, useQueryStates } from "nuqs";
 
-const startCurrentMonth = getCurrentTime();
-startCurrentMonth.setDate(1);
-startCurrentMonth.setHours(0, 0, 0, 0);
-const now = getCurrentTime();
+function getDefaultDateRange() {
+  const from = getCurrentTime();
+  from.setDate(1);
+  from.setHours(0, 0, 0, 0);
+
+  const to = new Date(from);
+  to.setMonth(to.getMonth() + 1);
+
+  return { from, to };
+}
+
+const defaultRange = getDefaultDateRange();
 
 export const DashboardView = () => {
   useTitle("Dashboard");
@@ -34,8 +42,16 @@ export const DashboardView = () => {
 
   const canRead = hasPermission("dashboard.read");
 
-  const [fromDate, setFromDate] = useState<Date | undefined>(startCurrentMonth);
-  const [toDate, setToDate] = useState<Date | undefined>(now);
+  const [queryDates, setQueryDates] = useQueryStates(
+    {
+      from: parseAsIsoDateTime.withDefault(defaultRange.from),
+      to: parseAsIsoDateTime.withDefault(defaultRange.to),
+    },
+    { shallow: false }
+  );
+
+  const fromDate = queryDates.from;
+  const toDate = queryDates.to;
 
   const dateRange = { from: fromDate, to: toDate };
 
@@ -61,11 +77,13 @@ export const DashboardView = () => {
     <PageContainer>
       <div className="flex items-center justify-end">
         <DateRange
-          initialDateFrom={fromDate ?? startCurrentMonth}
+          initialDateFrom={fromDate}
           initialDateTo={toDate}
           onUpdate={({ range }) => {
-            setFromDate(range.from);
-            setToDate(range.to);
+            setQueryDates({
+              from: range.from ?? null,
+              to: range.to ?? null,
+            });
           }}
         />
       </div>
