@@ -21,12 +21,12 @@ import { useState } from "react";
 import { DateRange } from "@/components/date-range";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 import { PageLoader } from "@/components/page-loader";
+import { getCurrentTime } from "@/lib/utils";
 
-const startCurrentMonth = new Date();
+const startCurrentMonth = getCurrentTime();
 startCurrentMonth.setDate(1);
 startCurrentMonth.setHours(0, 0, 0, 0);
-
-const now = new Date();
+const now = getCurrentTime();
 
 export const DashboardView = () => {
   useTitle("Dashboard");

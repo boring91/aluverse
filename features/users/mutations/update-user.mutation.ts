@@ -3,6 +3,7 @@ import { userFullMapper } from "@/shared/mappers/users/user-full.mapper";
 import { hashPassword } from "better-auth/crypto";
 import { z } from "zod";
 import { updateUserSchema } from "../schemas/users.shared-schema";
+import { getCurrentTime } from "@/lib/utils";
 
 export async function updateUserMutation(
   data: z.infer<typeof updateUserSchema>
@@ -25,7 +26,7 @@ export async function updateUserMutation(
       ? password.trim()
       : undefined;
 
-  const now = new Date();
+  const now = getCurrentTime();
 
   const credentialAccount = await db
     .selectFrom("accounts")

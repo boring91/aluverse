@@ -37,7 +37,7 @@ export const getProjectStatus = (
   return "completed";
 };
 
-export const getCurrentTime = () => new Date();
+export const getCurrentTime = () => new Date(Date.now());
 
 export function toUuid(input: number | string): string {
   const NUMBER_NAMESPACE = "1b671a64-40d5-491e-99b0-da01ff1f3341";

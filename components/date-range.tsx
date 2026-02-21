@@ -26,6 +26,7 @@ import {
   CheckIcon,
 } from "lucide-react";
 import { cn } from "@/lib/client-utils";
+import { getCurrentTime } from "@/lib/utils";
 type DateInputProps = {
   value?: Date;
   onChange: (date: Date) => void;
@@ -39,7 +40,7 @@ type DateParts = {
 
 const DateInput: React.FC<DateInputProps> = ({ value, onChange }) => {
   const [date, setDate] = React.useState<DateParts>(() => {
-    const d = value ? new Date(value) : new Date();
+    const d = value ? new Date(value) : getCurrentTime();
     return {
       day: d.getDate(),
       month: d.getMonth() + 1, // JavaScript months are 0-indexed
@@ -52,7 +53,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange }) => {
   const yearRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const d = value ? new Date(value) : new Date();
+    const d = value ? new Date(value) : getCurrentTime();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDate({
       day: d.getDate(),
@@ -364,7 +365,7 @@ const PRESET_LABELS: Record<(typeof PRESETS)[number], string> = {
 
 /** The DateRangePicker component allows a user to select a range of dates */
 export const DateRange: FC<DateRangePickerProps> = ({
-  initialDateFrom = new Date(new Date().setHours(0, 0, 0, 0)),
+  initialDateFrom = new Date(getCurrentTime().setHours(0, 0, 0, 0)),
   initialDateTo,
   initialCompareFrom,
   initialCompareTo,
@@ -420,8 +421,8 @@ export const DateRange: FC<DateRangePickerProps> = ({
   const getPresetRange = (presetName: string): DateRange => {
     const preset = PRESETS.find((p) => p === presetName);
     if (!preset) throw new Error(`Unknown date range preset: ${presetName}`);
-    const from = new Date();
-    const to = new Date();
+    const from = getCurrentTime();
+    const to = getCurrentTime();
     const first = from.getDate() - from.getDay();
 
     switch (preset) {
@@ -761,7 +762,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
                           } else {
                             setRangeCompare({
                               from: date,
-                              to: new Date(),
+                              to: getCurrentTime(),
                             });
                           }
                         }}
@@ -820,8 +821,8 @@ export const DateRange: FC<DateRangePickerProps> = ({
                   numberOfMonths={isSmallScreen ? 1 : 2}
                   defaultMonth={
                     new Date(
-                      new Date().setMonth(
-                        new Date().getMonth() - (isSmallScreen ? 0 : 1)
+                      getCurrentTime().setMonth(
+                        getCurrentTime().getMonth() - (isSmallScreen ? 0 : 1)
                       )
                     )
                   }

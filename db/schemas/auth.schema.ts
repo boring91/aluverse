@@ -1,3 +1,4 @@
+import { getCurrentTime } from "@/lib/utils";
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
@@ -9,7 +10,7 @@ export const users = pgTable("users", {
   image: text("image"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
+    .$onUpdate(() => getCurrentTime())
     .notNull(),
 });
 
@@ -21,7 +22,7 @@ export const sessions = pgTable(
     token: text("token").notNull().unique(),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at")
-      .$onUpdate(() => new Date())
+      .$onUpdate(() => getCurrentTime())
       .notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
@@ -50,7 +51,7 @@ export const accounts = pgTable(
     password: text("password"),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at")
-      .$onUpdate(() => new Date())
+      .$onUpdate(() => getCurrentTime())
       .notNull(),
   },
   (table) => [index("accounts_userId_idx").on(table.userId)]
@@ -65,7 +66,7 @@ export const verifications = pgTable(
     expiresAt: timestamp("expires_at").notNull(),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at")
-      .$onUpdate(() => new Date())
+      .$onUpdate(() => getCurrentTime())
       .notNull(),
   },
   (table) => [index("verifications_identifier_idx").on(table.identifier)]

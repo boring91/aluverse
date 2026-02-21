@@ -1,3 +1,4 @@
+import { getCurrentTime } from "@/lib/utils";
 import { timestamp } from "drizzle-orm/pg-core";
 
 export const auditColumns = {
@@ -5,5 +6,5 @@ export const auditColumns = {
   updatedAt: timestamp({ mode: "date" })
     .notNull()
     .defaultNow()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => getCurrentTime()),
 };

@@ -17,6 +17,7 @@ import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
 import { createBudgetCategoryAllocationSchema } from "../schemas/budgets.shared-schema";
+import { getCurrentTime } from "@/lib/utils";
 
 type SchemaType = z.infer<typeof createBudgetCategoryAllocationSchema>;
 
@@ -95,7 +96,7 @@ export function CreateBudgetCategoryAllocation({
         ? data
           ? { ...data, amount: data.amount / 100 }
           : data
-        : { amount: 0, effectiveDate: new Date() }
+        : { amount: 0, effectiveDate: getCurrentTime() }
     ),
     validators: {
       onChange: createBudgetCategoryAllocationSchema,
@@ -120,7 +121,7 @@ export function CreateBudgetCategoryAllocation({
           ? data
             ? { ...data, amount: data.amount / 100 }
             : data
-          : { amount: 0, effectiveDate: new Date() }
+          : { amount: 0, effectiveDate: getCurrentTime() }
       )
     );
   }, [form, open, data, isUpdate]);
