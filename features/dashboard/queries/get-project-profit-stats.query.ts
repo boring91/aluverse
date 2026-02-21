@@ -3,6 +3,7 @@ import { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 import {
   isProjectWithinRange,
   projectCost,
+  projectMargin,
 } from "@/shared/expressions/projects/project.expression";
 
 export async function getProjectProfitStatsQuery(input: DashboardDateRange) {
@@ -24,25 +25,13 @@ export async function getProjectProfitStatsQuery(input: DashboardDateRange) {
       "title",
       "price",
       projectCost(eb).as("projectCost"),
-      eb
-        .case()
-        .when("price", ">", eb.lit(0))
-        .then(
-          eb(
-            eb.parens(eb("price", "-", projectCost(eb))),
-            "/",
-            eb.cast<number>(eb.ref("price"), "double precision")
-          )
-        )
-        .else(eb.lit(0))
-        .end()
-        .as("profitMargin"),
+      projectMargin(eb).as("profitMargin"),
     ])
     .orderBy("profitMargin", "desc")
     .execute();
 
   return projects.map((project) => ({
     name: project.humanId || project.title,
-    profit: Number(project.profitMargin ?? 0),
+    profit: project.profitMargin ?? 0,
   }));
 }
