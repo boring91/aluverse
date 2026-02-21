@@ -3,6 +3,7 @@ import {
   DataTableColumnHeader,
 } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/utils";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { ColumnDef } from "@tanstack/react-table";
@@ -46,6 +47,20 @@ export const useBudgetCategoriesColumns = (
             <Badge variant={category.includingGst ? "default" : "secondary"}>
               {category.includingGst ? "GST included" : "GST excluded"}
             </Badge>
+          );
+        },
+      },
+      {
+        id: "monthlyAllocation",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Monthly allocation" />
+        ),
+        cell: ({ row }) => {
+          const category = row.original;
+          return (
+            <span className="font-mono">
+              {formatCurrency(category.monthlyAllocation)}
+            </span>
           );
         },
       },
