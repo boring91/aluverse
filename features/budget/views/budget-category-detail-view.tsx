@@ -31,7 +31,7 @@ export const BudgetCategoryDetailView = () => {
     )
   );
 
-  useTitle(data ? `${data.humanId} - ${data.name}` : "Loading");
+  useTitle(data ? data.name : "Loading");
 
   const [openCreateSheet, setOpenCreateSheet] = useState(false);
 

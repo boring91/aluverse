@@ -12,12 +12,7 @@ export async function listBudgetCategoriesQuery(
   const { filters, pagination } = input;
 
   if (filters?.keyword) {
-    query = query.where((eb) =>
-      eb.or([
-        eb("name", "ilike", `%${filters.keyword}%`),
-        eb("humanId", "ilike", `%${filters.keyword}%`),
-      ])
-    );
+    query = query.where("name", "ilike", `%${filters.keyword}%`);
   }
 
   if (filters?.includingGst !== undefined) {

@@ -3,7 +3,6 @@ import { z } from "zod";
 
 const budgetCategorySchema = z.object({
   name: z.string().min(1),
-  humanId: z.string().min(1),
   includingGst: z.boolean(),
 });
 

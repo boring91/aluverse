@@ -13,23 +13,12 @@ export const BudgetCategoryBasicInfo = ({
   category: BudgetCategory;
 }) => {
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-sm text-muted-foreground">Name</CardTitle>
         </CardHeader>
         <CardContent className="font-semibold">{category.name}</CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm text-muted-foreground">
-            Human ID
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="font-mono text-lg font-semibold">
-          {category.humanId}
-        </CardContent>
       </Card>
 
       <Card>

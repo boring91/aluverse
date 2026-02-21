@@ -43,7 +43,6 @@ export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
 
       return {
         categoryId: category.id,
-        categoryHumanId: category.humanId,
         categoryName: category.name,
         spent,
         allocated,

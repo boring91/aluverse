@@ -43,7 +43,7 @@ export const transactionFullMapper = (
                 "=",
                 "reconciliations.budgetCategoryId"
               )
-              .select(["id", "humanId", "name", "includingGst"])
+              .select(["id", "name", "includingGst"])
           ).as("budgetCategory"),
           jsonObjectFrom(
             y

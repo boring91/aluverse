@@ -130,7 +130,7 @@ export function BudgetCategoryField({ form }: { form: FormApi }) {
           items={
             data?.items.map((category) => ({
               value: category.id,
-              label: `${category.name} (${category.humanId})`,
+              label: category.name,
             })) ?? []
           }
         />

@@ -35,9 +35,6 @@ export const BudgetCategoryDetailHeader = ({
               {category.includingGst ? "GST included" : "GST excluded"}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            <span className="font-mono">{category.humanId}</span>
-          </p>
         </div>
       </div>
 

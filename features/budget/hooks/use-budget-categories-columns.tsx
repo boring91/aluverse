@@ -29,10 +29,7 @@ export const useBudgetCategoriesColumns = (
           return (
             <div className="flex flex-col gap-1">
               <Link href={`/budgets/${category.id}`}>
-                <p>
-                  <span className="font-mono">{category.humanId}</span>
-                  <span> - {category.name}</span>
-                </p>
+                <p>{category.name}</p>
               </Link>
             </div>
           );

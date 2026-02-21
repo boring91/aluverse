@@ -24,7 +24,7 @@ export const reconciliationFullMapper = (
           "=",
           "reconciliations.budgetCategoryId"
         )
-        .select(["id", "humanId", "name", "includingGst"])
+        .select(["id", "name", "includingGst"])
     ).as("budgetCategory"),
     jsonObjectFrom(
       eb

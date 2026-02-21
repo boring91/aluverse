@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { db } from "@/db";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import { createBudgetCategoryMutation } from "../mutations/create-budget-category.mutation";
 import { deleteBudgetCategoryMutation } from "../mutations/delete-budget-category.mutation";
@@ -12,46 +11,6 @@ import {
   listBudgetCategorySchema,
   updateBudgetCategorySchema,
 } from "../schemas/budgets.shared-schema";
-
-const addHumanIdNotAvailableIssue = (ctx: z.RefinementCtx) => {
-  ctx.addIssue({
-    code: "custom",
-    params: {
-      code: "HUMAN_ID_NOT_AVAILABLE",
-    },
-    message: "HUMAN_ID_NOT_AVAILABLE",
-    path: ["humanId"],
-  });
-};
-
-const createBudgetCategoryInputSchema = createBudgetCategorySchema.superRefine(
-  async (data, ctx) => {
-    const existingCategory = await db
-      .selectFrom("budgetCategories")
-      .where("humanId", "=", data.humanId)
-      .select(["id"])
-      .executeTakeFirst();
-
-    if (existingCategory) {
-      addHumanIdNotAvailableIssue(ctx);
-    }
-  }
-);
-
-const updateBudgetCategoryInputSchema = updateBudgetCategorySchema.superRefine(
-  async (data, ctx) => {
-    const existingCategory = await db
-      .selectFrom("budgetCategories")
-      .where("humanId", "=", data.humanId)
-      .where("id", "!=", data.id)
-      .select(["id"])
-      .executeTakeFirst();
-
-    if (existingCategory) {
-      addHumanIdNotAvailableIssue(ctx);
-    }
-  }
-);
 
 export const budgetCategoriesRouter = createTRPCRouter({
   list: permissionProcedure("budgetCategories.read")
@@ -71,13 +30,13 @@ export const budgetCategoriesRouter = createTRPCRouter({
     }),
 
   create: permissionProcedure("budgetCategories.create")
-    .input(createBudgetCategoryInputSchema)
+    .input(createBudgetCategorySchema)
     .mutation(async ({ input }) => {
       return await createBudgetCategoryMutation(input);
     }),
 
   update: permissionProcedure("budgetCategories.update")
-    .input(updateBudgetCategoryInputSchema)
+    .input(updateBudgetCategorySchema)
     .mutation(async ({ input }) => {
       return await updateBudgetCategoryMutation(input);
     }),

@@ -143,11 +143,6 @@ export function CreateBudgetCategory({
               />
 
               <form.AppField
-                name="humanId"
-                children={(field) => <field.TextField label="Human ID" />}
-              />
-
-              <form.AppField
                 name="includingGst"
                 children={(field) => (
                   <field.CheckboxField label="Including GST" />

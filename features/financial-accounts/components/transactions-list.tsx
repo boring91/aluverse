@@ -305,7 +305,7 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
                     options={
                       budgetCategories?.items.map((category) => ({
                         value: category.id,
-                        label: `${category.name} (${category.humanId})`,
+                        label: category.name,
                       })) ?? []
                     }
                   />

@@ -204,6 +204,13 @@
       "when": 1771486727000,
       "tag": "0028_tidy_reconciliation",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1771718400000,
+      "tag": "0029_drop_budget_category_human_id",
+      "breakpoints": true
     }
   ]
 }

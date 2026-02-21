@@ -27,7 +27,7 @@ const daysBetween = (from: Date, to: Date) =>
 async function listBudgetCategoriesQuery() {
   return await db
     .selectFrom("budgetCategories")
-    .select(["id", "humanId", "name", "includingGst"])
+    .select(["id", "name", "includingGst"])
     .orderBy("name")
     .execute();
 }
