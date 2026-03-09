@@ -254,6 +254,7 @@ export function AccessControlView() {
                 columns={usersColumns}
                 data={usersData}
                 {...usersTable}
+                setOpenCreateSheet={undefined}
                 filtersSlot={
                   <DataTableFilters
                     onReset={usersReset}
