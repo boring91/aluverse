@@ -3,16 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { loadGoogleMapsPlaces } from "@/lib/google-maps";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "../ui/command";
+import { cn } from "@/lib/client-utils";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
-import { Popover, PopoverAnchor, PopoverContent } from "../ui/popover";
 import { useFieldContext } from "./form-context";
 
 type Prediction = {
@@ -34,7 +27,6 @@ export function AddressField({ label, placeholder }: Props) {
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const placesLibRef = useRef<google.maps.PlacesLibrary | null>(null);
@@ -73,7 +65,6 @@ export function AddressField({ label, placeholder }: Props) {
     }
 
     debounceTimerRef.current = setTimeout(async () => {
-      setIsLoading(true);
       try {
         const { suggestions } =
           await placesLibRef.current!.AutocompleteSuggestion.fetchAutocompleteSuggestions(
@@ -103,8 +94,6 @@ export function AddressField({ label, placeholder }: Props) {
         setPredictions([]);
         setIsOpen(false);
         setSelectedIndex(-1);
-      } finally {
-        setIsLoading(false);
       }
     }, 300);
   }, []);
@@ -153,58 +142,51 @@ export function AddressField({ label, placeholder }: Props) {
     <Field>
       <FieldLabel>{label}</FieldLabel>
       {isGoogleLoaded ? (
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverAnchor asChild>
-            <Input
-              value={field.state.value ?? ""}
-              placeholder={placeholder}
-              autoComplete="off"
-              onChange={(e) => {
-                field.handleChange(e.target.value);
-                fetchPredictions(e.target.value);
-              }}
-              onFocus={() => {
-                if (predictions.length > 0) {
-                  setIsOpen(true);
-                }
-              }}
-              onKeyDown={handleKeyDown}
-            />
-          </PopoverAnchor>
-          <PopoverContent className="w-(--anchor-width) p-0">
-            <Command>
-              <CommandList>
-                {isLoading ? (
-                  <CommandEmpty>Loading...</CommandEmpty>
-                ) : predictions.length === 0 ? (
-                  <CommandEmpty>No addresses found</CommandEmpty>
-                ) : (
-                  <CommandGroup>
-                    {predictions.map((prediction, index) => (
-                      <CommandItem
-                        key={prediction.placeId}
-                        value={prediction.description}
-                        onSelect={() => handleSelect(prediction.description)}
-                        data-selected={index === selectedIndex}
-                        className={
-                          index === selectedIndex
-                            ? "bg-accent text-accent-foreground"
-                            : ""
-                        }
-                        onMouseEnter={() => setSelectedIndex(index)}
-                      >
-                        <MapPin className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                        <span className="truncate">
-                          {prediction.description}
-                        </span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                )}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        <div className="relative">
+          <Input
+            value={field.state.value ?? ""}
+            placeholder={placeholder}
+            autoComplete="off"
+            onChange={(e) => {
+              field.handleChange(e.target.value);
+              fetchPredictions(e.target.value);
+            }}
+            onFocus={() => {
+              if (predictions.length > 0) {
+                setIsOpen(true);
+              }
+            }}
+            onBlur={() => {
+              setTimeout(() => setIsOpen(false), 150);
+            }}
+            onKeyDown={handleKeyDown}
+          />
+          {isOpen && predictions.length > 0 && (
+            <div className="bg-popover text-popover-foreground ring-foreground/10 absolute z-50 mt-1 w-full shadow-md ring-1">
+              <div className="max-h-72 overflow-y-auto">
+                {predictions.map((prediction, index) => (
+                  <div
+                    key={prediction.placeId}
+                    className={cn(
+                      "flex cursor-default items-center gap-2 px-2 py-2 text-xs select-none",
+                      index === selectedIndex
+                        ? "bg-accent text-accent-foreground"
+                        : ""
+                    )}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelect(prediction.description);
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <MapPin className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <span className="truncate">{prediction.description}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         <Input
           value={field.state.value ?? ""}
