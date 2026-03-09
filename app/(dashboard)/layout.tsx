@@ -29,8 +29,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <div className="flex flex-col w-full">
-        <AppHeader />
+      <div className="flex flex-col w-full overflow-hidden h-screen">
+        <AppHeader className="shrink-0" />
         <main className="grow overflow-auto">{children}</main>
       </div>
     </SidebarProvider>

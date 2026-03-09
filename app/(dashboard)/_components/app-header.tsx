@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useIsMounted } from "@/hooks/use-is-mounted";
+import { cn } from "@/lib/client-utils";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -21,9 +22,14 @@ const ThemeSwitcher = () => {
   );
 };
 
-export const AppHeader = () => {
+export const AppHeader = ({ className }: { className?: string }) => {
   return (
-    <header className="h-16 flex items-center px-4 border-b w-full justify-between">
+    <header
+      className={cn(
+        "h-16 flex items-center px-4 border-b w-full justify-between",
+        className
+      )}
+    >
       <SidebarTrigger />
 
       <div className="flex items-center gap-2">
