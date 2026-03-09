@@ -1,11 +1,6 @@
 import { useDataTable } from "@/components/data-table/hooks/use-data-table";
 import { useTRPC } from "@/trpc/client";
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DataTable } from "@/components/data-table";
 import { useReconciliationsColumns } from "../hooks/use-reconciliations-columns";
 import { CreateReconciliation } from "./create-reconciliation";
@@ -83,7 +78,6 @@ export const ReconciliationsList = ({
         sorting: dataTable.sorting,
       },
       {
-        placeholderData: keepPreviousData,
         enabled: open && canRead,
       }
     )
