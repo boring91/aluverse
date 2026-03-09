@@ -86,19 +86,18 @@ export function ReconciliationGroupField({ form }: { form: FormApi }) {
             }))
             .sort((a, b) => a.label.localeCompare(b.label))}
           onChange={(value) => {
-            if (value !== "budget")
-              form.setFieldValue("budgetCategoryId", undefined);
+            if (value !== "budget") form.resetField("budgetCategoryId");
 
             if (value !== "project") {
-              form.setFieldValue("projectId", undefined);
-              form.setFieldValue("projectStream", undefined);
-              form.setFieldValue("projectItemId", undefined);
+              form.resetField("projectId");
+              form.resetField("projectStream");
+              form.resetField("projectItemId");
             }
 
             if (value !== "loan") {
-              form.setFieldValue("loanId", undefined);
-              form.setFieldValue("isPayoff", undefined);
-              form.setFieldValue("loanPayoffId", undefined);
+              form.resetField("loanId");
+              form.resetField("isPayoff");
+              form.resetField("loanPayoffId");
             }
           }}
         />
