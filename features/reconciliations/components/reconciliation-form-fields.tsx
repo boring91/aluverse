@@ -212,15 +212,13 @@ export const ProjectFields = forwardRef<
 
   const handleItemCreated = useCallback(
     (id: string) => {
-      form.setFieldValue("projectItemId", id);
       handlePendingItemCreated(id);
     },
-    [form, handlePendingItemCreated]
+    [handlePendingItemCreated]
   );
 
   const handleProjectCreated = useCallback(
     (id: string) => {
-      form.setFieldValue("projectId", id);
       form.resetField("projectStream");
       form.resetField("projectItemId");
       handlePendingProjectCreated(id);
@@ -277,6 +275,9 @@ export const ProjectFields = forwardRef<
               value: stream,
               label: STREAM_LABELS[stream],
             }))}
+            onChange={() => {
+              form.resetField("projectItemId");
+            }}
           />
         )}
       />
@@ -298,7 +299,10 @@ export const ProjectFields = forwardRef<
             }
             onCreate={
               canCreateProjectItems
-                ? () => createProjectItemRef.current?.open()
+                ? () => {
+                    form.resetField("projectItemId");
+                    createProjectItemRef.current?.open();
+                  }
                 : undefined
             }
           />
@@ -376,10 +380,9 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
     });
     const handlePayoffCreated = useCallback(
       (id: string) => {
-        form.setFieldValue("loanPayoffId", id);
         handlePendingPayoffCreated(id);
       },
-      [form, handlePendingPayoffCreated]
+      [handlePendingPayoffCreated]
     );
     const handleLoanCreated = (createdLoanId: string) => {
       form.setFieldValue("loanId", createdLoanId);
