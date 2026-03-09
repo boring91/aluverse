@@ -17,21 +17,39 @@ const STATUS_LABELS = {
   completed: "Completed",
 } as const;
 
+const STATUS_STYLES = {
+  planning: {
+    badge: "bg-muted text-muted-foreground",
+    dot: "bg-muted-foreground/60",
+  },
+  inProgress: {
+    badge: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
+    dot: "bg-blue-500 dark:bg-blue-400",
+  },
+  awaitingPayment: {
+    badge:
+      "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400",
+    dot: "bg-amber-500 dark:bg-amber-400",
+  },
+  completed: {
+    badge:
+      "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400",
+    dot: "bg-emerald-500 dark:bg-emerald-400",
+  },
+} as const;
+
 export const ProjectStatusBadge = ({ project }: Props) => {
   const status = getProjectStatus(project);
+  const styles = STATUS_STYLES[status];
 
   return (
     <div
       className={cn(
-        "rounded-xl inline-flex px-4 py-1 items-center justify-center text-white text-xs font-bold",
-        {
-          "bg-sky-400": status === "planning",
-          "bg-amber-400": status === "inProgress",
-          "bg-rose-400": status === "awaitingPayment",
-          "bg-emerald-400": status === "completed",
-        }
+        "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium",
+        styles.badge
       )}
     >
+      <span className={cn("size-1.5 rounded-full", styles.dot)} />
       {STATUS_LABELS[status]}
     </div>
   );
