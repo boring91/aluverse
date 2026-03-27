@@ -12,7 +12,7 @@ export const loanPaid = (eb: ExpressionBuilder<DB, "loans">) => {
 };
 
 export const loanRemaining = (eb: ExpressionBuilder<DB, "loans">) =>
-  eb("amount", "-", loanPaid(eb)).$notNull();
+  eb("amount", "+", loanPaid(eb)).$notNull();
 
 export const isLoanReconciled = (eb: ExpressionBuilder<DB, "loans">) => {
   return eb("reconciliationId", "is not", null).$notNull();
