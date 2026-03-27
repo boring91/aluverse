@@ -161,7 +161,9 @@ export function CreateProject({
 
               <form.AppField
                 name="price"
-                children={(field) => <field.NumberField label="Price" />}
+                children={(field) => (
+                  <field.NumberField label="Price (including gst)" />
+                )}
               />
 
               <form.AppField

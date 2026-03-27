@@ -60,7 +60,7 @@ const ProjectAlertsList = ({
   projects: inferRouterOutputs<AppRouter>["dashboard"]["projectsWithAlerts"];
 }) => {
   const getProjectSeverity = (project: (typeof projects)[number]) => {
-    if (project.price - project.cost < 0) return "high";
+    if (project.profit < 0) return "high";
     if (project.daysOverdue) return "high";
     if (project.allocationOverrun) return "medium";
     return "low";
@@ -79,7 +79,7 @@ const ProjectAlertsList = ({
   };
 
   const getType = (project: (typeof projects)[number]) => {
-    return project.price - project.cost < 0
+    return project.profit < 0
       ? "negativeProfit"
       : !!project.daysOverdue
         ? "overduePayment"
@@ -89,8 +89,8 @@ const ProjectAlertsList = ({
   };
 
   const getProjectMessage = (project: (typeof projects)[number]) => {
-    if (project.price - project.cost < 0) {
-      return `This project is currently running at a negative profit of ${formatCurrency((project.price - project.cost) / 100)}.`;
+    if (project.profit < 0) {
+      return `This project is currently running at a negative profit of ${formatCurrency(project.profit / 100)}.`;
     }
 
     if (project.daysOverdue) {

@@ -69,10 +69,10 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
             </p>
             <p
               className={cn("text-xs font-mono text-emerald-500", {
-                "text-rose-500": project.price - project.cost < 0,
+                "text-rose-500": project.profit < 0,
               })}
             >
-              {formatCurrency(project.price + project.cost)}
+              {formatCurrency(project.profit)}
             </p>
           </div>
         </CardContent>

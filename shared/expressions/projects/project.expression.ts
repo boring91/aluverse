@@ -1,6 +1,7 @@
 import { ExpressionBuilder } from "kysely";
 import { DB } from "@/db/types";
 import { getCurrentTime } from "@/lib/utils";
+import { GST_RATE } from "@/lib/constants";
 
 export const projectPaid = (
   eb: ExpressionBuilder<DB, "projects">,
@@ -179,13 +180,19 @@ export const projectCost = (
     .$notNull();
 };
 
+export const projectPriceExcGst = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb.parens(eb(eb.ref("price"), "/", eb.lit(1 + GST_RATE)));
+
+export const projectProfit = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb.parens(eb(projectPriceExcGst, "+", projectCost));
+
 export const projectMarkup = (eb: ExpressionBuilder<DB, "projects">) =>
   eb
     .case()
     .when(eb.fn<number>("abs", [projectCost]), ">", eb.lit(0))
     .then(
       eb(
-        eb.parens(eb("price", "+", projectCost(eb))),
+        eb.parens(eb(projectPriceExcGst, "+", projectCost(eb))),
         "/",
         eb.cast<number>(projectCost(eb), "double precision")
       )
@@ -194,15 +201,14 @@ export const projectMarkup = (eb: ExpressionBuilder<DB, "projects">) =>
     .end();
 
 export const projectMargin = (eb: ExpressionBuilder<DB, "projects">) =>
-  // eb.lit(0);
   eb
     .case()
-    .when("price", ">", 0)
+    .when(projectPriceExcGst, ">", 0)
     .then(
       eb(
-        eb.parens(eb("price", "+", projectCost(eb))),
+        eb.parens(eb(projectPriceExcGst, "+", projectCost(eb))),
         "/",
-        eb.cast<number>(eb.ref("price"), "double precision")
+        eb.cast<number>(projectPriceExcGst, "double precision")
       )
     )
     .else(null)
@@ -293,7 +299,11 @@ export const projectDaysOverdue = (eb: ExpressionBuilder<DB, "projects">) => {
 };
 
 export const projectAllocation = (eb: ExpressionBuilder<DB, "projects">) =>
-  eb.parens(eb.parens(eb.val(1), "-", eb.ref("margin")), "*", eb.ref("price"));
+  eb.parens(
+    eb.parens(eb.val(1), "-", eb.ref("margin")),
+    "*",
+    projectPriceExcGst
+  );
 
 export const projectAllocationOverrun = (
   eb: ExpressionBuilder<DB, "projects">

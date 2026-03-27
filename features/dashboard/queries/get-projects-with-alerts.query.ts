@@ -2,8 +2,8 @@ import { db } from "@/db";
 import {
   isProjectWithinRange,
   projectAllocationOverrun,
-  projectCost,
   projectDaysOverdue,
+  projectProfit,
 } from "@/shared/expressions/projects/project.expression";
 import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
 
@@ -15,7 +15,7 @@ export async function getProjectsWithAlertsQuery(from?: Date, to?: Date) {
   return query
     .where((eb) =>
       eb.or([
-        eb(projectCost, ">", eb.ref("price")),
+        eb(projectProfit, "<", eb.lit(0)),
         eb(projectDaysOverdue, ">", 1),
         eb(projectAllocationOverrun, ">", 0),
       ])
@@ -24,7 +24,7 @@ export async function getProjectsWithAlertsQuery(from?: Date, to?: Date) {
     .orderBy((eb) =>
       eb
         .case()
-        .when(projectCost, ">", eb.ref("price"))
+        .when(projectProfit, "<", eb.lit(0))
         .then(0)
         .when(eb(projectDaysOverdue, ">", 0))
         .then(1)

@@ -7,6 +7,8 @@ import {
   projectMargin,
   projectMarkup,
   projectPaid,
+  projectPriceExcGst,
+  projectProfit,
   unreconciledItemsCount,
 } from "@/shared/expressions/projects/project.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
@@ -26,8 +28,10 @@ export const projectListMapper = (eb: ExpressionBuilder<DB, "projects">) =>
     "margin",
     "budgetUnits",
     "budgetUnitValue",
+    projectPriceExcGst(eb).as("priceExcGst"),
     projectDaysOverdue(eb).as("daysOverdue"),
     projectCost(eb).as("cost"),
+    projectProfit(eb).as("profit"),
     projectPaid(eb).as("paid"),
     projectMarkup(eb).as("effectiveMarkup"),
     projectMargin(eb).as("effectiveMargin"),
