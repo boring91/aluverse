@@ -69,8 +69,14 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
             Price & margin
           </CardTitle>
         </CardHeader>
-        <CardContent className="font-mono text-lg font-semibold">
-          {formatCurrency(project.price)} ({(project.margin * 100).toFixed(2)}%)
+        <CardContent className="font-mono text-lg font-semibold flex flex-col gap-2">
+          <p>
+            {formatCurrency(project.price)} ({(project.margin * 100).toFixed(2)}
+            %)
+          </p>
+          <p className="text-sm">
+            {formatCurrency(project.priceExcGst)} (exc. GST)
+          </p>
         </CardContent>
       </Card>
     </div>
