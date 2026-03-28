@@ -305,16 +305,33 @@ export const projectAllocation = (eb: ExpressionBuilder<DB, "projects">) =>
     projectPriceExcGst
   );
 
+export const projectUsedAllocation = (eb: ExpressionBuilder<DB, "projects">) =>
+  eb.parens(
+    eb
+      .case()
+      .when(projectAllocation, "!=", eb.lit(0))
+      .then(eb(eb.fn<number>("abs", [projectCost]), "/", projectAllocation))
+      .else(eb.lit(null))
+      .end()
+  );
+
 export const projectAllocationOverrun = (
   eb: ExpressionBuilder<DB, "projects">
 ) =>
   eb
     .case()
     .when(
-      eb.and([eb(projectCost, ">", projectAllocation), eb("price", ">", 0)])
+      eb.and([
+        eb(eb.fn<number>("abs", [projectCost]), ">", projectAllocation),
+        eb("price", ">", 0),
+      ])
     )
     .then(
-      eb(eb.parens(projectCost, "+", projectAllocation), "/", projectAllocation)
+      eb(
+        eb.parens(eb.fn<number>("abs", [projectCost]), "-", projectAllocation),
+        "/",
+        projectAllocation
+      )
     )
     .else(null)
     .end();

@@ -9,6 +9,7 @@ import {
   projectPaid,
   projectPriceExcGst,
   projectProfit,
+  projectUsedAllocation,
   unreconciledItemsCount,
 } from "@/shared/expressions/projects/project.expression";
 import { ExpressionBuilder, SelectExpression } from "kysely";
@@ -36,6 +37,7 @@ export const projectFullMapper = (eb: ExpressionBuilder<DB, "projects">) =>
     projectMarkup(eb).as("effectiveMarkup"),
     projectMargin(eb).as("effectiveMargin"),
     projectAllocation(eb).as("allocation"),
+    projectUsedAllocation(eb).as("usedAllocation"),
     projectAllocationOverrun(eb).as("allocationOverrun"),
     unreconciledItemsCount(eb).as("unreconciledItemsCount"),
   ] satisfies SelectExpression<DB, "projects">[];
