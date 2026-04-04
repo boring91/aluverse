@@ -92,16 +92,6 @@ const mainItems = [
   },
 ] as const;
 
-const toolsItems = [
-  {
-    id: "priceCalculator",
-    label: "Price Calculator",
-    link: "/tools/price-calculator",
-    icon: CalculatorIcon,
-    permission: "projects.read" satisfies Permission,
-  },
-] as const;
-
 const gstItems = [
   {
     id: "pendingGst",
@@ -116,6 +106,16 @@ const gstItems = [
     link: "/gst/payments",
     icon: ReceiptTextIcon,
     permission: "gst.read" satisfies Permission,
+  },
+] as const;
+
+const toolsItems = [
+  {
+    id: "priceCalculator",
+    label: "Price Calculator",
+    link: "/tools/price-calculator",
+    icon: CalculatorIcon,
+    permission: "projects.read" satisfies Permission,
   },
 ] as const;
 
@@ -141,8 +141,8 @@ const settingsItems = [
 
 type SidebarItem =
   | (typeof mainItems)[number]
-  | (typeof toolsItems)[number]
   | (typeof gstItems)[number]
+  | (typeof toolsItems)[number]
   | (typeof settingsItems)[number];
 
 function UserNav() {
@@ -250,13 +250,13 @@ export function AppSidebar() {
     ? mainItems
     : mainItems.filter((item) => hasItemAccess(item));
 
-  const visibleToolsItems = isPending
-    ? toolsItems
-    : toolsItems.filter((item) => hasItemAccess(item));
-
   const visibleGstItems = isPending
     ? gstItems
     : gstItems.filter((item) => hasItemAccess(item));
+
+  const visibleToolsItems = isPending
+    ? toolsItems
+    : toolsItems.filter((item) => hasItemAccess(item));
 
   const visibleSettingsItems = isPending
     ? settingsItems
@@ -296,14 +296,14 @@ export function AppSidebar() {
           </SidebarGroup>
         ) : null}
 
-        {visibleToolsItems.length > 0 ? (
+        {visibleGstItems.length > 0 ? (
           <SidebarGroup>
-            <SidebarGroupLabel>Tools</SidebarGroupLabel>
+            <SidebarGroupLabel>GST</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {visibleToolsItems.map((item) => (
+                {visibleGstItems.map((item) => (
                   <SidebarMenuItem
-                    key={isPending ? `tools-loading-${item.id}` : item.id}
+                    key={isPending ? `gst-loading-${item.id}` : item.id}
                   >
                     {isPending ? (
                       <SidebarMenuSkeleton showIcon />
@@ -322,14 +322,14 @@ export function AppSidebar() {
           </SidebarGroup>
         ) : null}
 
-        {visibleGstItems.length > 0 ? (
+        {visibleToolsItems.length > 0 ? (
           <SidebarGroup>
-            <SidebarGroupLabel>GST</SidebarGroupLabel>
+            <SidebarGroupLabel>Tools</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {visibleGstItems.map((item) => (
+                {visibleToolsItems.map((item) => (
                   <SidebarMenuItem
-                    key={isPending ? `gst-loading-${item.id}` : item.id}
+                    key={isPending ? `tools-loading-${item.id}` : item.id}
                   >
                     {isPending ? (
                       <SidebarMenuSkeleton showIcon />
