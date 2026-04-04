@@ -18,7 +18,7 @@ export const FinancialAccountsListView = () => {
   const { confirm } = useConfirm();
   const { hasPermission, isPending } = useRbacAccess();
 
-  useTitle("Financial accounts");
+  useTitle("Financial Accounts");
 
   const canRead = hasPermission("financialAccounts.read");
   const canCreate = hasPermission("financialAccounts.create");

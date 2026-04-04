@@ -64,7 +64,7 @@ const mainItems = [
   },
   {
     id: "financialAccounts",
-    label: "Financial accounts",
+    label: "Financial Accounts",
     link: "/financial-accounts",
     icon: CoinsIcon,
     permission: "financialAccounts.read" satisfies Permission,
