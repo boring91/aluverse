@@ -37,6 +37,7 @@ import {
   HomeIcon,
   LogOutIcon,
   ReceiptIcon,
+  ReceiptTextIcon,
   ShieldCheckIcon,
   UsersIcon,
   WalletIcon,
@@ -98,6 +99,13 @@ const toolsItems = [
     link: "/tools/price-calculator",
     icon: CalculatorIcon,
     permission: "projects.read" satisfies Permission,
+  },
+  {
+    id: "pendingGst",
+    label: "Pending GST",
+    link: "/tools/pending-gst",
+    icon: ReceiptTextIcon,
+    permission: "reconciliations.read" satisfies Permission,
   },
 ] as const;
 
