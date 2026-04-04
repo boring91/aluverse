@@ -13,40 +13,19 @@ import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsIsoDateTime, useQueryStates } from "nuqs";
 
-function getDefaultDateRange() {
-  const now = getCurrentTime();
+function getBasQuarterRange(date: Date) {
+  const month = date.getMonth();
+  const year = date.getFullYear();
 
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  // BAS quarters: Jul-Sep, Oct-Dec, Jan-Mar, Apr-Jun
-  const quarterStartMonths = [6, 9, 0, 3];
-  let fromMonth = quarterStartMonths[0];
-  let fromYear = currentYear;
-
-  for (const m of quarterStartMonths) {
-    if (m <= currentMonth) {
-      fromMonth = m;
-      fromYear = currentYear;
-    }
-  }
-
-  // Handle Jul-Sep quarter when current month is before July
-  if (currentMonth < 6) {
-    // We're in Jan-Jun, pick the right quarter
-    if (currentMonth < 3) {
-      fromMonth = 0;
-      fromYear = currentYear;
-    } else {
-      fromMonth = 3;
-      fromYear = currentYear;
-    }
-  }
-
-  const from = new Date(fromYear, fromMonth, 1);
-  const to = new Date(fromYear, fromMonth + 3, 1);
+  const fromMonth = month >= 9 ? 9 : month >= 6 ? 6 : month >= 3 ? 3 : 0;
+  const from = new Date(year, fromMonth, 1);
+  const to = new Date(year, fromMonth + 3, 1);
 
   return { from, to };
+}
+
+function getDefaultDateRange() {
+  return getBasQuarterRange(getCurrentTime());
 }
 
 const defaultRange = getDefaultDateRange();
@@ -112,6 +91,12 @@ export const PendingGstView = () => {
         <DateRange
           initialDateFrom={fromDate}
           initialDateTo={toDate}
+          pageNavigation={{
+            stepInMonths: 3,
+            getRangeForDate: getBasQuarterRange,
+            previousAriaLabel: "Select previous BAS quarter",
+            nextAriaLabel: "Select next BAS quarter",
+          }}
           onUpdate={({ range }) => {
             setQueryDates({
               from: range.from ?? null,
