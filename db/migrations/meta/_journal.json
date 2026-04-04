@@ -211,6 +211,13 @@
       "when": 1771718400000,
       "tag": "0029_drop_budget_category_human_id",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1775291432618,
+      "tag": "0030_secret_james_howlett",
+      "breakpoints": true
     }
   ]
 }

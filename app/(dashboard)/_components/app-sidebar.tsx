@@ -107,6 +107,13 @@ const toolsItems = [
     icon: ReceiptTextIcon,
     permission: "reconciliations.read" satisfies Permission,
   },
+  {
+    id: "gstPayments",
+    label: "GST Payments",
+    link: "/tools/gst-payments",
+    icon: ReceiptTextIcon,
+    permission: "gst.read" satisfies Permission,
+  },
 ] as const;
 
 const settingsItems = [

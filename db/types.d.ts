@@ -95,6 +95,16 @@ export interface FinancialAccounts {
   updatedAt: Generated<Timestamp>;
 }
 
+export interface GstPayments {
+  amount: number;
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  periodFrom: Timestamp;
+  periodTo: Timestamp;
+  rate: number;
+  updatedAt: Generated<Timestamp>;
+}
+
 export interface LoanPayoffs {
   amount: number;
   createdAt: Generated<Timestamp>;
@@ -270,6 +280,7 @@ export interface DB {
   budgetCategoryAllocations: BudgetCategoryAllocations;
   "drizzle.DrizzleMigrations": DrizzleDrizzleMigrations;
   financialAccounts: FinancialAccounts;
+  gstPayments: GstPayments;
   loanPayoffs: LoanPayoffs;
   loans: Loans;
   projectLabors: ProjectLabors;
