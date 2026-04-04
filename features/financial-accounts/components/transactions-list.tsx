@@ -45,6 +45,7 @@ const RECONCILIATION_GROUP_LABELS: Record<
   budget: "Budget",
   project: "Project",
   loan: "Loan",
+  gst_payable: "GST Payable",
   tax: "Tax",
   refund: "Refund",
   refunded: "Refunded",

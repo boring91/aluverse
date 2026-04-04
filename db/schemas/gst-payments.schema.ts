@@ -4,7 +4,9 @@ import {
   date,
   doublePrecision,
   integer,
+  AnyPgColumn,
 } from "drizzle-orm/pg-core";
+import { reconciliations } from "./reconciliations.schema";
 import { auditColumns } from "../utils";
 
 export const gstPayments = pgTable("gst_payments", {
@@ -13,5 +15,8 @@ export const gstPayments = pgTable("gst_payments", {
   periodTo: date({ mode: "date" }).notNull(),
   rate: doublePrecision().notNull(),
   amount: integer().notNull(), // in cents
+  reconciliationId: uuid().references((): AnyPgColumn => reconciliations.id, {
+    onDelete: "set null",
+  }),
   ...auditColumns,
 });

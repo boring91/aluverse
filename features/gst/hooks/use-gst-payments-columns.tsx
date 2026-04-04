@@ -9,6 +9,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
+import { CheckIcon, XIcon } from "lucide-react";
 
 type GstPayment =
   inferRouterOutputs<AppRouter>["gst"]["listPayments"]["items"][number];
@@ -55,6 +56,28 @@ export const useGstPaymentsColumns = (
         cell: ({ row }) => {
           const item = row.original;
           return <p className="font-mono">{formatCurrency(item.amount)}</p>;
+        },
+      },
+      {
+        id: "isReconciled",
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            className="text-center"
+            column={column}
+            title="Is reconciled"
+          />
+        ),
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <p className="flex items-center justify-center">
+              {item.isReconciled ? (
+                <CheckIcon className="text-emerald-500" />
+              ) : (
+                <XIcon className="text-rose-500" />
+              )}
+            </p>
+          );
         },
       },
       {

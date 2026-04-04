@@ -26,6 +26,9 @@ export const createReconciliationSchema = z
     isPayoff: z.boolean().optional(),
     loanPayoffId: z.uuid().optional(),
 
+    /* for gst payments */
+    gstPaymentId: z.uuid().optional(),
+
     isGst: z.boolean(),
   })
   .superRefine((data, ctx) => {
@@ -132,6 +135,28 @@ export const createReconciliationSchema = z
           path: ["projectId"],
         });
       }
+    }
+
+    if (data.reconciliationGroup === "gst_payable" && !data.gstPaymentId) {
+      ctx.addIssue({
+        code: "custom",
+        params: {
+          code: "GST_PAYMENT_REQUIRED",
+        },
+        message: "GST_PAYMENT_REQUIRED",
+        path: ["gstPaymentId"],
+      });
+    }
+
+    if (data.reconciliationGroup !== "gst_payable" && data.gstPaymentId) {
+      ctx.addIssue({
+        code: "custom",
+        params: {
+          code: "CANNOT_ASSOCIATE_GST_PAYMENT",
+        },
+        message: "CANNOT_ASSOCIATE_GST_PAYMENT",
+        path: ["gstPaymentId"],
+      });
     }
   });
 

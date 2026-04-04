@@ -16,6 +16,7 @@ import { transactions } from "./transactions.schema";
 import { projects } from "./projects.schema";
 import { loans, loanPayoffs } from "./loans.schema";
 import { budgetCategories } from "./budget.schema";
+import { gstPayments } from "./gst-payments.schema";
 import { auditColumns } from "../utils";
 
 export const transactionReconciledGroup = pgEnum(
@@ -53,6 +54,9 @@ export const reconciliations = pgTable(
     loanPayoffId: uuid().references(() => loanPayoffs.id, {
       onDelete: "set null",
     }),
+    gstPaymentId: uuid().references(() => gstPayments.id, {
+      onDelete: "set null",
+    }),
     ...auditColumns,
   },
   (table) => {
@@ -79,6 +83,12 @@ export const reconciliations = pgTable(
       check(
         "loan_payoff_check_constraint",
         sql`${table.isPayoff} IS NOT TRUE OR ${table.loanPayoffId} IS NOT NULL`
+      ),
+
+      // ensure gst payment id is only set if reconciliation group is gst_payable
+      check(
+        "gst_payment_id_check_constraint",
+        sql`${table.reconciliationGroup}::text <> 'gst_payable' OR ${table.gstPaymentId} IS NOT NULL`
       ),
     ];
   }

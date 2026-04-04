@@ -53,7 +53,7 @@ export async function getPendingGstQuery(input: PendingGstInput) {
 
   const gstRemitted = (
     await baseQuery
-      .where("reconciliationGroup", "=", "tax")
+      .where("reconciliationGroup", "=", "gst_payable")
       .select((eb) => [
         eb.fn
           .coalesce(eb.fn.sum<number>("reconciliations.amount"), eb.lit(0))

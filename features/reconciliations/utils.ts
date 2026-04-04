@@ -90,6 +90,29 @@ export async function updateReconciliationWithRelatedItem(
     }
   }
 
+  if (
+    reconciliation.reconciliationGroup === "gst_payable" &&
+    reconciliation.gstPayment?.id
+  ) {
+    const { amount } = await tx
+      .selectFrom("gstPayments")
+      .where("id", "=", reconciliation.gstPayment.id)
+      .select("amount")
+      .executeTakeFirstOrThrow();
+
+    if (amount !== reconciliation.amount) {
+      throw new Error(
+        "Reconciliation amount does not match GST payment amount. Please update the GST payment amount to match the reconciliation amount."
+      );
+    }
+
+    await tx
+      .updateTable("gstPayments")
+      .set({ reconciliationId: reconciliation.id })
+      .where("id", "=", reconciliation.gstPayment.id)
+      .execute();
+  }
+
   // Unlink other reconciliations that reference the same project item, if any
   if (reconciliation.projectItemId && reconciliation.projectStream) {
     await tx
@@ -112,6 +135,14 @@ export async function updateReconciliationWithRelatedItem(
     await tx
       .deleteFrom("reconciliations")
       .where("loanId", "=", reconciliation.loan?.id)
+      .where("id", "<>", reconciliation.id)
+      .execute();
+  }
+
+  if (reconciliation.gstPayment?.id) {
+    await tx
+      .deleteFrom("reconciliations")
+      .where("gstPaymentId", "=", reconciliation.gstPayment.id)
       .where("id", "<>", reconciliation.id)
       .execute();
   }

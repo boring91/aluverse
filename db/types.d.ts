@@ -22,6 +22,7 @@ export type LoanType = "borrowed" | "lent";
 
 export type ReconciliationGroup =
   | "budget"
+  | "gst_payable"
   | "loan"
   | "project"
   | "refund"
@@ -102,6 +103,7 @@ export interface GstPayments {
   periodFrom: Timestamp;
   periodTo: Timestamp;
   rate: number;
+  reconciliationId: string | null;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -194,6 +196,7 @@ export interface Reconciliations {
   budgetCategoryId: string | null;
   createdAt: Generated<Timestamp>;
   description: string | null;
+  gstPaymentId: string | null;
   id: Generated<string>;
   isGst: boolean;
   isPayoff: boolean | null;

@@ -12,7 +12,7 @@ export const createGstPaymentSchema = z.object({
   periodFrom: z.date(),
   periodTo: z.date(),
   rate: z.number().min(0).max(1),
-  amount: z.number().min(0),
+  amount: z.number().max(0),
 });
 
 export const updateGstPaymentSchema = createGstPaymentSchema.safeExtend({

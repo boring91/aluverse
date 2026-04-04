@@ -27,9 +27,17 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   itemId: string | null;
+  onCreated?: (paymentId: string) => void;
+  prefillData?: Partial<SchemaType>;
 };
 
-export function CreateGstPayment({ open, onOpenChange, itemId }: Props) {
+export function CreateGstPayment({
+  open,
+  onOpenChange,
+  itemId,
+  onCreated,
+  prefillData,
+}: Props) {
   const isUpdate = !!itemId;
   const queryClient = useQueryClient();
   const trpc = useTRPC();
@@ -46,8 +54,11 @@ export function CreateGstPayment({ open, onOpenChange, itemId }: Props) {
 
   const createMutation = useMutation(
     trpc.gst.createPayment.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (created) => {
         queryClient.invalidateQueries(trpc.gst.listPayments.queryOptions({}));
+        if (!isUpdate && created?.id) {
+          onCreated?.(created.id);
+        }
         onOpenChange(false);
         toast.success("Saved successfully");
       },
@@ -78,7 +89,7 @@ export function CreateGstPayment({ open, onOpenChange, itemId }: Props) {
         ? data
           ? { ...data, amount: data.amount / 100 }
           : data
-        : { rate: GST_RATE }
+        : { rate: GST_RATE, ...prefillData }
     ),
     validators: {
       onChange: createGstPaymentSchema,
@@ -100,10 +111,10 @@ export function CreateGstPayment({ open, onOpenChange, itemId }: Props) {
           ? data
             ? { ...data, amount: data.amount / 100 }
             : data
-          : { rate: GST_RATE }
+          : { rate: GST_RATE, ...prefillData }
       )
     );
-  }, [form, open, data, isUpdate]);
+  }, [data, form, isUpdate, open, prefillData]);
 
   const isPending = form.state.isSubmitting;
 

@@ -2,6 +2,7 @@ export const transactionReconciliationGroups = [
   "budget",
   "project",
   "loan",
+  "gst_payable",
   "tax",
   "refund",
   "refunded",
