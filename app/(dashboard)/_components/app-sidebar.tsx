@@ -100,17 +100,20 @@ const toolsItems = [
     icon: CalculatorIcon,
     permission: "projects.read" satisfies Permission,
   },
+] as const;
+
+const gstItems = [
   {
     id: "pendingGst",
     label: "Pending GST",
-    link: "/tools/pending-gst",
+    link: "/gst/pending",
     icon: ReceiptTextIcon,
     permission: "reconciliations.read" satisfies Permission,
   },
   {
     id: "gstPayments",
     label: "GST Payments",
-    link: "/tools/gst-payments",
+    link: "/gst/payments",
     icon: ReceiptTextIcon,
     permission: "gst.read" satisfies Permission,
   },
@@ -139,6 +142,7 @@ const settingsItems = [
 type SidebarItem =
   | (typeof mainItems)[number]
   | (typeof toolsItems)[number]
+  | (typeof gstItems)[number]
   | (typeof settingsItems)[number];
 
 function UserNav() {
@@ -250,6 +254,10 @@ export function AppSidebar() {
     ? toolsItems
     : toolsItems.filter((item) => hasItemAccess(item));
 
+  const visibleGstItems = isPending
+    ? gstItems
+    : gstItems.filter((item) => hasItemAccess(item));
+
   const visibleSettingsItems = isPending
     ? settingsItems
     : settingsItems.filter((item) => hasItemAccess(item));
@@ -296,6 +304,32 @@ export function AppSidebar() {
                 {visibleToolsItems.map((item) => (
                   <SidebarMenuItem
                     key={isPending ? `tools-loading-${item.id}` : item.id}
+                  >
+                    {isPending ? (
+                      <SidebarMenuSkeleton showIcon />
+                    ) : (
+                      <SidebarMenuButton asChild isActive={isActive(item.link)}>
+                        <Link href={item.link as Route}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {visibleGstItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>GST</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleGstItems.map((item) => (
+                  <SidebarMenuItem
+                    key={isPending ? `gst-loading-${item.id}` : item.id}
                   >
                     {isPending ? (
                       <SidebarMenuSkeleton showIcon />
