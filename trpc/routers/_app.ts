@@ -12,6 +12,7 @@ import { projectPaymentsRouter } from "@/features/projects/api/project-payments.
 import { loansRouter } from "@/features/loans/api/loans.router";
 import { loanPayoffsRouter } from "@/features/loans/api/loan-payoffs.router";
 import { dashboardRouter } from "@/features/dashboard/api/dashboard.router";
+import { gstRouter } from "@/features/gst/api/gst.router";
 import { rbacRouter } from "@/features/rbac/api/rbac.router";
 import { usersRouter } from "@/features/users/api/users.router";
 
@@ -29,6 +30,7 @@ export const appRouter = createTRPCRouter({
   loans: loansRouter,
   loanPayoffs: loanPayoffsRouter,
   dashboard: dashboardRouter,
+  gst: gstRouter,
   rbac: rbacRouter,
   users: usersRouter,
 });

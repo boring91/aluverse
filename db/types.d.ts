@@ -22,6 +22,7 @@ export type LoanType = "borrowed" | "lent";
 
 export type ReconciliationGroup =
   | "budget"
+  | "gst_payable"
   | "loan"
   | "project"
   | "refund"
@@ -92,6 +93,17 @@ export interface FinancialAccounts {
   id: Generated<string>;
   name: string;
   syncWithBank: FinancialAccountBankSyncers | null;
+  updatedAt: Generated<Timestamp>;
+}
+
+export interface GstPayments {
+  amount: number;
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  periodFrom: Timestamp;
+  periodTo: Timestamp;
+  rate: number;
+  reconciliationId: string | null;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -184,6 +196,7 @@ export interface Reconciliations {
   budgetCategoryId: string | null;
   createdAt: Generated<Timestamp>;
   description: string | null;
+  gstPaymentId: string | null;
   id: Generated<string>;
   isGst: boolean;
   isPayoff: boolean | null;
@@ -270,6 +283,7 @@ export interface DB {
   budgetCategoryAllocations: BudgetCategoryAllocations;
   "drizzle.DrizzleMigrations": DrizzleDrizzleMigrations;
   financialAccounts: FinancialAccounts;
+  gstPayments: GstPayments;
   loanPayoffs: LoanPayoffs;
   loans: Loans;
   projectLabors: ProjectLabors;

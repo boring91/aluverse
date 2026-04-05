@@ -39,6 +39,11 @@ export const permissions = [
   "projectItems.update",
   "projectItems.delete",
 
+  "gst.read",
+  "gst.create",
+  "gst.update",
+  "gst.delete",
+
   "loans.read",
   "loans.create",
   "loans.update",

@@ -2,6 +2,7 @@ import { DB } from "@/db/types";
 import { balance } from "@/shared/expressions/financial-accounts/financial-account.expression";
 import { jsonObjectFrom } from "@/db/json-helpers";
 import { ExpressionBuilder, SelectExpression } from "kysely";
+import { gstPaymentListMapper } from "@/shared/mappers/gst/gst-payment-list.mapper";
 
 export const reconciliationFullMapper = (
   eb: ExpressionBuilder<DB, "reconciliations">
@@ -16,6 +17,7 @@ export const reconciliationFullMapper = (
     "projectStream",
     "projectItemId",
     "isPayoff",
+    "gstPaymentId",
     jsonObjectFrom(
       eb
         .selectFrom("budgetCategories")
@@ -44,6 +46,12 @@ export const reconciliationFullMapper = (
         .whereRef("loanPayoffs.id", "=", "reconciliations.loanPayoffId")
         .select(["id", "amount", "date"])
     ).as("loanPayoff"),
+    jsonObjectFrom(
+      eb
+        .selectFrom("gstPayments")
+        .whereRef("gstPayments.id", "=", "reconciliations.gstPaymentId")
+        .select(gstPaymentListMapper)
+    ).as("gstPayment"),
     jsonObjectFrom(
       eb
         .selectFrom("transactions")

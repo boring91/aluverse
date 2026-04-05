@@ -7,12 +7,25 @@ import { updateReconciliationWithRelatedItem } from "../utils";
 export async function createReconciliationMutation(
   data: z.infer<typeof createReconciliationWithTransactionIdSchema>
 ) {
-  if (data.reconciliationGroup !== "budget") {
-    data = {
-      ...data,
-      budgetCategoryId: undefined,
-    };
-  }
+  data = {
+    ...data,
+    budgetCategoryId:
+      data.reconciliationGroup === "budget" ? data.budgetCategoryId : undefined,
+    projectId:
+      data.reconciliationGroup === "project" ? data.projectId : undefined,
+    projectStream:
+      data.reconciliationGroup === "project" ? data.projectStream : undefined,
+    projectItemId:
+      data.reconciliationGroup === "project" ? data.projectItemId : undefined,
+    loanId: data.reconciliationGroup === "loan" ? data.loanId : undefined,
+    isPayoff: data.reconciliationGroup === "loan" ? data.isPayoff : undefined,
+    loanPayoffId:
+      data.reconciliationGroup === "loan" ? data.loanPayoffId : undefined,
+    gstPaymentId:
+      data.reconciliationGroup === "gst_payable"
+        ? data.gstPaymentId
+        : undefined,
+  };
 
   return await db.transaction().execute(async (tx) => {
     const reconciliation = await tx

@@ -119,6 +119,7 @@ export function useReconciliationForm({
         loanId: data.loan?.id ?? undefined,
         isPayoff: data.isPayoff ?? false,
         loanPayoffId: data.loanPayoff?.id ?? undefined,
+        gstPaymentId: data.gstPayment?.id ?? undefined,
       };
     }
 

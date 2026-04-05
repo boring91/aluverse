@@ -302,6 +302,17 @@ export type DateRangePickerProps = {
   locale?: string;
   /** Option for showing compare feature */
   showCompare?: boolean;
+  /** Configure how the previous/next buttons page through ranges */
+  pageNavigation?: {
+    /** Number of months to move the anchor date by on each button click */
+    stepInMonths?: number;
+    /** Builds the next selected range from the shifted anchor date */
+    getRangeForDate?: (date: Date) => DateRange;
+    /** Accessible label for the previous button */
+    previousAriaLabel?: string;
+    /** Accessible label for the next button */
+    nextAriaLabel?: string;
+  };
 };
 
 const formatDate = (date: Date, locale: string = "en-us"): string => {
@@ -338,6 +349,13 @@ const getMonthRange = (monthDate: Date): DateRange => {
   return { from, to };
 };
 
+const DEFAULT_PAGE_NAVIGATION = {
+  stepInMonths: 1,
+  getRangeForDate: getMonthRange,
+  previousAriaLabel: "Select previous month",
+  nextAriaLabel: "Select next month",
+} satisfies NonNullable<DateRangePickerProps["pageNavigation"]>;
+
 // Define presets
 const PRESETS = [
   "today",
@@ -373,6 +391,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
   align = "end",
   locale = "en-US",
   showCompare = false,
+  pageNavigation,
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -404,6 +423,11 @@ export const DateRange: FC<DateRangePickerProps> = ({
   const [isSmallScreen, setIsSmallScreen] = useState(
     typeof window !== "undefined" ? window.innerWidth < 960 : false
   );
+
+  const resolvedPageNavigation = {
+    ...DEFAULT_PAGE_NAVIGATION,
+    ...pageNavigation,
+  };
 
   useEffect(() => {
     const handleResize = (): void => {
@@ -503,12 +527,14 @@ export const DateRange: FC<DateRangePickerProps> = ({
     applyRange(nextRange);
   };
 
-  const setRelativeMonthRange = (monthOffset: number) => {
-    const monthDate = new Date(range.from);
-    monthDate.setMonth(monthDate.getMonth() + monthOffset);
+  const setRelativePagedRange = (direction: -1 | 1) => {
+    const anchorDate = new Date(range.from);
+    anchorDate.setMonth(
+      anchorDate.getMonth() + direction * resolvedPageNavigation.stepInMonths
+    );
 
-    const monthRange = getMonthRange(monthDate);
-    return applyRange(monthRange);
+    const nextRange = resolvedPageNavigation.getRangeForDate(anchorDate);
+    return applyRange(nextRange);
   };
 
   const checkPreset = useCallback((): void => {
@@ -625,9 +651,9 @@ export const DateRange: FC<DateRangePickerProps> = ({
         <Button
           size="icon"
           variant="outline"
-          aria-label="Select previous month"
+          aria-label={resolvedPageNavigation.previousAriaLabel}
           onClick={() => {
-            const values = setRelativeMonthRange(-1);
+            const values = setRelativePagedRange(-1);
             onUpdate?.(values);
           }}
         >
@@ -664,9 +690,9 @@ export const DateRange: FC<DateRangePickerProps> = ({
         <Button
           size="icon"
           variant="outline"
-          aria-label="Select next month"
+          aria-label={resolvedPageNavigation.nextAriaLabel}
           onClick={() => {
-            const values = setRelativeMonthRange(1);
+            const values = setRelativePagedRange(1);
             onUpdate?.(values);
           }}
         >

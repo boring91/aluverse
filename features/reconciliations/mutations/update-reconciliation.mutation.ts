@@ -10,7 +10,13 @@ export async function updateReconciliationMutation(
   const oldReconciliation = await db
     .selectFrom("reconciliations")
     .where("id", "=", data.id)
-    .select(["projectStream", "projectItemId", "loanId", "loanPayoffId"])
+    .select([
+      "projectStream",
+      "projectItemId",
+      "loanId",
+      "loanPayoffId",
+      "gstPaymentId",
+    ])
     .executeTakeFirstOrThrow();
 
   const {
@@ -18,39 +24,28 @@ export async function updateReconciliationMutation(
     projectItemId: oldProjectItemId,
     loanId: oldLoanId,
     loanPayoffId: oldLoanPayoffId,
+    gstPaymentId: oldGstPaymentId,
   } = oldReconciliation;
 
-  if (data.reconciliationGroup !== "budget") {
-    data = {
-      ...data,
-      budgetCategoryId: undefined,
-    };
-  }
-
-  // Reset fields that are not related to the selected group using spread operator
-  if (data.reconciliationGroup === "project") {
-    data = {
-      ...data,
-      loanId: undefined,
-      loanPayoffId: undefined,
-      budgetCategoryId: undefined,
-    };
-  } else if (data.reconciliationGroup === "loan") {
-    data = {
-      ...data,
-      projectStream: undefined,
-      projectItemId: undefined,
-      budgetCategoryId: undefined,
-    };
-  } else if (data.reconciliationGroup === "budget") {
-    data = {
-      ...data,
-      projectStream: undefined,
-      projectItemId: undefined,
-      loanId: undefined,
-      loanPayoffId: undefined,
-    };
-  }
+  data = {
+    ...data,
+    budgetCategoryId:
+      data.reconciliationGroup === "budget" ? data.budgetCategoryId : undefined,
+    projectId:
+      data.reconciliationGroup === "project" ? data.projectId : undefined,
+    projectStream:
+      data.reconciliationGroup === "project" ? data.projectStream : undefined,
+    projectItemId:
+      data.reconciliationGroup === "project" ? data.projectItemId : undefined,
+    loanId: data.reconciliationGroup === "loan" ? data.loanId : undefined,
+    isPayoff: data.reconciliationGroup === "loan" ? data.isPayoff : undefined,
+    loanPayoffId:
+      data.reconciliationGroup === "loan" ? data.loanPayoffId : undefined,
+    gstPaymentId:
+      data.reconciliationGroup === "gst_payable"
+        ? data.gstPaymentId
+        : undefined,
+  };
 
   return await db.transaction().execute(async (tx) => {
     const reconciliation = await tx
@@ -92,6 +87,14 @@ export async function updateReconciliationMutation(
         .updateTable("loanPayoffs")
         .set({ reconciliationId: null })
         .where("id", "=", oldLoanPayoffId)
+        .execute();
+    }
+
+    if (oldGstPaymentId && oldGstPaymentId !== data.gstPaymentId) {
+      await tx
+        .updateTable("gstPayments")
+        .set({ reconciliationId: null })
+        .where("id", "=", oldGstPaymentId)
         .execute();
     }
 

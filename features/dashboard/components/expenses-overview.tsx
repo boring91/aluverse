@@ -26,6 +26,7 @@ const GROUP_LABELS: Record<string, string> = {
   budget: "Budget",
   project: "Project",
   loan: "Loan",
+  gst_payable: "GST Payable",
   tax: "Tax",
   refund: "Refund",
   refunded: "Refunded",

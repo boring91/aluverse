@@ -23,6 +23,8 @@ import {
   LoanFieldsHandle,
   ProjectFields,
   ProjectFieldsHandle,
+  GstPaymentFields,
+  GstPaymentFieldsHandle,
 } from "./reconciliation-form-fields";
 import type { ReconciliationPrefillData } from "./reconciliation-form-fields";
 
@@ -78,6 +80,7 @@ export function CreateReconciliation({
 
   const projectFieldsRef = useRef<ProjectFieldsHandle>(null);
   const loanFieldsRef = useRef<LoanFieldsHandle>(null);
+  const gstPaymentFieldsRef = useRef<GstPaymentFieldsHandle>(null);
 
   return (
     <Dialog
@@ -88,6 +91,7 @@ export function CreateReconciliation({
           form.reset();
           projectFieldsRef.current?.closeAll();
           loanFieldsRef.current?.closeAll();
+          gstPaymentFieldsRef.current?.closeAll();
         }
         onOpenChange(value);
       }}
@@ -132,6 +136,14 @@ export function CreateReconciliation({
                 {selectedGroup === "loan" && (
                   <LoanFields
                     ref={loanFieldsRef}
+                    form={form}
+                    prefillData={prefillData}
+                  />
+                )}
+
+                {selectedGroup === "gst_payable" && (
+                  <GstPaymentFields
+                    ref={gstPaymentFieldsRef}
                     form={form}
                     prefillData={prefillData}
                   />

@@ -21,10 +21,12 @@ import { useQuery } from "@tanstack/react-query";
 import { CreateLoan } from "@/features/loans/components/create-loan";
 import { CreateLoanPayoff, CreateLoanPayoffHandle } from "./create-loan-payoff";
 import { useLoanPayoffs } from "../hooks/use-loan-payoffs";
+import { useGstPayments } from "../hooks/use-gst-payments";
 import { formatCurrency } from "@/lib/utils";
 import { useStore } from "@tanstack/react-form";
 import type { useReconciliationForm } from "../hooks/use-reconciliation-form";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
+import { CreateGstPayment, CreateGstPaymentHandle } from "./create-gst-payment";
 
 type FormApi = ReturnType<typeof useReconciliationForm>["form"];
 
@@ -41,6 +43,7 @@ const GROUP_LABELS: Record<
   budget: "Budget",
   project: "Project",
   loan: "Loan",
+  gst_payable: "GST Payable",
   tax: "Tax",
   refund: "Refund",
   refunded: "Refunded",
@@ -98,6 +101,10 @@ export function ReconciliationGroupField({ form }: { form: FormApi }) {
               form.resetField("loanId");
               form.resetField("isPayoff");
               form.resetField("loanPayoffId");
+            }
+
+            if (value !== "gst_payable") {
+              form.resetField("gstPaymentId");
             }
           }}
         />
@@ -493,6 +500,95 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
   }
 );
 LoanFields.displayName = "LoanFields";
+
+type GstPaymentFieldsProps = {
+  form: FormApi;
+  prefillData: ReconciliationPrefillData;
+};
+
+export type GstPaymentFieldsHandle = {
+  closeAll: () => void;
+};
+
+export const GstPaymentFields = forwardRef<
+  GstPaymentFieldsHandle,
+  GstPaymentFieldsProps
+>(({ form, prefillData }, ref) => {
+  const { hasPermission } = useRbacAccess();
+  const canReadGstPayments = hasPermission("gst.read");
+  const canCreateGstPayments = hasPermission("gst.create");
+
+  const gstPayments = useGstPayments(canReadGstPayments);
+  const createGstPaymentRef = useRef<CreateGstPaymentHandle>(null);
+
+  const handlePendingGstPaymentCreated = usePendingSelection({
+    items: gstPayments,
+    onItemFound: useCallback(
+      (id) => {
+        form.setFieldValue("gstPaymentId", id);
+      },
+      [form]
+    ),
+    resetDependencies: [],
+  });
+
+  const handleGstPaymentCreated = useCallback(
+    (id: string) => {
+      handlePendingGstPaymentCreated(id);
+    },
+    [handlePendingGstPaymentCreated]
+  );
+
+  useImperativeHandle(ref, () => {
+    return {
+      closeAll: () => {
+        createGstPaymentRef.current?.close();
+      },
+    };
+  });
+
+  return (
+    <>
+      <form.AppField
+        name="gstPaymentId"
+        children={(field) => (
+          <field.SelectField
+            label="GST payment"
+            items={
+              gstPayments?.map((item) => ({
+                value: item.id,
+                label:
+                  `${item.periodFrom.toDateString()} - ${item.periodTo.toDateString()} (${formatCurrency(item.amount)})` +
+                  ` - ${item.isReconciled ? "Reconciled" : "Not reconciled"}`,
+              })) ?? []
+            }
+            isSearchable
+            onCreate={
+              canCreateGstPayments
+                ? () => {
+                    form.resetField("gstPaymentId");
+                    createGstPaymentRef.current?.open();
+                  }
+                : undefined
+            }
+          />
+        )}
+      />
+
+      {canCreateGstPayments ? (
+        <CreateGstPayment
+          ref={createGstPaymentRef}
+          onPaymentCreated={handleGstPaymentCreated}
+          prefillData={{
+            amount: prefillData.amount,
+          }}
+          canCreate={canCreateGstPayments}
+        />
+      ) : null}
+    </>
+  );
+});
+GstPaymentFields.displayName = "GstPaymentFields";
 
 export function IsGstField({ form }: { form: FormApi }) {
   return (

@@ -37,6 +37,7 @@ import {
   HomeIcon,
   LogOutIcon,
   ReceiptIcon,
+  ReceiptTextIcon,
   ShieldCheckIcon,
   UsersIcon,
   WalletIcon,
@@ -63,7 +64,7 @@ const mainItems = [
   },
   {
     id: "financialAccounts",
-    label: "Financial accounts",
+    label: "Financial Accounts",
     link: "/financial-accounts",
     icon: CoinsIcon,
     permission: "financialAccounts.read" satisfies Permission,
@@ -88,6 +89,23 @@ const mainItems = [
     link: "/budgets",
     icon: WalletIcon,
     permission: "budgetCategories.read" satisfies Permission,
+  },
+] as const;
+
+const gstItems = [
+  {
+    id: "pendingGst",
+    label: "Pending GST",
+    link: "/gst/pending",
+    icon: ReceiptTextIcon,
+    permission: "reconciliations.read" satisfies Permission,
+  },
+  {
+    id: "gstPayments",
+    label: "GST Payments",
+    link: "/gst/payments",
+    icon: ReceiptTextIcon,
+    permission: "gst.read" satisfies Permission,
   },
 ] as const;
 
@@ -123,6 +141,7 @@ const settingsItems = [
 
 type SidebarItem =
   | (typeof mainItems)[number]
+  | (typeof gstItems)[number]
   | (typeof toolsItems)[number]
   | (typeof settingsItems)[number];
 
@@ -231,6 +250,10 @@ export function AppSidebar() {
     ? mainItems
     : mainItems.filter((item) => hasItemAccess(item));
 
+  const visibleGstItems = isPending
+    ? gstItems
+    : gstItems.filter((item) => hasItemAccess(item));
+
   const visibleToolsItems = isPending
     ? toolsItems
     : toolsItems.filter((item) => hasItemAccess(item));
@@ -255,6 +278,32 @@ export function AppSidebar() {
                 {visibleMainItems.map((item) => (
                   <SidebarMenuItem
                     key={isPending ? `main-loading-${item.id}` : item.id}
+                  >
+                    {isPending ? (
+                      <SidebarMenuSkeleton showIcon />
+                    ) : (
+                      <SidebarMenuButton asChild isActive={isActive(item.link)}>
+                        <Link href={item.link as Route}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {visibleGstItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>GST</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleGstItems.map((item) => (
+                  <SidebarMenuItem
+                    key={isPending ? `gst-loading-${item.id}` : item.id}
                   >
                     {isPending ? (
                       <SidebarMenuSkeleton showIcon />

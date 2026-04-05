@@ -17,5 +17,11 @@ const revenueOrCost = (
     type === "income"
       ? eb("reconciliations.amount", ">", eb.lit(0))
       : eb("reconciliations.amount", "<", eb.lit(1)),
-    eb("reconciliationGroup", "not in", ["loan", "tax", "refund", "refunded"]),
+    eb("reconciliationGroup", "not in", [
+      "loan",
+      "gst_payable",
+      "tax",
+      "refund",
+      "refunded",
+    ]),
   ]);
