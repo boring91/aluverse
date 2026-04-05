@@ -13,7 +13,7 @@ function extractGst(inclusiveAmount: number) {
 }
 
 const startOfDay = (date: Date) =>
-  new Date(Math.round(date.getTime() / DAY_MS) * DAY_MS);
+  new Date(Math.floor(date.getTime() / DAY_MS) * DAY_MS);
 
 const daysBetween = (from: Date, to: Date) =>
   Math.round((to.getTime() - from.getTime()) / DAY_MS);
