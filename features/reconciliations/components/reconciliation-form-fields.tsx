@@ -529,6 +529,7 @@ export const GstPaymentFields = forwardRef<
       },
       [form]
     ),
+    resetDependencies: [],
   });
 
   const handleGstPaymentCreated = useCallback(
