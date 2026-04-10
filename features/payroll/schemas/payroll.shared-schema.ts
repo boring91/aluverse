@@ -42,6 +42,22 @@ const keypayPayScheduleIdSchema = z.number().int().positive();
 
 const keypayPayRunIdSchema = z.number().int().positive();
 
+const payScheduleFrequencySchema = z.enum([
+  "Weekly",
+  "Fortnightly",
+  "Monthly",
+  "AdHoc",
+]);
+
+const payScheduleEmployeeSelectionStrategySchema = z.enum([
+  "None",
+  "PayRunDefault",
+  "TimesheetLocations",
+  "PayRunDefaultWithTimesheets",
+  "ActiveSubcontractors",
+  "EmployingEntity",
+]);
+
 const createPayrollEmployeeBaseSchema = z.object({
   firstName: z.string().trim().min(1),
   surname: z.string().trim().min(1),
@@ -52,6 +68,10 @@ const createPayrollEmployeeBaseSchema = z.object({
 
 export const getPayrollEmployeeSchema = z.object({
   id: keypayEmployeeIdSchema,
+});
+
+export const getPayrollPayScheduleSchema = z.object({
+  id: keypayPayScheduleIdSchema,
 });
 
 export const createPayrollEmployeeFormSchema =
@@ -74,6 +94,18 @@ export const createPayrollEmployeeSchema = z.object({
   rateUnit: optionalTrimmedStringSchema,
   hoursPerWeek: z.number().nullable().optional(),
 });
+
+export const createPayrollPayScheduleSchema = z.object({
+  name: z.string().trim().min(1),
+  frequency: payScheduleFrequencySchema,
+  employeeSelectionStrategy: payScheduleEmployeeSelectionStrategySchema,
+  equalMonthlyPayments: z.boolean(),
+});
+
+export const updatePayrollPayScheduleSchema =
+  createPayrollPayScheduleSchema.safeExtend({
+    id: keypayPayScheduleIdSchema,
+  });
 
 export const sendPayrollOnboardingEmailSchema = z.object({
   firstName: optionalTrimmedStringSchema,

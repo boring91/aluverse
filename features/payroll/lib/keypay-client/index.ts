@@ -7,6 +7,7 @@ import {
   KeypayFinalizePayRunResult,
   KeypayPayRun,
   KeypayPaySchedule,
+  KeypayPayScheduleWriteInput,
   KeypaySendOnboardingEmailInput,
   KeypaySendOnboardingEmailResult,
   KeypayStpStatus,
@@ -219,6 +220,38 @@ export const keypayClient = {
   listPaySchedules: async () =>
     request<KeypayPaySchedule[]>({
       path: "/payschedule",
+    }),
+
+  getPaySchedule: async (id: number) =>
+    request<KeypayPaySchedule>({
+      path: `/payschedule/${id}`,
+    }),
+
+  createPaySchedule: async (data: KeypayPayScheduleWriteInput) =>
+    request<KeypayPaySchedule>({
+      path: "/payschedule",
+      method: "POST",
+      body: {
+        ...data,
+        locations: [],
+      },
+    }),
+
+  updatePaySchedule: async (id: number, data: KeypayPayScheduleWriteInput) =>
+    request<KeypayPaySchedule>({
+      path: `/payschedule/${id}`,
+      method: "PUT",
+      body: {
+        id,
+        ...data,
+        locations: [],
+      },
+    }),
+
+  deletePaySchedule: async (id: number) =>
+    request<null>({
+      path: `/payschedule/${id}`,
+      method: "DELETE",
     }),
 
   listPayRuns: async (payScheduleId?: number) =>

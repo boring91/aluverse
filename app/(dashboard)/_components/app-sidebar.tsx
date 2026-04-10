@@ -29,6 +29,7 @@ import { type Permission } from "@/features/rbac/schemas/rbac.shared-schema";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useConfirm } from "@/lib/confirm-context";
 import {
+  CalendarRangeIcon,
   CalculatorIcon,
   ChartPieIcon,
   ChevronsUpDown,
@@ -88,6 +89,13 @@ const mainItems = [
     label: "Payroll",
     link: "/payroll/employees",
     icon: UsersIcon,
+    permission: "payroll.read" satisfies Permission,
+  },
+  {
+    id: "payrollPaySchedules",
+    label: "Pay Schedules",
+    link: "/payroll/pay-schedules",
+    icon: CalendarRangeIcon,
     permission: "payroll.read" satisfies Permission,
   },
   {

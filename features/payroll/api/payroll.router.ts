@@ -3,12 +3,15 @@ import { keypayClient } from "../lib/keypay-client";
 import {
   calculatePayrollPayRunSchema,
   createPayrollEmployeeSchema,
+  createPayrollPayScheduleSchema,
   createPayrollPayRunSchema,
   finalizePayrollPayRunSchema,
   getPayrollEmployeeSchema,
+  getPayrollPayScheduleSchema,
   getPayrollStpStatusSchema,
   listPayrollPayRunsSchema,
   sendPayrollOnboardingEmailSchema,
+  updatePayrollPayScheduleSchema,
 } from "../schemas/payroll.shared-schema";
 
 export const payrollRouter = createTRPCRouter({
@@ -49,6 +52,30 @@ export const payrollRouter = createTRPCRouter({
   listPaySchedules: permissionProcedure("payroll.read").query(async () => {
     return await keypayClient.listPaySchedules();
   }),
+
+  getPaySchedule: permissionProcedure("payroll.read")
+    .input(getPayrollPayScheduleSchema)
+    .query(async ({ input }) => {
+      return await keypayClient.getPaySchedule(input.id);
+    }),
+
+  createPaySchedule: permissionProcedure("payroll.write")
+    .input(createPayrollPayScheduleSchema)
+    .mutation(async ({ input }) => {
+      return await keypayClient.createPaySchedule(input);
+    }),
+
+  updatePaySchedule: permissionProcedure("payroll.write")
+    .input(updatePayrollPayScheduleSchema)
+    .mutation(async ({ input }) => {
+      return await keypayClient.updatePaySchedule(input.id, input);
+    }),
+
+  deletePaySchedule: permissionProcedure("payroll.write")
+    .input(getPayrollPayScheduleSchema)
+    .mutation(async ({ input }) => {
+      return await keypayClient.deletePaySchedule(input.id);
+    }),
 
   listPayRuns: permissionProcedure("payroll.read")
     .input(listPayrollPayRunsSchema)

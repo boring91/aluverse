@@ -92,6 +92,19 @@ export type KeypayPaySchedule = {
   equalMonthlyPayments?: boolean | null;
 };
 
+export type KeypayPayScheduleWriteInput = {
+  name: string;
+  frequency: "Weekly" | "Fortnightly" | "Monthly" | "AdHoc";
+  employeeSelectionStrategy:
+    | "None"
+    | "PayRunDefault"
+    | "TimesheetLocations"
+    | "PayRunDefaultWithTimesheets"
+    | "ActiveSubcontractors"
+    | "EmployingEntity";
+  equalMonthlyPayments: boolean;
+};
+
 export type KeypayPayRun = {
   id: number;
   dateFinalised?: string | null; // cspell:words Finalised
