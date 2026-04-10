@@ -108,6 +108,7 @@ export const updatePayrollPayScheduleSchema =
   });
 
 export const sendPayrollOnboardingEmailSchema = z.object({
+  employeeId: keypayEmployeeIdSchema,
   firstName: optionalTrimmedStringSchema,
   surname: optionalTrimmedStringSchema,
   email: z.email(),

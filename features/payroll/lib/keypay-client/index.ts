@@ -199,12 +199,13 @@ export const keypayClient = {
   },
 
   sendOnboardingEmail: async (data: KeypaySendOnboardingEmailInput) => {
-    // TODO: Re-test the `{ id }` variant on future tenants.
-    // This tenant returns 500 for `{ id }`, but succeeds with name/email/mobile.
+    // The self-service endpoint creates a new employee if `id` is omitted.
+    // Always send the existing employee ID when inviting from Aluverse.
     await request<null>({
       path: "/employeeonboarding/initiateselfservice",
       method: "POST",
       body: {
+        id: data.employeeId,
         firstName: data.firstName,
         surname: data.surname,
         email: data.email,

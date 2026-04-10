@@ -75,6 +75,7 @@ export function PayrollEmployeesList() {
     setCurrentlyProcessing((current) => new Set(current).add(employee.id));
     onboardingMutation.mutate(
       {
+        employeeId: employee.id,
         firstName: employee.firstName ?? undefined,
         surname: employee.surname ?? undefined,
         email: employee.emailAddress,

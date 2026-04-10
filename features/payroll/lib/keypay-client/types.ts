@@ -62,6 +62,7 @@ export type KeypayEmployeeWriteResult = {
 };
 
 export type KeypaySendOnboardingEmailInput = {
+  employeeId: number;
   firstName?: string | null;
   surname?: string | null;
   email: string;
