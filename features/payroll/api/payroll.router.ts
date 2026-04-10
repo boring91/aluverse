@@ -8,6 +8,7 @@ import {
   createPayrollPayRunSchema,
   finalizePayrollPayRunSchema,
   getPayrollEmployeeSchema,
+  getPayrollPayRunSchema,
   getPayrollPayScheduleSchema,
   getPayrollStpStatusSchema,
   listPayrollPayRunsSchema,
@@ -87,7 +88,13 @@ export const payrollRouter = createTRPCRouter({
   listPayRuns: permissionProcedure("payroll.read")
     .input(listPayrollPayRunsSchema)
     .query(async ({ input }) => {
-      return await keypayClient.listPayRuns(input.payScheduleId);
+      const items = await keypayClient.listPayRuns(input.payScheduleId);
+
+      return {
+        items,
+        count: items.length,
+        filteredCount: items.length,
+      };
     }),
 
   createPayRun: permissionProcedure("payroll.write")
@@ -99,10 +106,25 @@ export const payrollRouter = createTRPCRouter({
       );
     }),
 
+  getPayRunEmployeeHours: permissionProcedure("payroll.read")
+    .input(getPayrollPayRunSchema)
+    .query(async ({ input }) => {
+      return await keypayClient.getPayRunEmployeeHours(input.payRunId);
+    }),
+
+  deletePayRun: permissionProcedure("payroll.write")
+    .input(getPayrollPayRunSchema)
+    .mutation(async ({ input }) => {
+      return await keypayClient.deletePayRun(input.payRunId);
+    }),
+
   calculatePayRun: permissionProcedure("payroll.write")
     .input(calculatePayrollPayRunSchema)
     .mutation(async ({ input }) => {
-      return await keypayClient.calculatePayRun(input.payRunId);
+      return await keypayClient.calculatePayRun(
+        input.payRunId,
+        input.employeeHours
+      );
     }),
 
   finalizePayRun: permissionProcedure("payroll.write")

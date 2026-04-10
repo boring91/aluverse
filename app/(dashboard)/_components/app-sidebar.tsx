@@ -99,6 +99,13 @@ const mainItems = [
     permission: "payroll.read" satisfies Permission,
   },
   {
+    id: "payrollPayRuns",
+    label: "Pay Runs",
+    link: "/payroll/pay-runs",
+    icon: ReceiptTextIcon,
+    permission: "payroll.read" satisfies Permission,
+  },
+  {
     id: "budget",
     label: "Budget",
     link: "/budgets",

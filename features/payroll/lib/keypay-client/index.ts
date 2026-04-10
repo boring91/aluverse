@@ -1,11 +1,14 @@
 import {
+  KeypayCalculatePayRunEmployeeHoursInput,
   KeypayCreateEmployeeInput,
   KeypayCreatePayRunInput,
   KeypayEmployee,
+  KeypayEmployeePayRate,
   KeypayEmployeeWriteResult,
   KeypayFinalizePayRunOptions,
   KeypayFinalizePayRunResult,
   KeypayPayRun,
+  KeypayPayRunListItem,
   KeypayPaySchedule,
   KeypayPayScheduleWriteInput,
   KeypaySendOnboardingEmailInput,
@@ -14,6 +17,9 @@ import {
   KeypaySuperContribution,
   KeypayYtdReportEntry,
   RawKeypayEmployee,
+  RawKeypayPayRun,
+  RawKeypayPayRunEarningsLinesResponse,
+  RawKeypayPayRunSummary,
   RawKeypaySuperContribution,
   RawKeypayYtdReportEntry,
 } from "./types";
@@ -29,6 +35,8 @@ type KeypayPayCategory = {
   name?: string | null;
   rateUnit?: string | null;
 };
+
+type KeypayPayRunStatus = KeypayPayRunListItem["status"];
 
 // ATO placeholder TFN for new hires who are within the 28-day grace period
 // while applying for their real TFN. Employment Hero replaces it during self-service.
@@ -101,6 +109,27 @@ function mapSuperContribution(
   };
 }
 
+function mapPayRun(payRun: RawKeypayPayRun): KeypayPayRun {
+  const { dateFinalised, isFinalised, ...rest } = payRun; // cspell:ignore Finalised
+
+  return {
+    ...rest,
+    dateFinalized: dateFinalised ?? null,
+    isFinalized: isFinalised,
+  };
+}
+
+function mapPayRunSummary(summary: RawKeypayPayRunSummary) {
+  const { totalGrossWages, totalNetWages, totalHours, ...rest } = summary;
+
+  return {
+    ...rest,
+    totalHours: totalHours ?? null,
+    totalGrossWagesInCents: toCents(totalGrossWages),
+    totalNetWagesInCents: toCents(totalNetWages),
+  };
+}
+
 function getCurrentFinancialYearRange(referenceDate = new Date()) {
   const year =
     referenceDate.getMonth() >= 6
@@ -148,6 +177,39 @@ function getPrimaryLocationName(locations: KeypayLocation[]) {
   return primaryLocation;
 }
 
+function getSingleLocationId(locations: KeypayLocation[]) {
+  if (locations.length > 1) {
+    throw new Error(
+      "Employment Hero has multiple locations configured. Explicit location selection isn't supported yet — remove extra locations or contact support."
+    );
+  }
+
+  const primaryLocationId = locations[0]?.id;
+
+  if (!primaryLocationId) {
+    throw new Error(
+      "Employment Hero has no locations configured. Please create one before adding employees."
+    );
+  }
+
+  return primaryLocationId;
+}
+
+function getEmployeeHoursDefaults(
+  employmentType: KeypayCreateEmployeeInput["employmentType"]
+) {
+  if (employmentType === "Casual") {
+    return { hoursPerWeek: 0, automaticallyPayEmployee: false };
+  }
+
+  if (employmentType === "PartTime") {
+    return { hoursPerWeek: 19, automaticallyPayEmployee: true };
+  }
+
+  // FullTime and anything else
+  return { hoursPerWeek: 38, automaticallyPayEmployee: true };
+}
+
 function getPrimaryPayCategoryName(
   payCategories: KeypayPayCategory[],
   employmentType: KeypayCreateEmployeeInput["employmentType"]
@@ -167,6 +229,50 @@ function getPrimaryPayCategoryName(
   }
 
   return payCategory.name;
+}
+
+function flattenPayRunEarningsLines(
+  response: RawKeypayPayRunEarningsLinesResponse
+) {
+  return Object.values(response.earningsLines ?? {}).flatMap(
+    (lines) => lines ?? []
+  );
+}
+
+function getPayRunStatus(
+  payRun: KeypayPayRun,
+  summary: RawKeypayPayRunSummary,
+  earningsLines: RawKeypayPayRunEarningsLinesResponse
+) {
+  if (payRun.isFinalized) {
+    return "Finalized" satisfies KeypayPayRunStatus;
+  }
+
+  // Employment Hero does not expose a dedicated persisted "calculated" flag,
+  // so we infer it from generated totals or earnings lines being present.
+  const hasCalculatedValues =
+    (summary.totalHours ?? 0) > 0 ||
+    (summary.totalGrossWages ?? 0) > 0 ||
+    (summary.totalNetWages ?? 0) > 0 ||
+    flattenPayRunEarningsLines(earningsLines).length > 0;
+
+  return hasCalculatedValues
+    ? ("Calculated" satisfies KeypayPayRunStatus)
+    : ("Draft" satisfies KeypayPayRunStatus);
+}
+
+function getPrimaryEmployeePayRate(payRates: KeypayEmployeePayRate[]) {
+  const primaryPayRate = payRates.find(
+    (payRate) => payRate.isPrimaryPayCategory
+  );
+
+  if (!primaryPayRate) {
+    throw new Error(
+      "Employment Hero has no primary pay rate configured for this employee."
+    );
+  }
+
+  return primaryPayRate;
 }
 
 export const keypayClient = {
@@ -213,6 +319,12 @@ export const keypayClient = {
       payCategories,
       data.employmentType
     );
+    // Employment Hero leaves new employees with hoursPerWeek: 0 and automaticallyPayEmployee: false
+    // unless we set them explicitly. Without these, salaried employees will never appear in a
+    // calculated pay run. Casuals keep the defaults because their hours are entered per pay run.
+    const { hoursPerWeek, automaticallyPayEmployee } = getEmployeeHoursDefaults(
+      data.employmentType
+    );
 
     return await request<KeypayEmployeeWriteResult>({
       path: "/employee/unstructured",
@@ -222,6 +334,8 @@ export const keypayClient = {
         taxFileNumber: TFN_PLACEHOLDER,
         primaryLocation,
         primaryPayCategory,
+        hoursPerWeek: data.hoursPerWeek ?? hoursPerWeek,
+        automaticallyPayEmployee,
       },
     });
   },
@@ -283,13 +397,59 @@ export const keypayClient = {
       method: "DELETE",
     }),
 
-  listPayRuns: async (payScheduleId?: number) =>
-    request<KeypayPayRun[]>({
-      path: "/payrun",
-      searchParams: {
-        payScheduleId,
-      },
-    }),
+  // TODO: Each pay run requires 2 extra API calls (summary + earnings lines) to infer status.
+  // This will hit rate limits as pay run count grows. Consider paginating, caching status,
+  // or limiting enrichment to the most recent N pay runs.
+  listPayRuns: async (payScheduleId?: number) => {
+    const [allPayRuns, paySchedules] = await Promise.all([
+      // The KeyPay AU /payrun endpoint ignores server-side query filters (both `payScheduleId`
+      // and OData `$filter=payScheduleId eq X` return unfiltered results or 500).
+      // Fetch everything and filter here before enriching.
+      request<RawKeypayPayRun[]>({
+        path: "/payrun",
+      }),
+      request<KeypayPaySchedule[]>({
+        path: "/payschedule",
+      }),
+    ]);
+    const payRuns =
+      payScheduleId == null
+        ? allPayRuns
+        : allPayRuns.filter(
+            (rawPayRun) => rawPayRun.payScheduleId === payScheduleId
+          );
+    const payScheduleNamesById = new Map(
+      paySchedules.map((paySchedule) => [
+        paySchedule.id,
+        paySchedule.name ?? null,
+      ])
+    );
+
+    return await Promise.all(
+      payRuns.map(async (rawPayRun) => {
+        const [summary, earningsLines] = await Promise.all([
+          request<RawKeypayPayRunSummary>({
+            path: `/payrun/${rawPayRun.id}/summary`,
+          }),
+          request<RawKeypayPayRunEarningsLinesResponse>({
+            path: `/payrun/${rawPayRun.id}/earningslines`,
+          }),
+        ]);
+        const payRun = mapPayRun(rawPayRun);
+        const mappedSummary = mapPayRunSummary(summary);
+
+        return {
+          ...payRun,
+          payScheduleName:
+            payScheduleNamesById.get(payRun.payScheduleId) ?? null,
+          totalHours: mappedSummary.totalHours,
+          totalGrossWagesInCents: mappedSummary.totalGrossWagesInCents,
+          totalNetWagesInCents: mappedSummary.totalNetWagesInCents,
+          status: getPayRunStatus(payRun, summary, earningsLines),
+        } satisfies KeypayPayRunListItem;
+      })
+    );
+  },
 
   createPayRun: async (
     payScheduleId: number,
@@ -299,26 +459,175 @@ export const keypayClient = {
       "payPeriodEnding" | "payScheduleId"
     > = {}
   ) =>
-    request<KeypayPayRun>({
-      path: "/payrun",
-      method: "POST",
-      body: {
-        ...options,
-        payScheduleId,
-        payPeriodEnding: periodEndingDate,
-      },
-    }),
+    mapPayRun(
+      await request<RawKeypayPayRun>({
+        path: "/payrun",
+        method: "POST",
+        body: {
+          ...options,
+          payScheduleId,
+          payPeriodEnding: periodEndingDate,
+          datePaid: options.datePaid ?? periodEndingDate,
+        },
+      })
+    ),
 
   getPayRun: async (payRunId: number) =>
-    request<KeypayPayRun>({
+    mapPayRun(
+      await request<RawKeypayPayRun>({
+        path: `/payrun/${payRunId}`,
+      })
+    ),
+
+  deletePayRun: async (payRunId: number) =>
+    request<null>({
       path: `/payrun/${payRunId}`,
+      method: "DELETE",
     }),
 
-  calculatePayRun: async (payRunId: number) =>
-    request<null>({
+  getPayRunEmployeeHours: async (payRunId: number) => {
+    const earningsLines = await request<RawKeypayPayRunEarningsLinesResponse>({
+      path: `/payrun/${payRunId}/earningslines`,
+    });
+    const flattenedEarningsLines = flattenPayRunEarningsLines(earningsLines);
+    const employeeIds = Array.from(
+      new Set(
+        flattenedEarningsLines
+          .map((earningsLine) => Number(earningsLine.employeeId))
+          .filter((employeeId) => Number.isFinite(employeeId))
+      )
+    );
+
+    if (employeeIds.length === 0) {
+      return [];
+    }
+
+    const primaryPayRateByEmployeeId = new Map(
+      await Promise.all(
+        employeeIds.map(async (employeeId) => {
+          const payRates = await request<KeypayEmployeePayRate[]>({
+            path: `/employee/${employeeId}/payrate`,
+          });
+
+          return [employeeId, getPrimaryEmployeePayRate(payRates)] as const;
+        })
+      )
+    );
+
+    return employeeIds.flatMap((employeeId) => {
+      const primaryPayRate = primaryPayRateByEmployeeId.get(employeeId);
+
+      if (!primaryPayRate) {
+        return [];
+      }
+
+      const units = flattenedEarningsLines
+        .filter((earningsLine) => {
+          return (
+            Number(earningsLine.employeeId) === employeeId &&
+            Number(earningsLine.payCategoryId) === primaryPayRate.payCategoryId
+          );
+        })
+        .reduce((total, earningsLine) => total + (earningsLine.units ?? 0), 0);
+
+      if (units <= 0) {
+        return [];
+      }
+
+      return [
+        {
+          employeeId,
+          units,
+        },
+      ];
+    });
+  },
+
+  calculatePayRun: async (
+    payRunId: number,
+    employeeHours: KeypayCalculatePayRunEmployeeHoursInput[] = []
+  ) => {
+    if (employeeHours.length > 0) {
+      const locations = await request<KeypayLocation[]>({
+        path: "/location",
+      });
+      const locationId = getSingleLocationId(locations);
+
+      await Promise.all(
+        employeeHours.map(async ({ employeeId, units }) => {
+          const [earningsLines, payRates] = await Promise.all([
+            request<RawKeypayPayRunEarningsLinesResponse>({
+              path: `/payrun/${payRunId}/earningslines/${employeeId}`,
+            }),
+            request<KeypayEmployeePayRate[]>({
+              path: `/employee/${employeeId}/payrate`,
+            }),
+          ]);
+          const primaryPayRate = getPrimaryEmployeePayRate(payRates);
+
+          if (primaryPayRate.rateUnit !== "Hourly") {
+            throw new Error(
+              "Only hourly employees can have manual hours entered before calculating a pay run."
+            );
+          }
+
+          const existingPrimaryEarningsLines = flattenPayRunEarningsLines(
+            earningsLines
+          ).filter((earningsLine) => {
+            return (
+              Number(earningsLine.payCategoryId) ===
+              primaryPayRate.payCategoryId
+            );
+          });
+
+          await Promise.all(
+            existingPrimaryEarningsLines.map((earningsLine) =>
+              request<null>({
+                path: `/payrun/${payRunId}/earningslines`,
+                method: "DELETE",
+                searchParams: {
+                  id: earningsLine.id,
+                },
+              })
+            )
+          );
+
+          if (units <= 0) {
+            return;
+          }
+
+          await request<null>({
+            path: `/payrun/${payRunId}/earningslines`,
+            method: "POST",
+            body: {
+              payRunId,
+              replaceExisting: false,
+              suppressCalculations: true,
+              employeeIdType: "Standard",
+              locationIdType: "Standard",
+              payCategoryIdType: "Standard",
+              earningsLines: {
+                [String(employeeId)]: [
+                  {
+                    employeeId: String(employeeId),
+                    locationId: String(locationId),
+                    payCategoryId: String(primaryPayRate.payCategoryId),
+                    units,
+                    rate: primaryPayRate.rate,
+                  },
+                ],
+              },
+            },
+          });
+        })
+      );
+    }
+
+    return await request<null>({
       path: `/payrun/${payRunId}/recalculate`,
       method: "POST",
-    }),
+    });
+  },
 
   finalizePayRun: async (
     payRunId: number,
@@ -330,6 +639,9 @@ export const keypayClient = {
       body: {
         ...options,
         payRunId,
+        // Do not rely on tenant-level manual defaults here; finalizing from Aluverse
+        // should also trigger the STP lodgement path unless explicitly overridden.
+        lodgePayRun: options.lodgePayRun ?? true,
       },
     });
 

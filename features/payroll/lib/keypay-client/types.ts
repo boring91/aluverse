@@ -1,4 +1,8 @@
+import { employmentTypes } from "@/lib/constants";
+
 type KeypayMoneyInCents = number;
+
+export type KeypayEmploymentType = (typeof employmentTypes)[number];
 
 export type KeypayProblemDetails = {
   type?: string | null;
@@ -23,7 +27,7 @@ export type RawKeypayEmployee = {
   mobilePhone?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  employmentType?: string | null;
+  employmentType?: KeypayEmploymentType | null;
   paySchedule?: string | null;
   primaryPayCategory?: string | null;
   primaryLocation?: string | null;
@@ -54,7 +58,7 @@ export type KeypayCreateEmployeeInput = {
   firstName: string;
   surname: string;
   startDate: string;
-  employmentType: string;
+  employmentType: KeypayEmploymentType;
   emailAddress?: string | null;
   mobilePhone?: string | null;
   endDate?: string | null;
@@ -118,7 +122,9 @@ export type KeypayPayScheduleWriteInput = {
   equalMonthlyPayments: boolean;
 };
 
-export type KeypayPayRun = {
+export type KeypayPayRunStatus = "Draft" | "Calculated" | "Finalized";
+
+export type RawKeypayPayRun = {
   id: number;
   dateFinalised?: string | null; // cspell:words Finalised
   payScheduleId: number;
@@ -129,6 +135,36 @@ export type KeypayPayRun = {
   paySlipsPublished: boolean;
   notation?: string | null;
   externalId?: string | null;
+};
+
+export type KeypayPayRun = Omit<
+  RawKeypayPayRun,
+  "dateFinalised" | "isFinalised"
+> & {
+  dateFinalized: string | null;
+  isFinalized: boolean;
+};
+
+export type RawKeypayPayRunSummary = {
+  totalHours?: number | null;
+  totalNetWages?: number | null;
+  totalGrossWages?: number | null;
+  id: number;
+  payScheduleId: number;
+  payPeriodStarting?: string | null;
+  payPeriodEnding?: string | null;
+  datePaid?: string | null;
+  paySlipsPublished: boolean;
+  notation?: string | null;
+  externalId?: string | null;
+};
+
+export type KeypayPayRunListItem = KeypayPayRun & {
+  payScheduleName: string | null;
+  totalHours: number | null;
+  totalNetWagesInCents: KeypayMoneyInCents | null;
+  totalGrossWagesInCents: KeypayMoneyInCents | null;
+  status: KeypayPayRunStatus;
 };
 
 export type KeypayCreatePayRunInput = {
@@ -146,6 +182,42 @@ export type KeypayCreatePayRunInput = {
   createWithEmptyPays?: boolean | null;
   adhoc?: boolean | null;
   includeTerminatedEmployees?: boolean | null;
+};
+
+export type KeypayEmployeePayRate = {
+  hasSuperRateOverride?: boolean | null;
+  superRate?: number | null;
+  payCategoryId: number;
+  payCategoryName?: string | null;
+  isPrimaryPayCategory: boolean;
+  accruesLeave?: boolean | null;
+  rateUnit?: string | null;
+  rate: number;
+  calculatedRate?: number | null;
+};
+
+export type RawKeypayPayRunEarningsLine = {
+  id: number;
+  payCategoryId?: string | null;
+  payCategoryName?: string | null;
+  units?: number | null;
+  rate?: number | null;
+  earnings?: number | null;
+  isSystemGenerated?: boolean | null;
+  locationId?: string | null;
+  locationName?: string | null;
+  employeeId?: string | null;
+  employeeName?: string | null;
+};
+
+export type RawKeypayPayRunEarningsLinesResponse = {
+  earningsLines?: Record<string, RawKeypayPayRunEarningsLine[] | null> | null;
+  payRunId: number;
+};
+
+export type KeypayCalculatePayRunEmployeeHoursInput = {
+  employeeId: number;
+  units: number;
 };
 
 export type KeypayStpStatus = {

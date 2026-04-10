@@ -8,6 +8,7 @@ import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { formatDateString } from "@/lib/shared-utils";
 
 type PayrollEmployee =
   inferRouterOutputs<AppRouter>["payroll"]["listEmployees"]["items"][number];
@@ -22,20 +23,6 @@ const STATUS_VARIANTS: Record<
   Incomplete: "secondary",
   Terminated: "outline",
 };
-
-function formatStartDate(value: string | null | undefined) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
-
-  return date.toLocaleDateString("en-AU");
-}
 
 export function usePayrollEmployeesColumns(
   canWrite: boolean,
@@ -113,7 +100,7 @@ export function usePayrollEmployeesColumns(
         ),
         accessorKey: "startDate",
         cell: ({ row }) => {
-          return <p>{formatStartDate(row.original.startDate)}</p>;
+          return <p>{formatDateString(row.original.startDate)}</p>;
         },
       },
       {

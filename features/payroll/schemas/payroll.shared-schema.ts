@@ -125,6 +125,19 @@ export const listPayrollPayRunsSchema = z
   })
   .default({});
 
+export const payrollPayRunFiltersSchema = z.object({
+  payScheduleId: z.string().optional(),
+});
+
+export const getPayrollPayRunSchema = z.object({
+  payRunId: keypayPayRunIdSchema,
+});
+
+export const createPayrollPayRunFormSchema = z.object({
+  payScheduleId: z.string().min(1),
+  periodEndingDate: z.date(),
+});
+
 export const createPayrollPayRunSchema = z.object({
   payScheduleId: keypayPayScheduleIdSchema,
   periodEndingDate: keypayDateSchema,
@@ -132,6 +145,15 @@ export const createPayrollPayRunSchema = z.object({
 
 export const calculatePayrollPayRunSchema = z.object({
   payRunId: keypayPayRunIdSchema,
+  employeeHours: z
+    .array(
+      z.object({
+        employeeId: keypayEmployeeIdSchema,
+        units: z.number().min(0),
+      })
+    )
+    .optional()
+    .default([]),
 });
 
 export const finalizePayrollPayRunSchema = z.object({

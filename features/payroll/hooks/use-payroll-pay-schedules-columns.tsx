@@ -9,23 +9,10 @@ import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { formatDateString } from "@/lib/shared-utils";
 
 type PayrollPaySchedule =
   inferRouterOutputs<AppRouter>["payroll"]["listPaySchedules"][number];
-
-function formatDate(value: string | null | undefined) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
-
-  return date.toLocaleDateString("en-AU");
-}
 
 function getSchedulePurpose(schedule: PayrollPaySchedule) {
   if (schedule.frequency === "Weekly") {
@@ -99,7 +86,7 @@ export function usePayrollPaySchedulesColumns(
         ),
         accessorKey: "lastPayRun",
         cell: ({ row }) => {
-          return <p>{formatDate(row.original.lastPayRun)}</p>;
+          return <p>{formatDateString(row.original.lastPayRun)}</p>;
         },
       },
       {
@@ -109,7 +96,7 @@ export function usePayrollPaySchedulesColumns(
         ),
         accessorKey: "lastDatePaid",
         cell: ({ row }) => {
-          return <p>{formatDate(row.original.lastDatePaid)}</p>;
+          return <p>{formatDateString(row.original.lastDatePaid)}</p>;
         },
       },
     ];
