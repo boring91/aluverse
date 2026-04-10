@@ -1,20 +1,14 @@
+import { z } from "zod";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import { keypayClient } from "../lib/keypay-client";
 import {
-  activatePayrollEmployeeSchema,
-  calculatePayrollPayRunSchema,
   createPayrollEmployeeSchema,
   createPayrollPayScheduleSchema,
-  createPayrollPayRunSchema,
-  finalizeEofySchema,
-  finalizePayrollPayRunSchema,
-  getPayrollEmployeeSchema,
-  getPayrollPayRunEmployeeSchema,
-  getPayrollPayRunSchema,
-  getPayrollPayScheduleSchema,
-  getPayrollStpStatusSchema,
-  listPayrollPayRunsSchema,
-  sendPayrollOnboardingEmailSchema,
+  keypayEmployeeIdSchema,
+  keypayPayRunIdSchema,
+  keypayPayScheduleIdSchema,
+  keypayDateSchema,
+  optionalTrimmedStringSchema,
   updatePayrollEmployeeSchema,
   updatePayrollPayScheduleSchema,
 } from "../schemas/payroll.shared-schema";
@@ -31,13 +25,13 @@ export const payrollRouter = createTRPCRouter({
   }),
 
   getEmployee: permissionProcedure("payroll.read")
-    .input(getPayrollEmployeeSchema)
+    .input(z.object({ id: keypayEmployeeIdSchema }))
     .query(async ({ input }) => {
       return await keypayClient.getEmployee(input.id);
     }),
 
   deleteEmployee: permissionProcedure("payroll.write")
-    .input(getPayrollEmployeeSchema)
+    .input(z.object({ id: keypayEmployeeIdSchema }))
     .mutation(async ({ input }) => {
       return await keypayClient.deleteEmployee(input.id);
     }),
@@ -56,13 +50,21 @@ export const payrollRouter = createTRPCRouter({
     }),
 
   activateEmployee: permissionProcedure("payroll.write")
-    .input(activatePayrollEmployeeSchema)
+    .input(z.object({ id: keypayEmployeeIdSchema }))
     .mutation(async ({ input }) => {
       return await keypayClient.activateEmployee(input.id);
     }),
 
   sendOnboardingEmail: permissionProcedure("payroll.write")
-    .input(sendPayrollOnboardingEmailSchema)
+    .input(
+      z.object({
+        employeeId: keypayEmployeeIdSchema,
+        firstName: optionalTrimmedStringSchema,
+        surname: optionalTrimmedStringSchema,
+        email: z.email(),
+        mobile: optionalTrimmedStringSchema,
+      })
+    )
     .mutation(async ({ input }) => {
       return await keypayClient.sendOnboardingEmail(input);
     }),
@@ -72,7 +74,7 @@ export const payrollRouter = createTRPCRouter({
   }),
 
   getPaySchedule: permissionProcedure("payroll.read")
-    .input(getPayrollPayScheduleSchema)
+    .input(z.object({ id: keypayPayScheduleIdSchema }))
     .query(async ({ input }) => {
       return await keypayClient.getPaySchedule(input.id);
     }),
@@ -90,13 +92,19 @@ export const payrollRouter = createTRPCRouter({
     }),
 
   deletePaySchedule: permissionProcedure("payroll.write")
-    .input(getPayrollPayScheduleSchema)
+    .input(z.object({ id: keypayPayScheduleIdSchema }))
     .mutation(async ({ input }) => {
       return await keypayClient.deletePaySchedule(input.id);
     }),
 
   listPayRuns: permissionProcedure("payroll.read")
-    .input(listPayrollPayRunsSchema)
+    .input(
+      z
+        .object({
+          payScheduleId: keypayPayScheduleIdSchema.optional(),
+        })
+        .default({})
+    )
     .query(async ({ input }) => {
       const items = await keypayClient.listPayRuns(input.payScheduleId);
 
@@ -108,7 +116,12 @@ export const payrollRouter = createTRPCRouter({
     }),
 
   createPayRun: permissionProcedure("payroll.write")
-    .input(createPayrollPayRunSchema)
+    .input(
+      z.object({
+        payScheduleId: keypayPayScheduleIdSchema,
+        periodEndingDate: keypayDateSchema,
+      })
+    )
     .mutation(async ({ input }) => {
       return await keypayClient.createPayRun(
         input.payScheduleId,
@@ -117,13 +130,18 @@ export const payrollRouter = createTRPCRouter({
     }),
 
   getPayRunDetails: permissionProcedure("payroll.read")
-    .input(getPayrollPayRunSchema)
+    .input(z.object({ payRunId: keypayPayRunIdSchema }))
     .query(async ({ input }) => {
       return await keypayClient.getPayRunDetails(input.payRunId);
     }),
 
   getPayRunEmployeeBankPayments: permissionProcedure("payroll.read")
-    .input(getPayrollPayRunEmployeeSchema)
+    .input(
+      z.object({
+        payRunId: keypayPayRunIdSchema,
+        employeeId: keypayEmployeeIdSchema,
+      })
+    )
     .query(async ({ input }) => {
       return await keypayClient.getPayRunEmployeeBankPayments(
         input.payRunId,
@@ -132,19 +150,32 @@ export const payrollRouter = createTRPCRouter({
     }),
 
   getPayRunEmployeeHours: permissionProcedure("payroll.read")
-    .input(getPayrollPayRunSchema)
+    .input(z.object({ payRunId: keypayPayRunIdSchema }))
     .query(async ({ input }) => {
       return await keypayClient.getPayRunEmployeeHours(input.payRunId);
     }),
 
   deletePayRun: permissionProcedure("payroll.write")
-    .input(getPayrollPayRunSchema)
+    .input(z.object({ payRunId: keypayPayRunIdSchema }))
     .mutation(async ({ input }) => {
       return await keypayClient.deletePayRun(input.payRunId);
     }),
 
   calculatePayRun: permissionProcedure("payroll.write")
-    .input(calculatePayrollPayRunSchema)
+    .input(
+      z.object({
+        payRunId: keypayPayRunIdSchema,
+        employeeHours: z
+          .array(
+            z.object({
+              employeeId: keypayEmployeeIdSchema,
+              units: z.number().min(0),
+            })
+          )
+          .optional()
+          .default([]),
+      })
+    )
     .mutation(async ({ input }) => {
       return await keypayClient.calculatePayRun(
         input.payRunId,
@@ -153,13 +184,13 @@ export const payrollRouter = createTRPCRouter({
     }),
 
   finalizePayRun: permissionProcedure("payroll.write")
-    .input(finalizePayrollPayRunSchema)
+    .input(z.object({ payRunId: keypayPayRunIdSchema }))
     .mutation(async ({ input }) => {
       return await keypayClient.finalizePayRun(input.payRunId);
     }),
 
   getStpStatus: permissionProcedure("payroll.read")
-    .input(getPayrollStpStatusSchema)
+    .input(z.object({ payRunId: keypayPayRunIdSchema }))
     .query(async ({ input }) => {
       return await keypayClient.getStpStatus(input.payRunId);
     }),
@@ -177,7 +208,13 @@ export const payrollRouter = createTRPCRouter({
   }),
 
   finalizeEofy: permissionProcedure("payroll.write")
-    .input(finalizeEofySchema)
+    .input(
+      z.object({
+        // Australian financial years end on 30 June and are identified by the ending year.
+        // e.g. 2026 represents the FY from 1 July 2025 to 30 June 2026.
+        financialYearEnding: z.number().int().min(2000).max(2100),
+      })
+    )
     .mutation(async ({ input }) => {
       return await keypayClient.finalizeEofy(input.financialYearEnding);
     }),

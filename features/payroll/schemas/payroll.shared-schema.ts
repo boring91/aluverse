@@ -7,9 +7,9 @@ function toKeypayDateString(value: Date) {
   ).toISOString();
 }
 
-const keypayDateSchema = z.date().transform(toKeypayDateString);
+export const keypayDateSchema = z.date().transform(toKeypayDateString);
 
-const optionalTrimmedStringSchema = z
+export const optionalTrimmedStringSchema = z
   .string()
   .trim()
   .optional()
@@ -17,14 +17,14 @@ const optionalTrimmedStringSchema = z
     return value ? value : undefined;
   });
 
-const optionalEmailSchema = optionalTrimmedStringSchema.refine(
+export const optionalEmailSchema = optionalTrimmedStringSchema.refine(
   (value) => !value || z.email().safeParse(value).success,
   {
     message: "Invalid email address",
   }
 );
 
-const optionalKeypayDateSchema = z
+export const optionalKeypayDateSchema = z
   .date()
   .nullable()
   .optional()
@@ -36,27 +36,11 @@ const optionalKeypayDateSchema = z
     return toKeypayDateString(value);
   });
 
-const keypayEmployeeIdSchema = z.number().int().positive();
+export const keypayEmployeeIdSchema = z.number().int().positive();
 
-const keypayPayScheduleIdSchema = z.number().int().positive();
+export const keypayPayScheduleIdSchema = z.number().int().positive();
 
-const keypayPayRunIdSchema = z.number().int().positive();
-
-const payScheduleFrequencySchema = z.enum([
-  "Weekly",
-  "Fortnightly",
-  "Monthly",
-  "AdHoc",
-]);
-
-const payScheduleEmployeeSelectionStrategySchema = z.enum([
-  "None",
-  "PayRunDefault",
-  "TimesheetLocations",
-  "PayRunDefaultWithTimesheets",
-  "ActiveSubcontractors",
-  "EmployingEntity",
-]);
+export const keypayPayRunIdSchema = z.number().int().positive();
 
 const createPayrollEmployeeBaseSchema = z.object({
   firstName: z.string().trim().min(1),
@@ -66,34 +50,22 @@ const createPayrollEmployeeBaseSchema = z.object({
   rate: z.number().positive(),
 });
 
-export const getPayrollEmployeeSchema = z.object({
-  id: keypayEmployeeIdSchema,
-});
-
-export const getPayrollPayScheduleSchema = z.object({
-  id: keypayPayScheduleIdSchema,
-});
-
 export const createPayrollEmployeeFormSchema =
   createPayrollEmployeeBaseSchema.safeExtend({
     payScheduleId: z.string().min(1),
     startDate: z.date(),
   });
 
-export const createPayrollEmployeeSchema = z.object({
-  firstName: z.string().trim().min(1),
-  surname: z.string().trim().min(1),
-  emailAddress: optionalEmailSchema,
-  employmentType: z.enum(employmentTypes),
-  startDate: keypayDateSchema,
-  mobilePhone: optionalTrimmedStringSchema,
-  endDate: optionalKeypayDateSchema,
-  externalId: optionalTrimmedStringSchema,
-  paySchedule: optionalTrimmedStringSchema,
-  rate: z.number().positive(),
-  rateUnit: optionalTrimmedStringSchema,
-  hoursPerWeek: z.number().nullable().optional(),
-});
+export const createPayrollEmployeeSchema =
+  createPayrollEmployeeBaseSchema.safeExtend({
+    startDate: keypayDateSchema,
+    mobilePhone: optionalTrimmedStringSchema,
+    endDate: optionalKeypayDateSchema,
+    externalId: optionalTrimmedStringSchema,
+    paySchedule: optionalTrimmedStringSchema,
+    rateUnit: optionalTrimmedStringSchema,
+    hoursPerWeek: z.number().nullable().optional(),
+  });
 
 export const updatePayrollEmployeeSchema =
   createPayrollEmployeeSchema.safeExtend({
@@ -102,8 +74,15 @@ export const updatePayrollEmployeeSchema =
 
 export const createPayrollPayScheduleSchema = z.object({
   name: z.string().trim().min(1),
-  frequency: payScheduleFrequencySchema,
-  employeeSelectionStrategy: payScheduleEmployeeSelectionStrategySchema,
+  frequency: z.enum(["Weekly", "Fortnightly", "Monthly", "AdHoc"]),
+  employeeSelectionStrategy: z.enum([
+    "None",
+    "PayRunDefault",
+    "TimesheetLocations",
+    "PayRunDefaultWithTimesheets",
+    "ActiveSubcontractors",
+    "EmployingEntity",
+  ]),
   equalMonthlyPayments: z.boolean(),
 });
 
@@ -112,70 +91,11 @@ export const updatePayrollPayScheduleSchema =
     id: keypayPayScheduleIdSchema,
   });
 
-export const activatePayrollEmployeeSchema = z.object({
-  id: keypayEmployeeIdSchema,
-});
-
-export const sendPayrollOnboardingEmailSchema = z.object({
-  employeeId: keypayEmployeeIdSchema,
-  firstName: optionalTrimmedStringSchema,
-  surname: optionalTrimmedStringSchema,
-  email: z.email(),
-  mobile: optionalTrimmedStringSchema,
-});
-
-export const listPayrollPayRunsSchema = z
-  .object({
-    payScheduleId: keypayPayScheduleIdSchema.optional(),
-  })
-  .default({});
-
-export const payrollPayRunFiltersSchema = z.object({
-  payScheduleId: z.string().optional(),
-});
-
-export const getPayrollPayRunSchema = z.object({
-  payRunId: keypayPayRunIdSchema,
-});
-
-export const getPayrollPayRunEmployeeSchema = z.object({
-  payRunId: keypayPayRunIdSchema,
-  employeeId: keypayEmployeeIdSchema,
-});
-
 export const createPayrollPayRunFormSchema = z.object({
   payScheduleId: z.string().min(1),
   periodEndingDate: z.date(),
 });
 
-export const createPayrollPayRunSchema = z.object({
-  payScheduleId: keypayPayScheduleIdSchema,
-  periodEndingDate: keypayDateSchema,
-});
-
-export const calculatePayrollPayRunSchema = z.object({
-  payRunId: keypayPayRunIdSchema,
-  employeeHours: z
-    .array(
-      z.object({
-        employeeId: keypayEmployeeIdSchema,
-        units: z.number().min(0),
-      })
-    )
-    .optional()
-    .default([]),
-});
-
-export const finalizePayrollPayRunSchema = z.object({
-  payRunId: keypayPayRunIdSchema,
-});
-
-export const getPayrollStpStatusSchema = z.object({
-  payRunId: keypayPayRunIdSchema,
-});
-
-export const finalizeEofySchema = z.object({
-  // Australian financial years end on 30 June and are identified by the ending year.
-  // e.g. 2026 represents the FY from 1 July 2025 to 30 June 2026.
-  financialYearEnding: z.number().int().min(2000).max(2100),
+export const payrollPayRunFiltersSchema = z.object({
+  payScheduleId: z.string().optional(),
 });
