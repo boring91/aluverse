@@ -1,0 +1,222 @@
+type KeypayMoneyInCents = number;
+
+export type KeypayProblemDetails = {
+  type?: string | null;
+  title?: string | null;
+  status?: number | null;
+  detail?: string | null;
+  instance?: string | null;
+} & Record<string, unknown>;
+
+export type RawKeypayEmployee = {
+  id: number;
+  title?: string | null;
+  firstName?: string | null;
+  middleName?: string | null;
+  surname?: string | null;
+  preferredName?: string | null;
+  dateOfBirth?: string | null;
+  externalId?: string | null;
+  emailAddress?: string | null;
+  homePhone?: string | null;
+  workPhone?: string | null;
+  mobilePhone?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  employmentType?: string | null;
+  paySchedule?: string | null;
+  primaryPayCategory?: string | null;
+  primaryLocation?: string | null;
+  rate?: number | null;
+  rateUnit?: string | null;
+  hoursPerWeek?: number | null;
+  status?: "Active" | "Terminated" | "Incomplete" | null;
+  dateCreated?: string | null;
+};
+
+export type KeypayEmployee = Omit<RawKeypayEmployee, "rate"> & {
+  rateInCents: KeypayMoneyInCents | null;
+};
+
+export type KeypayCreateEmployeeInput = {
+  firstName: string;
+  surname: string;
+  startDate: string;
+  employmentType: string;
+  emailAddress?: string | null;
+  mobilePhone?: string | null;
+  endDate?: string | null;
+  externalId?: string | null;
+  paySchedule?: string | null;
+  primaryPayCategory?: string | null;
+  primaryLocation?: string | null;
+  rate?: number | null;
+  rateUnit?: string | null;
+  hoursPerWeek?: number | null;
+};
+
+export type KeypayEmployeeWriteResult = {
+  id: number;
+  status?: string | null;
+  detailedStatus?: string | null;
+};
+
+export type KeypayOnboardingInput = {
+  id?: number | null;
+  employingEntityId?: number | null;
+  title?: number | null;
+  firstName?: string | null;
+  surname?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+  qualificationsRequired?: boolean | null;
+  emergencyContactDetailsRequired?: boolean | null;
+};
+
+export type KeypayOnboardingUrl = {
+  url: string | null;
+};
+
+export type KeypayPaySchedule = {
+  id: number;
+  name?: string | null;
+  frequency?: "Weekly" | "Fortnightly" | "Monthly" | "AdHoc" | "Initial" | null;
+  employeeSelectionStrategy?:
+    | "None"
+    | "PayRunDefault"
+    | "TimesheetLocations"
+    | "PayRunDefaultWithTimesheets"
+    | "ActiveSubcontractors"
+    | "EmployingEntity"
+    | null;
+  lastDatePaid?: string | null;
+  lastPayRun?: string | null;
+  externalId?: string | null;
+  source?: string | null;
+  locations?: number[] | null;
+  equalMonthlyPayments?: boolean | null;
+};
+
+export type KeypayPayRun = {
+  id: number;
+  dateFinalised?: string | null; // cspell:words Finalised
+  payScheduleId: number;
+  payPeriodStarting?: string | null;
+  payPeriodEnding?: string | null;
+  datePaid?: string | null;
+  isFinalised: boolean; // cspell:words Finalised
+  paySlipsPublished: boolean;
+  notation?: string | null;
+  externalId?: string | null;
+};
+
+export type KeypayCreatePayRunInput = {
+  payScheduleId: number;
+  payPeriodEnding: string;
+  datePaid?: string | null;
+  timesheetImportOption?:
+    | "None"
+    | "ThisPayPeriod"
+    | "AllOutstanding"
+    | "CustomPeriod"
+    | null;
+  externalId?: string | null;
+  callbackUrl?: string | null;
+  createWithEmptyPays?: boolean | null;
+  adhoc?: boolean | null;
+  includeTerminatedEmployees?: boolean | null;
+};
+
+export type KeypayStpStatus = {
+  status: string | null;
+  detail: string | null;
+  jobId: string | null;
+};
+
+export type KeypayFinalizePayRunOptions = {
+  payRunId?: number | null;
+  datePaid?: string | null;
+  exportJournals?: boolean | null;
+  publishPaySlips?: "Manual" | "Immediate" | "Scheduled" | null;
+  publishPaySlipsDateTime?: string | null;
+  suppressNotifications?: boolean | null;
+  lodgePayRun?: boolean | null;
+  lodgePayRunInTestMode?: boolean | null;
+  lodgeFinalPayRun?: boolean | null;
+  finaliseAsAdmin?: boolean | null;
+  saveChangesToDefaultSettings?: boolean | null;
+  fromPayRunAutomation?: boolean | null;
+};
+
+export type KeypaySuperPayment = {
+  superInterchangeId: number;
+  description?: string | null;
+  clearingHouse?: "Click" | "Beam" | "Manual" | "HeroClear" | null;
+  status?: string | null;
+};
+
+export type KeypayFinalizePayRunResult = {
+  paySlipsPublished?: boolean | null;
+  publishPreference?: "Manual" | "Immediate" | "Scheduled" | null;
+  datePaid?: string | null;
+  payRunLodgementJobId?: string | null;
+  activeEmployees?: number | null;
+  lodgePayRun?: "Manual" | "Immediate" | "Scheduled" | null;
+  lodgePayRunScheduledDateTimeUtc?: string | null;
+  superPayments: KeypaySuperPayment[];
+  isFirstFinalisation?: boolean | null;
+};
+
+export type RawKeypayYtdReportEntry = {
+  bsb?: string | null; // cspell:words bsb
+  employeeId: number;
+  firstName?: string | null;
+  surname?: string | null;
+  externalId?: string | null;
+  datePaid?: string | null;
+  locationName?: string | null;
+  accountName?: string | null;
+  accountNumber?: string | null;
+  accountType?: string | null;
+  taxableEarnings?: number | null;
+  netEarnings?: number | null;
+  totalAllowances?: number | null;
+  totalDeductions?: number | null;
+  amount?: number | null;
+};
+
+export type KeypayYtdReportEntry = Omit<
+  RawKeypayYtdReportEntry,
+  | "taxableEarnings"
+  | "netEarnings"
+  | "totalAllowances"
+  | "totalDeductions"
+  | "amount"
+> & {
+  taxableEarningsInCents: KeypayMoneyInCents | null;
+  netEarningsInCents: KeypayMoneyInCents | null;
+  totalAllowancesInCents: KeypayMoneyInCents | null;
+  totalDeductionsInCents: KeypayMoneyInCents | null;
+  amountInCents: KeypayMoneyInCents | null;
+};
+
+export type RawKeypaySuperContribution = {
+  locationId: number;
+  locationName?: string | null;
+  employeeId: number;
+  firstName?: string | null;
+  surname?: string | null;
+  externalId?: string | null;
+  accrualDate?: string | null;
+  accrualType?: string | null;
+  accrualAmount?: number | null;
+  batchId?: number | null;
+  status?: string | null;
+};
+
+export type KeypaySuperContribution = Omit<
+  RawKeypaySuperContribution,
+  "accrualAmount"
+> & {
+  accrualAmountInCents: KeypayMoneyInCents | null;
+};
