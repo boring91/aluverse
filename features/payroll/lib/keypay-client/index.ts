@@ -5,9 +5,10 @@ import {
   KeypayEmployeeWriteResult,
   KeypayFinalizePayRunOptions,
   KeypayFinalizePayRunResult,
-  KeypayOnboardingUrl,
   KeypayPayRun,
   KeypayPaySchedule,
+  KeypaySendOnboardingEmailInput,
+  KeypaySendOnboardingEmailResult,
   KeypayStpStatus,
   KeypaySuperContribution,
   KeypayYtdReportEntry,
@@ -16,6 +17,21 @@ import {
   RawKeypayYtdReportEntry,
 } from "./types";
 import { request } from "./request";
+
+type KeypayLocation = {
+  id: number;
+  name?: string | null;
+};
+
+type KeypayPayCategory = {
+  id: number;
+  name?: string | null;
+  rateUnit?: string | null;
+};
+
+// ATO placeholder TFN for new hires who are within the 28-day grace period
+// while applying for their real TFN. Employment Hero replaces it during self-service.
+const TFN_PLACEHOLDER = "111111111";
 
 function toCents(value: number | null | undefined) {
   return value == null ? null : Math.round(value * 100);
@@ -92,6 +108,45 @@ function getStringValue(record: Record<string, unknown>, key: string) {
   return typeof value === "string" ? value : null;
 }
 
+function getPrimaryLocationName(locations: KeypayLocation[]) {
+  if (locations.length > 1) {
+    throw new Error(
+      "Employment Hero has multiple locations configured. Explicit location selection isn't supported yet — remove extra locations or contact support."
+    );
+  }
+
+  const primaryLocation = locations[0]?.name;
+
+  if (!primaryLocation) {
+    throw new Error(
+      "Employment Hero has no locations configured. Please create one before adding employees."
+    );
+  }
+
+  return primaryLocation;
+}
+
+function getPrimaryPayCategoryName(
+  payCategories: KeypayPayCategory[],
+  employmentType: KeypayCreateEmployeeInput["employmentType"]
+) {
+  const isCasual = employmentType === "Casual";
+  const requiredRateUnit = isCasual ? "Hourly" : "Annually";
+  const payCategory = payCategories.find(
+    (item) => item.rateUnit === requiredRateUnit && item.name
+  );
+
+  if (!payCategory?.name) {
+    throw new Error(
+      isCasual
+        ? "No hourly pay category found in Employment Hero. Please create one before adding casual employees."
+        : "No annual pay category found in Employment Hero. Please create one before adding salaried employees."
+    );
+  }
+
+  return payCategory.name;
+}
+
 export const keypayClient = {
   listEmployees: async () =>
     // TODO: add pagination once the employee list grows enough for this endpoint to page.
@@ -108,25 +163,51 @@ export const keypayClient = {
       })
     ),
 
-  createEmployee: async (data: KeypayCreateEmployeeInput) =>
-    request<KeypayEmployeeWriteResult>({
+  createEmployee: async (data: KeypayCreateEmployeeInput) => {
+    const [locations, payCategories] = await Promise.all([
+      request<KeypayLocation[]>({
+        path: "/location",
+      }),
+      request<KeypayPayCategory[]>({
+        path: "/paycategory",
+      }),
+    ]);
+
+    const primaryLocation = getPrimaryLocationName(locations);
+    const primaryPayCategory = getPrimaryPayCategoryName(
+      payCategories,
+      data.employmentType
+    );
+
+    return await request<KeypayEmployeeWriteResult>({
       path: "/employee/unstructured",
       method: "POST",
-      body: data,
-    }),
+      body: {
+        ...data,
+        taxFileNumber: TFN_PLACEHOLDER,
+        primaryLocation,
+        primaryPayCategory,
+      },
+    });
+  },
 
-  getOnboardingUrl: async (employeeId: number) => {
-    const response = await request<{ url?: string } | null>({
+  sendOnboardingEmail: async (data: KeypaySendOnboardingEmailInput) => {
+    // TODO: Re-test the `{ id }` variant on future tenants.
+    // This tenant returns 500 for `{ id }`, but succeeds with name/email/mobile.
+    await request<null>({
       path: "/employeeonboarding/initiateselfservice",
       method: "POST",
       body: {
-        id: employeeId,
+        firstName: data.firstName,
+        surname: data.surname,
+        email: data.email,
+        mobile: data.mobile,
       },
     });
 
     return {
-      url: response && typeof response.url === "string" ? response.url : null,
-    } satisfies KeypayOnboardingUrl;
+      email: data.email,
+    } satisfies KeypaySendOnboardingEmailResult;
   },
 
   listPaySchedules: async () =>

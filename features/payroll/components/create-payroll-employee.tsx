@@ -166,7 +166,7 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
               <form.AppField
                 name="emailAddress"
                 children={(field) => (
-                  <field.TextField label="Email" type="email" />
+                  <field.TextField label="Email (optional)" type="email" />
                 )}
               />
               <form.AppField

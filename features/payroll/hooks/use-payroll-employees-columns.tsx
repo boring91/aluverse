@@ -40,7 +40,7 @@ function formatStartDate(value: string | null | undefined) {
 export function usePayrollEmployeesColumns(
   canWrite: boolean,
   currentlyProcessing: Set<number>,
-  handleGenerateOnboardingUrl: ((employee: PayrollEmployee) => void) | undefined
+  handleSendOnboardingEmail: ((employee: PayrollEmployee) => void) | undefined
 ) {
   return useMemo<ColumnDef<PayrollEmployee>[]>(() => {
     const columns: ColumnDef<PayrollEmployee>[] = [
@@ -132,7 +132,7 @@ export function usePayrollEmployeesColumns(
       },
     ];
 
-    if (canWrite && handleGenerateOnboardingUrl) {
+    if (canWrite && handleSendOnboardingEmail) {
       columns.push({
         id: "actions",
         cell: ({ row }) => {
@@ -143,10 +143,12 @@ export function usePayrollEmployeesColumns(
               <Button
                 size="sm"
                 variant="outline"
-                disabled={currentlyProcessing.has(employee.id)}
-                onClick={() => handleGenerateOnboardingUrl(employee)}
+                disabled={
+                  currentlyProcessing.has(employee.id) || !employee.emailAddress
+                }
+                onClick={() => handleSendOnboardingEmail(employee)}
               >
-                Generate onboarding link
+                Send onboarding email
               </Button>
             </div>
           );
@@ -155,5 +157,5 @@ export function usePayrollEmployeesColumns(
     }
 
     return columns;
-  }, [canWrite, currentlyProcessing, handleGenerateOnboardingUrl]);
+  }, [canWrite, currentlyProcessing, handleSendOnboardingEmail]);
 }

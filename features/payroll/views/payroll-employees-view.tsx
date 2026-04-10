@@ -35,8 +35,8 @@ export function PayrollEmployeesView() {
       <div className="flex flex-col gap-2">
         <h1 className="font-bold text-2xl">Payroll employees</h1>
         <p className="text-muted-foreground max-w-3xl text-sm">
-          Create employees in Aluverse, then generate a self-service onboarding
-          link so Employment Hero collects TFN, super, and bank details
+          Create employees in Aluverse, then send a self-service onboarding
+          email so Employment Hero collects TFN, super, and bank details
           directly.
         </p>
       </div>

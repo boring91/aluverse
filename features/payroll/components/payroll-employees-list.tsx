@@ -30,52 +30,47 @@ export function PayrollEmployeesList() {
   );
 
   const onboardingMutation = useMutation(
-    trpc.payroll.getOnboardingUrl.mutationOptions({
-      onSuccess: async ({ url }) => {
-        if (!url) {
-          toast.error(
-            "Employment Hero did not return an onboarding URL yet. We'll verify the payload once a real employee is available."
-          );
-          return;
-        }
-
-        try {
-          await navigator.clipboard.writeText(url);
-          toast.success("Onboarding link copied to clipboard.");
-        } catch {
-          toast.error("Failed to copy the onboarding link to the clipboard.");
-        }
+    trpc.payroll.sendOnboardingEmail.mutationOptions({
+      onSuccess: ({ email }) => {
+        toast.success(`Onboarding email sent to ${email}.`);
       },
       onError: (error) => {
         toast.error(error.message);
       },
-      onSettled: (_, __, input) => {
-        setCurrentlyProcessing((current) => {
-          const next = new Set(current);
-          next.delete(input.employeeId);
-          return next;
-        });
-      },
     })
   );
 
-  const handleGenerateOnboardingUrl = (
+  const handleSendOnboardingEmail = (
     employee: NonNullable<typeof employees>["items"][number]
   ) => {
-    if (!canWrite) {
+    if (!canWrite || !employee.emailAddress) {
       return;
     }
 
     setCurrentlyProcessing((current) => new Set(current).add(employee.id));
-    onboardingMutation.mutate({
-      employeeId: employee.id,
-    });
+    onboardingMutation.mutate(
+      {
+        firstName: employee.firstName ?? undefined,
+        surname: employee.surname ?? undefined,
+        email: employee.emailAddress,
+        mobile: employee.mobilePhone ?? undefined,
+      },
+      {
+        onSettled: () => {
+          setCurrentlyProcessing((current) => {
+            const next = new Set(current);
+            next.delete(employee.id);
+            return next;
+          });
+        },
+      }
+    );
   };
 
   const columns = usePayrollEmployeesColumns(
     canWrite,
     currentlyProcessing,
-    canWrite ? handleGenerateOnboardingUrl : undefined
+    canWrite ? handleSendOnboardingEmail : undefined
   );
 
   if (isAccessPending) {

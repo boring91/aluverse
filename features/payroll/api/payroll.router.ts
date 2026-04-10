@@ -6,9 +6,9 @@ import {
   createPayrollPayRunSchema,
   finalizePayrollPayRunSchema,
   getPayrollEmployeeSchema,
-  getPayrollOnboardingUrlSchema,
   getPayrollStpStatusSchema,
   listPayrollPayRunsSchema,
+  sendPayrollOnboardingEmailSchema,
 } from "../schemas/payroll.shared-schema";
 
 export const payrollRouter = createTRPCRouter({
@@ -34,10 +34,10 @@ export const payrollRouter = createTRPCRouter({
       return await keypayClient.createEmployee(input);
     }),
 
-  getOnboardingUrl: permissionProcedure("payroll.write")
-    .input(getPayrollOnboardingUrlSchema)
+  sendOnboardingEmail: permissionProcedure("payroll.write")
+    .input(sendPayrollOnboardingEmailSchema)
     .mutation(async ({ input }) => {
-      return await keypayClient.getOnboardingUrl(input.employeeId);
+      return await keypayClient.sendOnboardingEmail(input);
     }),
 
   listPaySchedules: permissionProcedure("payroll.read").query(async () => {

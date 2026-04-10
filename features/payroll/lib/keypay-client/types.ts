@@ -61,20 +61,15 @@ export type KeypayEmployeeWriteResult = {
   detailedStatus?: string | null;
 };
 
-export type KeypayOnboardingInput = {
-  id?: number | null;
-  employingEntityId?: number | null;
-  title?: number | null;
+export type KeypaySendOnboardingEmailInput = {
   firstName?: string | null;
   surname?: string | null;
-  email?: string | null;
+  email: string;
   mobile?: string | null;
-  qualificationsRequired?: boolean | null;
-  emergencyContactDetailsRequired?: boolean | null;
 };
 
-export type KeypayOnboardingUrl = {
-  url: string | null;
+export type KeypaySendOnboardingEmailResult = {
+  email: string;
 };
 
 export type KeypayPaySchedule = {

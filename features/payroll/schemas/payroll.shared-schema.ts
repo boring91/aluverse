@@ -9,6 +9,21 @@ function toKeypayDateString(value: Date) {
 
 const keypayDateSchema = z.date().transform(toKeypayDateString);
 
+const optionalTrimmedStringSchema = z
+  .string()
+  .trim()
+  .optional()
+  .transform((value) => {
+    return value ? value : undefined;
+  });
+
+const optionalEmailSchema = optionalTrimmedStringSchema.refine(
+  (value) => !value || z.email().safeParse(value).success,
+  {
+    message: "Invalid email address",
+  }
+);
+
 const optionalKeypayDateSchema = z
   .date()
   .nullable()
@@ -30,7 +45,7 @@ const keypayPayRunIdSchema = z.number().int().positive();
 const createPayrollEmployeeBaseSchema = z.object({
   firstName: z.string().trim().min(1),
   surname: z.string().trim().min(1),
-  emailAddress: z.email(),
+  emailAddress: optionalEmailSchema,
   employmentType: z.enum(employmentTypes),
   rate: z.number().positive(),
 });
@@ -48,22 +63,23 @@ export const createPayrollEmployeeFormSchema =
 export const createPayrollEmployeeSchema = z.object({
   firstName: z.string().trim().min(1),
   surname: z.string().trim().min(1),
-  emailAddress: z.email(),
+  emailAddress: optionalEmailSchema,
   employmentType: z.enum(employmentTypes),
   startDate: keypayDateSchema,
-  mobilePhone: z.string().trim().min(1).nullable().optional(),
+  mobilePhone: optionalTrimmedStringSchema,
   endDate: optionalKeypayDateSchema,
-  externalId: z.string().trim().min(1).nullable().optional(),
-  paySchedule: z.string().trim().min(1).nullable().optional(),
-  primaryPayCategory: z.string().trim().min(1).nullable().optional(),
-  primaryLocation: z.string().trim().min(1).nullable().optional(),
-  rate: z.number().positive().nullable().optional(),
-  rateUnit: z.string().trim().min(1).nullable().optional(),
+  externalId: optionalTrimmedStringSchema,
+  paySchedule: optionalTrimmedStringSchema,
+  rate: z.number().positive(),
+  rateUnit: optionalTrimmedStringSchema,
   hoursPerWeek: z.number().nullable().optional(),
 });
 
-export const getPayrollOnboardingUrlSchema = z.object({
-  employeeId: keypayEmployeeIdSchema,
+export const sendPayrollOnboardingEmailSchema = z.object({
+  firstName: optionalTrimmedStringSchema,
+  surname: optionalTrimmedStringSchema,
+  email: z.email(),
+  mobile: optionalTrimmedStringSchema,
 });
 
 export const listPayrollPayRunsSchema = z
