@@ -6,11 +6,18 @@ import {
 } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { employmentTypeLabels } from "@/lib/constants";
 import { formatDateString } from "@/lib/shared-utils";
+import { cn } from "@/lib/client-utils";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { ColumnDef } from "@tanstack/react-table";
+import { AlertTriangleIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type PayrollEmployee =
@@ -24,6 +31,73 @@ const STATUS_VARIANTS: Record<
   Incomplete: "secondary",
   Terminated: "outline",
 };
+
+type CasualConversionWarning = {
+  level: "approaching" | "eligible";
+  monthsElapsed: number;
+};
+
+// Under Australian law, casual employees who have worked for 12 months of regular
+// and systematic service must be offered conversion to permanent employment.
+// Flag casuals approaching (>= 10 months) or already past (>= 12 months) that mark.
+function getCasualConversionWarning(
+  employee: PayrollEmployee
+): CasualConversionWarning | null {
+  if (employee.employmentType !== "Casual" || employee.status !== "Active") {
+    return null;
+  }
+
+  if (!employee.startDate) {
+    return null;
+  }
+
+  const startDate = new Date(employee.startDate);
+  if (Number.isNaN(startDate.getTime())) {
+    return null;
+  }
+
+  const now = new Date();
+  const monthsElapsed =
+    (now.getFullYear() - startDate.getFullYear()) * 12 +
+    (now.getMonth() - startDate.getMonth()) +
+    (now.getDate() >= startDate.getDate() ? 0 : -1);
+
+  if (monthsElapsed >= 12) {
+    return { level: "eligible", monthsElapsed };
+  }
+
+  if (monthsElapsed >= 10) {
+    return { level: "approaching", monthsElapsed };
+  }
+
+  return null;
+}
+
+function CasualConversionBadge({
+  warning,
+}: {
+  warning: CasualConversionWarning;
+}) {
+  const isEligible = warning.level === "eligible";
+
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <AlertTriangleIcon
+          className={cn(
+            "size-4 shrink-0",
+            isEligible ? "text-rose-500" : "text-amber-500"
+          )}
+        />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs">
+        {isEligible
+          ? `This casual has worked for ${warning.monthsElapsed} months and is eligible for conversion to permanent employment. Australian law requires you to offer conversion.`
+          : `This casual has worked for ${warning.monthsElapsed} months and is approaching the 12-month conversion threshold. Start planning to offer permanent conversion.`}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export function usePayrollEmployeesColumns(
   currentlyProcessing: Set<string>,
@@ -98,7 +172,14 @@ export function usePayrollEmployeesColumns(
         ),
         accessorKey: "startDate",
         cell: ({ row }) => {
-          return <p>{formatDateString(row.original.startDate)}</p>;
+          const warning = getCasualConversionWarning(row.original);
+
+          return (
+            <div className="flex items-center gap-2">
+              <p>{formatDateString(row.original.startDate)}</p>
+              {warning ? <CasualConversionBadge warning={warning} /> : null}
+            </div>
+          );
         },
       },
       {
