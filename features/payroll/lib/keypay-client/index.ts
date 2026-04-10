@@ -8,6 +8,9 @@ import {
   KeypayFinalizePayRunOptions,
   KeypayFinalizePayRunResult,
   KeypayPayRun,
+  KeypayPayRunDetails,
+  KeypayPayRunEmployeeTotal,
+  KeypayPayRunGrandTotal,
   KeypayPayRunListItem,
   KeypayPaySchedule,
   KeypayPayScheduleWriteInput,
@@ -18,7 +21,10 @@ import {
   KeypayYtdReportEntry,
   RawKeypayEmployee,
   RawKeypayPayRun,
+  RawKeypayPayRunDetails,
   RawKeypayPayRunEarningsLinesResponse,
+  RawKeypayPayRunEmployeeTotal,
+  RawKeypayPayRunGrandTotal,
   RawKeypayPayRunSummary,
   RawKeypaySuperContribution,
   RawKeypayYtdReportEntry,
@@ -127,6 +133,39 @@ function mapPayRunSummary(summary: RawKeypayPayRunSummary) {
     totalHours: totalHours ?? null,
     totalGrossWagesInCents: toCents(totalGrossWages),
     totalNetWagesInCents: toCents(totalNetWages),
+  };
+}
+
+function mapPayRunEmployeeTotal(
+  total: RawKeypayPayRunEmployeeTotal
+): KeypayPayRunEmployeeTotal {
+  return {
+    id: total.id,
+    employeeId: total.employeeId,
+    employeeName: total.employeeName ?? null,
+    totalHours: total.totalHours ?? null,
+    grossEarningsInCents: toCents(total.grossEarnings),
+    netEarningsInCents: toCents(total.netEarnings),
+    taxableEarningsInCents: toCents(total.taxableEarnings),
+    paygWithholdingInCents: toCents(total.paygWithholdingAmount),
+    superContributionInCents: toCents(total.superContribution),
+    isExcluded: total.isExcluded ?? false,
+    isComplete: total.isComplete ?? false,
+    isTermination: total.isTermination ?? false,
+  };
+}
+
+function mapPayRunGrandTotal(
+  grandTotal: RawKeypayPayRunGrandTotal
+): KeypayPayRunGrandTotal {
+  return {
+    numberOfEmployees: grandTotal.numberOfEmployees ?? 0,
+    totalHours: grandTotal.totalHours ?? null,
+    grossEarningsInCents: toCents(grandTotal.grossEarnings),
+    netEarningsInCents: toCents(grandTotal.netEarnings),
+    taxableEarningsInCents: toCents(grandTotal.taxableEarnings),
+    paygWithholdingInCents: toCents(grandTotal.paygWithholdingAmount),
+    superContributionInCents: toCents(grandTotal.superContribution),
   };
 }
 
@@ -510,6 +549,37 @@ export const keypayClient = {
         path: `/payrun/${payRunId}`,
       })
     ),
+
+  getPayRunDetails: async (payRunId: number): Promise<KeypayPayRunDetails> => {
+    const [details, summary, earningsLines, paySchedules] = await Promise.all([
+      request<RawKeypayPayRunDetails>({
+        path: `/payrun/${payRunId}/details`,
+      }),
+      request<RawKeypayPayRunSummary>({
+        path: `/payrun/${payRunId}/summary`,
+      }),
+      request<RawKeypayPayRunEarningsLinesResponse>({
+        path: `/payrun/${payRunId}/earningslines`,
+      }),
+      request<KeypayPaySchedule[]>({
+        path: "/payschedule",
+      }),
+    ]);
+    const payRun = mapPayRun(details.payRun);
+    const paySchedule = paySchedules.find(
+      (item) => item.id === payRun.payScheduleId
+    );
+
+    return {
+      payRun: {
+        ...payRun,
+        payScheduleName: paySchedule?.name ?? null,
+        status: getPayRunStatus(payRun, summary, earningsLines),
+      },
+      employees: details.payRunTotals.map(mapPayRunEmployeeTotal),
+      grandTotal: mapPayRunGrandTotal(details.grandTotal),
+    };
+  },
 
   deletePayRun: async (payRunId: number) =>
     request<null>({

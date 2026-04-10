@@ -220,6 +220,71 @@ export type KeypayCalculatePayRunEmployeeHoursInput = {
   units: number;
 };
 
+export type RawKeypayPayRunEmployeeTotal = {
+  id: number;
+  employeeId: number;
+  employeeName?: string | null;
+  totalHours?: number | null;
+  grossEarnings?: number | null;
+  netEarnings?: number | null;
+  taxableEarnings?: number | null;
+  paygWithholdingAmount?: number | null;
+  superContribution?: number | null;
+  isExcluded?: boolean | null;
+  isComplete?: boolean | null;
+  isTermination?: boolean | null;
+};
+
+export type RawKeypayPayRunGrandTotal = {
+  numberOfEmployees?: number | null;
+  totalHours?: number | null;
+  grossEarnings?: number | null;
+  netEarnings?: number | null;
+  taxableEarnings?: number | null;
+  paygWithholdingAmount?: number | null;
+  superContribution?: number | null;
+};
+
+export type RawKeypayPayRunDetails = {
+  payRunTotals: RawKeypayPayRunEmployeeTotal[];
+  grandTotal: RawKeypayPayRunGrandTotal;
+  payRun: RawKeypayPayRun;
+};
+
+export type KeypayPayRunEmployeeTotal = {
+  id: number;
+  employeeId: number;
+  employeeName: string | null;
+  totalHours: number | null;
+  grossEarningsInCents: KeypayMoneyInCents | null;
+  netEarningsInCents: KeypayMoneyInCents | null;
+  taxableEarningsInCents: KeypayMoneyInCents | null;
+  paygWithholdingInCents: KeypayMoneyInCents | null;
+  superContributionInCents: KeypayMoneyInCents | null;
+  isExcluded: boolean;
+  isComplete: boolean;
+  isTermination: boolean;
+};
+
+export type KeypayPayRunGrandTotal = {
+  numberOfEmployees: number;
+  totalHours: number | null;
+  grossEarningsInCents: KeypayMoneyInCents | null;
+  netEarningsInCents: KeypayMoneyInCents | null;
+  taxableEarningsInCents: KeypayMoneyInCents | null;
+  paygWithholdingInCents: KeypayMoneyInCents | null;
+  superContributionInCents: KeypayMoneyInCents | null;
+};
+
+export type KeypayPayRunDetails = {
+  payRun: KeypayPayRun & {
+    payScheduleName: string | null;
+    status: KeypayPayRunStatus;
+  };
+  employees: KeypayPayRunEmployeeTotal[];
+  grandTotal: KeypayPayRunGrandTotal;
+};
+
 export type KeypayStpStatus = {
   status: string | null;
   detail: string | null;

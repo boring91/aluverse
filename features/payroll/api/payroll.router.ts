@@ -114,6 +114,12 @@ export const payrollRouter = createTRPCRouter({
       );
     }),
 
+  getPayRunDetails: permissionProcedure("payroll.read")
+    .input(getPayrollPayRunSchema)
+    .query(async ({ input }) => {
+      return await keypayClient.getPayRunDetails(input.payRunId);
+    }),
+
   getPayRunEmployeeHours: permissionProcedure("payroll.read")
     .input(getPayrollPayRunSchema)
     .query(async ({ input }) => {
