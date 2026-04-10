@@ -175,8 +175,8 @@ export function CreatePayrollPaySchedule({
           <DialogTitle>Pay schedules</DialogTitle>
           <DialogDescription>
             {isUpdate
-              ? "Update an existing Employment Hero pay schedule."
-              : "Create a new Employment Hero pay schedule."}
+              ? "Update an existing pay schedule."
+              : "Create a new pay schedule."}
           </DialogDescription>
         </DialogHeader>
 

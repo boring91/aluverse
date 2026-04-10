@@ -215,8 +215,8 @@ export function CreatePayrollEmployee({ open, onOpenChange, itemId }: Props) {
           <DialogTitle>Payroll employees</DialogTitle>
           <DialogDescription>
             {isUpdate
-              ? "Update this payroll employee. TFN, bank details, and super details stay in Employment Hero."
-              : "Create a payroll employee. TFN, bank details, and super details stay in Employment Hero through self-service onboarding."}
+              ? "Update this payroll employee."
+              : "Create a payroll employee."}
           </DialogDescription>
         </DialogHeader>
 
@@ -287,7 +287,7 @@ export function CreatePayrollEmployee({ open, onOpenChange, itemId }: Props) {
             {!hasPaySchedules ? (
               <p className="text-muted-foreground text-sm">
                 No pay schedules are configured yet. Create the weekly and
-                monthly schedules in Employment Hero before adding employees.
+                monthly schedules before adding employees.
               </p>
             ) : null}
 

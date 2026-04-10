@@ -125,7 +125,7 @@ export const PayrollSettingsView = () => {
                   <AlertDescription>
                     Run this only after the last pay run of the financial year
                     has been finalized. If you finalize too early, you will need
-                    to amend and re-finalize in Employment Hero.
+                    to amend and re-finalize it again.
                   </AlertDescription>
                 </Alert>
 

@@ -277,7 +277,7 @@ export function PayrollPayRunDetailView() {
     confirm({
       title: "Finalize pay run",
       description:
-        "Are you sure you want to finalize this pay run? This is irreversible and may trigger STP lodgement in Employment Hero.",
+        "Are you sure you want to finalize this pay run? This is irreversible and will trigger STP lodgement.",
       onConfirm: () => {
         finalizeMutation.mutate({ payRunId });
       },

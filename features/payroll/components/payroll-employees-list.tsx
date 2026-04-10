@@ -109,7 +109,7 @@ export function PayrollEmployeesList() {
 
     confirm({
       title: "Delete employee",
-      description: `Are you sure you want to delete ${fullName}? This permanently removes the employee from Employment Hero.`,
+      description: `Are you sure you want to delete ${fullName}? This permanently removes the employee from the database.`,
       onConfirm: () => {
         setCurrentlyProcessing((current) => new Set(current).add(targetItemId));
         deleteMutation.mutate({

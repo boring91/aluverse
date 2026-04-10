@@ -193,7 +193,7 @@ export function PayrollPayRunsList() {
     confirm({
       title: "Finalize pay run",
       description:
-        "Are you sure you want to finalize this pay run? This is irreversible and may trigger STP lodgement in Employment Hero.",
+        "Are you sure you want to finalize this pay run? This is irreversible and will trigger STP.",
       onConfirm: () => {
         setCurrentlyProcessing((current) =>
           new Set(current).add(payRun.id.toString())
@@ -239,7 +239,7 @@ export function PayrollPayRunsList() {
     confirm({
       title: "Delete pay run",
       description:
-        "Are you sure you want to delete this pay run? This removes the draft from Employment Hero.",
+        "Are you sure you want to delete this pay run? This removes the draft from the database.",
       onConfirm: () => {
         setCurrentlyProcessing((current) => new Set(current).add(targetItemId));
         deleteMutation.mutate({

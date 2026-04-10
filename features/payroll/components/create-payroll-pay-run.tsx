@@ -134,8 +134,8 @@ export function CreatePayrollPayRun({
         <DialogHeader>
           <DialogTitle>New pay run</DialogTitle>
           <DialogDescription>
-            Create a draft pay run in Employment Hero. The paid date defaults to
-            the period ending date.
+            Create a draft pay run. The paid date defaults to the period ending
+            date.
           </DialogDescription>
         </DialogHeader>
 

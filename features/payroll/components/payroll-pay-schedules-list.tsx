@@ -127,8 +127,8 @@ export function PayrollPaySchedulesList() {
             <AlertCircleIcon />
             <AlertTitle>Expected schedules are missing</AlertTitle>
             <AlertDescription>
-              Employment Hero currently has {paySchedules?.length ?? 0} pay
-              schedule{(paySchedules?.length ?? 0) === 1 ? "" : "s"} configured.
+              You currently have {paySchedules?.length ?? 0} pay schedule
+              {(paySchedules?.length ?? 0) === 1 ? "" : "s"} configured.
               Missing: {missingFrequencies.join(", ")}.
             </AlertDescription>
           </Alert>
