@@ -240,7 +240,7 @@ This is the core daily-use feature.
   - **Option A (simple):** the owner enters hours in Employment Hero's UI before clicking Calculate
   - **Option B (better):** the app shows a form with each casual employee and an hours input, and the API call updates timesheet/earnings before calculating
 
-Go with Option B is a future enhancement, we don't want to leave the app.
+Go with Option B, we don't want to leave the app.
 
 ### Step 6 — Pay Run Detail View
 
