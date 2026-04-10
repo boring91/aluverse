@@ -28,7 +28,16 @@
     "frollo",
     "uuidv",
     "worktrees",
-    "pnp"
+    "pnp",
+    "ish",
+    "tfn",
+    "ato",
+    "payg",
+    "stp",
+    "eofy",
+    "ytd",
+    "rebranded",
+    "xero"
   ],
   "ignoreWords": ["idx"],
   "ignorePaths": [
