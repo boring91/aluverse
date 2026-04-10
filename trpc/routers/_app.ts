@@ -15,6 +15,7 @@ import { dashboardRouter } from "@/features/dashboard/api/dashboard.router";
 import { gstRouter } from "@/features/gst/api/gst.router";
 import { rbacRouter } from "@/features/rbac/api/rbac.router";
 import { usersRouter } from "@/features/users/api/users.router";
+import { payrollRouter } from "@/features/payroll/api/payroll.router";
 
 export const appRouter = createTRPCRouter({
   budgetCategories: budgetCategoriesRouter,
@@ -33,6 +34,7 @@ export const appRouter = createTRPCRouter({
   gst: gstRouter,
   rbac: rbacRouter,
   users: usersRouter,
+  payroll: payrollRouter,
 });
 
 export type AppRouter = typeof appRouter;
