@@ -173,3 +173,9 @@ export const finalizePayrollPayRunSchema = z.object({
 export const getPayrollStpStatusSchema = z.object({
   payRunId: keypayPayRunIdSchema,
 });
+
+export const finalizeEofySchema = z.object({
+  // Australian financial years end on 30 June and are identified by the ending year.
+  // e.g. 2026 represents the FY from 1 July 2025 to 30 June 2026.
+  financialYearEnding: z.number().int().min(2000).max(2100),
+});

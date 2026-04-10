@@ -6,6 +6,7 @@ import {
   createPayrollEmployeeSchema,
   createPayrollPayScheduleSchema,
   createPayrollPayRunSchema,
+  finalizeEofySchema,
   finalizePayrollPayRunSchema,
   getPayrollEmployeeSchema,
   getPayrollPayRunEmployeeSchema,
@@ -174,4 +175,10 @@ export const payrollRouter = createTRPCRouter({
   getDashboardStats: permissionProcedure("payroll.read").query(async () => {
     return await keypayClient.getPayrollDashboardStats();
   }),
+
+  finalizeEofy: permissionProcedure("payroll.write")
+    .input(finalizeEofySchema)
+    .mutation(async ({ input }) => {
+      return await keypayClient.finalizeEofy(input.financialYearEnding);
+    }),
 });

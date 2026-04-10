@@ -940,6 +940,29 @@ export const keypayClient = {
     ).map(mapSuperContribution);
   },
 
+  // Finalizes the payment summaries for a given financial year. In Australia the
+  // EOFY workflow is a two-step process on KeyPay's public AU API: generate (PUT),
+  // then publish (POST). Both hit the same `/paymentsummary/{year}` path.
+  finalizeEofy: async (financialYearEnding: number) => {
+    const generated = await request<KeypayPayRun[] | null>({
+      path: `/paymentsummary/${financialYearEnding}`,
+      method: "PUT",
+    });
+
+    await request<null>({
+      path: `/paymentsummary/${financialYearEnding}`,
+      method: "POST",
+    });
+
+    const generatedCount = Array.isArray(generated) ? generated.length : 0;
+
+    return {
+      financialYearEnding,
+      generatedCount,
+      publishedAt: new Date().toISOString(),
+    };
+  },
+
   getPayrollDashboardStats: async (): Promise<KeypayPayrollDashboardStats> => {
     const fiscalYear = getCurrentFinancialYearRange();
     const quarter = getCurrentQuarterRange();

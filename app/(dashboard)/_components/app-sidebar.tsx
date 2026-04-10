@@ -39,6 +39,7 @@ import {
   LogOutIcon,
   ReceiptIcon,
   ReceiptTextIcon,
+  SettingsIcon,
   ShieldCheckIcon,
   UsersIcon,
   WalletIcon,
@@ -103,6 +104,13 @@ const mainItems = [
     label: "Pay Runs",
     link: "/payroll/pay-runs",
     icon: ReceiptTextIcon,
+    permission: "payroll.read" satisfies Permission,
+  },
+  {
+    id: "payrollSettings",
+    label: "Payroll Settings",
+    link: "/payroll/settings",
+    icon: SettingsIcon,
     permission: "payroll.read" satisfies Permission,
   },
   {
