@@ -40,7 +40,8 @@ function formatStartDate(value: string | null | undefined) {
 export function usePayrollEmployeesColumns(
   canWrite: boolean,
   currentlyProcessing: Set<number>,
-  handleSendOnboardingEmail: ((employee: PayrollEmployee) => void) | undefined
+  handleSendOnboardingEmail: ((employee: PayrollEmployee) => void) | undefined,
+  handleDeleteEmployee: ((employee: PayrollEmployee) => void) | undefined
 ) {
   return useMemo<ColumnDef<PayrollEmployee>[]>(() => {
     const columns: ColumnDef<PayrollEmployee>[] = [
@@ -132,24 +133,35 @@ export function usePayrollEmployeesColumns(
       },
     ];
 
-    if (canWrite && handleSendOnboardingEmail) {
+    if (canWrite && (handleSendOnboardingEmail || handleDeleteEmployee)) {
       columns.push({
         id: "actions",
         cell: ({ row }) => {
           const employee = row.original;
+          const isProcessing = currentlyProcessing.has(employee.id);
 
           return (
-            <div className="flex justify-end">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={
-                  currentlyProcessing.has(employee.id) || !employee.emailAddress
-                }
-                onClick={() => handleSendOnboardingEmail(employee)}
-              >
-                Send onboarding email
-              </Button>
+            <div className="flex justify-end gap-2">
+              {handleSendOnboardingEmail ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isProcessing || !employee.emailAddress}
+                  onClick={() => handleSendOnboardingEmail(employee)}
+                >
+                  Send onboarding email
+                </Button>
+              ) : null}
+              {handleDeleteEmployee ? (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={isProcessing}
+                  onClick={() => handleDeleteEmployee(employee)}
+                >
+                  Delete
+                </Button>
+              ) : null}
             </div>
           );
         },
@@ -157,5 +169,10 @@ export function usePayrollEmployeesColumns(
     }
 
     return columns;
-  }, [canWrite, currentlyProcessing, handleSendOnboardingEmail]);
+  }, [
+    canWrite,
+    currentlyProcessing,
+    handleDeleteEmployee,
+    handleSendOnboardingEmail,
+  ]);
 }

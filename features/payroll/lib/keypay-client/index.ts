@@ -163,6 +163,12 @@ export const keypayClient = {
       })
     ),
 
+  deleteEmployee: async (id: number) =>
+    request<null>({
+      path: `/employee/${id}`,
+      method: "DELETE",
+    }),
+
   createEmployee: async (data: KeypayCreateEmployeeInput) => {
     const [locations, payCategories] = await Promise.all([
       request<KeypayLocation[]>({

@@ -28,6 +28,12 @@ export const payrollRouter = createTRPCRouter({
       return await keypayClient.getEmployee(input.id);
     }),
 
+  deleteEmployee: permissionProcedure("payroll.write")
+    .input(getPayrollEmployeeSchema)
+    .mutation(async ({ input }) => {
+      return await keypayClient.deleteEmployee(input.id);
+    }),
+
   createEmployee: permissionProcedure("payroll.write")
     .input(createPayrollEmployeeSchema)
     .mutation(async ({ input }) => {
