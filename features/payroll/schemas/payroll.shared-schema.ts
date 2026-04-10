@@ -95,6 +95,11 @@ export const createPayrollEmployeeSchema = z.object({
   hoursPerWeek: z.number().nullable().optional(),
 });
 
+export const updatePayrollEmployeeSchema =
+  createPayrollEmployeeSchema.safeExtend({
+    id: keypayEmployeeIdSchema,
+  });
+
 export const createPayrollPayScheduleSchema = z.object({
   name: z.string().trim().min(1),
   frequency: payScheduleFrequencySchema,

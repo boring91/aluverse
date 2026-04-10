@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { useStore } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -19,26 +20,69 @@ import { formQueryOptions } from "@/lib/client-utils";
 import { employmentTypeLabels, employmentTypes } from "@/lib/constants";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc/client";
+import { AppRouter } from "@/trpc/routers/_app";
+import { inferRouterOutputs } from "@trpc/server";
 import { createPayrollEmployeeFormSchema } from "../schemas/payroll.shared-schema";
 
 type PayrollEmployeeForm = z.infer<typeof createPayrollEmployeeFormSchema>;
 
+type PayrollEmployee = inferRouterOutputs<AppRouter>["payroll"]["getEmployee"];
+
+type PayrollPaySchedule =
+  inferRouterOutputs<AppRouter>["payroll"]["listPaySchedules"][number];
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  itemId: string | null;
 };
 
-export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
+function getFormValues(
+  employee: PayrollEmployee | undefined,
+  paySchedules: PayrollPaySchedule[] | undefined
+): Partial<PayrollEmployeeForm> {
+  if (!employee) {
+    return {
+      employmentType: "FullTime",
+      startDate: new Date(),
+    };
+  }
+
+  const paySchedule = paySchedules?.find(
+    (item) => item.name === employee.paySchedule
+  );
+
+  return {
+    firstName: employee.firstName ?? "",
+    surname: employee.surname ?? "",
+    emailAddress: employee.emailAddress ?? "",
+    employmentType: employee.employmentType ?? "FullTime",
+    payScheduleId: paySchedule?.id.toString() ?? "",
+    startDate: employee.startDate ? new Date(employee.startDate) : new Date(),
+    rate: employee.rateInCents != null ? employee.rateInCents / 100 : undefined,
+  };
+}
+
+export function CreatePayrollEmployee({ open, onOpenChange, itemId }: Props) {
+  const isUpdate = !!itemId;
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [selectedEmploymentType, setSelectedEmploymentType] =
-    useState<PayrollEmployeeForm["employmentType"]>("FullTime");
 
   const { data: paySchedules } = useQuery(
     trpc.payroll.listPaySchedules.queryOptions(undefined, {
       enabled: open,
       ...formQueryOptions,
     })
+  );
+
+  const { data: employee } = useQuery(
+    trpc.payroll.getEmployee.queryOptions(
+      { id: Number(itemId) },
+      {
+        enabled: open && isUpdate,
+        ...formQueryOptions,
+      }
+    )
   );
 
   const payScheduleItems = useMemo(() => {
@@ -50,11 +94,44 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
     }));
   }, [paySchedules]);
 
+  const createEmployeeMutation = useMutation(
+    trpc.payroll.createEmployee.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.payroll.listEmployees.queryOptions()
+        );
+        onOpenChange(false);
+        toast.success("Employee created successfully.");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
+
+  const updateEmployeeMutation = useMutation(
+    trpc.payroll.updateEmployee.mutationOptions({
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries(
+          trpc.payroll.listEmployees.queryOptions()
+        );
+        queryClient.invalidateQueries(
+          trpc.payroll.getEmployee.queryOptions({ id: variables.id })
+        );
+        onOpenChange(false);
+        toast.success("Employee updated successfully.");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
+
   const form = useAppForm({
-    defaultValues: getFormDefaults(createPayrollEmployeeFormSchema, {
-      employmentType: "FullTime",
-      startDate: new Date(),
-    }),
+    defaultValues: getFormDefaults(
+      createPayrollEmployeeFormSchema,
+      getFormValues(employee, paySchedules)
+    ),
     validators: {
       onChange: createPayrollEmployeeFormSchema,
     },
@@ -71,7 +148,7 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
       const normalizedRateUnit =
         parsedValue.employmentType === "Casual" ? "Hourly" : "Annually";
 
-      await createEmployeeMutation.mutateAsync({
+      const payload = {
         firstName: parsedValue.firstName,
         surname: parsedValue.surname,
         emailAddress: parsedValue.emailAddress,
@@ -80,7 +157,17 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
         startDate: parsedValue.startDate,
         rate: parsedValue.rate,
         rateUnit: normalizedRateUnit,
-      });
+      };
+
+      if (isUpdate && itemId) {
+        await updateEmployeeMutation.mutateAsync({
+          id: Number(itemId),
+          ...payload,
+        });
+        return;
+      }
+
+      await createEmployeeMutation.mutateAsync(payload);
     },
   });
 
@@ -90,33 +177,24 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
     }
 
     form.reset(
-      getFormDefaults(createPayrollEmployeeFormSchema, {
-        employmentType: "FullTime",
-        startDate: new Date(),
-      })
+      getFormDefaults(
+        createPayrollEmployeeFormSchema,
+        getFormValues(employee, paySchedules)
+      )
     );
-  }, [form, open]);
+  }, [employee, form, open, paySchedules]);
 
-  const createEmployeeMutation = useMutation(
-    trpc.payroll.createEmployee.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries(
-          trpc.payroll.listEmployees.queryOptions()
-        );
-        setSelectedEmploymentType("FullTime");
-        onOpenChange(false);
-        toast.success("Employee created successfully.");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    })
+  const selectedEmploymentType = useStore(
+    form.store,
+    (state) => state.values.employmentType
   );
 
   const isPending =
     form.state.isSubmitting ||
     createEmployeeMutation.isPending ||
-    !paySchedules;
+    updateEmployeeMutation.isPending ||
+    !paySchedules ||
+    (isUpdate && !employee);
   const hasPaySchedules = (paySchedules?.length ?? 0) > 0;
   const rateLabel =
     selectedEmploymentType === "Casual" ? "Hourly rate" : "Annual salary";
@@ -125,12 +203,8 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
     <Dialog
       open={open}
       onOpenChange={(value) => {
-        if (form.state.isSubmitting || createEmployeeMutation.isPending) {
+        if (isPending) {
           return;
-        }
-
-        if (!value) {
-          setSelectedEmploymentType("FullTime");
         }
 
         onOpenChange(value);
@@ -140,8 +214,9 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle>Payroll employees</DialogTitle>
           <DialogDescription>
-            Create a payroll employee. TFN, bank details, and super details stay
-            in Employment Hero through self-service onboarding.
+            {isUpdate
+              ? "Update this payroll employee. TFN, bank details, and super details stay in Employment Hero."
+              : "Create a payroll employee. TFN, bank details, and super details stay in Employment Hero through self-service onboarding."}
           </DialogDescription>
         </DialogHeader>
 
@@ -184,11 +259,6 @@ export function CreatePayrollEmployee({ open, onOpenChange }: Props) {
                       value: type,
                       label: employmentTypeLabels[type],
                     }))}
-                    onChange={(value) => {
-                      setSelectedEmploymentType(
-                        value as PayrollEmployeeForm["employmentType"]
-                      );
-                    }}
                   />
                 )}
               />

@@ -13,6 +13,7 @@ import {
   getPayrollStpStatusSchema,
   listPayrollPayRunsSchema,
   sendPayrollOnboardingEmailSchema,
+  updatePayrollEmployeeSchema,
   updatePayrollPayScheduleSchema,
 } from "../schemas/payroll.shared-schema";
 
@@ -43,6 +44,13 @@ export const payrollRouter = createTRPCRouter({
     .input(createPayrollEmployeeSchema)
     .mutation(async ({ input }) => {
       return await keypayClient.createEmployee(input);
+    }),
+
+  updateEmployee: permissionProcedure("payroll.write")
+    .input(updatePayrollEmployeeSchema)
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return await keypayClient.updateEmployee(id, data);
     }),
 
   activateEmployee: permissionProcedure("payroll.write")

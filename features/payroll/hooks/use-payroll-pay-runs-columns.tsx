@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import type { Route } from "next";
 import { ColumnDef } from "@tanstack/react-table";
 import { inferRouterOutputs } from "@trpc/server";
 import { useMemo } from "react";
-import { DataTableColumnHeader } from "@/components/data-table";
+import {
+  DataTableActions,
+  DataTableColumnHeader,
+} from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { formatDateString } from "@/lib/shared-utils";
 import { AppRouter } from "@/trpc/routers/_app";
 
@@ -48,10 +49,10 @@ function formatPeriod(payRun: PayrollPayRun) {
 }
 
 export function usePayrollPayRunsColumns(
-  currentlyProcessing: Set<number>,
+  currentlyProcessing: Set<string>,
   handleCalculate: ((payRun: PayrollPayRun) => void) | undefined,
   handleFinalize: ((payRun: PayrollPayRun) => void) | undefined,
-  handleDelete: ((payRun: PayrollPayRun) => void) | undefined
+  handleDelete: ((itemId: string) => void) | undefined
 ) {
   return useMemo<ColumnDef<PayrollPayRun>[]>(() => {
     const columns: ColumnDef<PayrollPayRun>[] = [
@@ -131,61 +132,56 @@ export function usePayrollPayRunsColumns(
           );
         },
       },
-    ];
-
-    if (handleCalculate || handleFinalize || handleDelete) {
-      columns.push({
+      {
         id: "actions",
         cell: ({ row }) => {
           const payRun = row.original;
-          const isProcessing = currentlyProcessing.has(payRun.id);
+          const itemId = payRun.id.toString();
+          const isProcessing = currentlyProcessing.has(itemId);
+          const canDelete = payRun.status !== "Finalized";
+          const showCalculate =
+            payRun.status !== "Finalized" && !!handleCalculate;
+          const showFinalize =
+            payRun.status === "Calculated" && !!handleFinalize;
+
+          const extraItems =
+            showCalculate || showFinalize ? (
+              <>
+                {showCalculate ? (
+                  <DropdownMenuItem
+                    disabled={isProcessing}
+                    onClick={() => handleCalculate?.(payRun)}
+                  >
+                    Calculate
+                  </DropdownMenuItem>
+                ) : null}
+                {showFinalize ? (
+                  <DropdownMenuItem
+                    disabled={isProcessing}
+                    onClick={() => handleFinalize?.(payRun)}
+                  >
+                    Finalize
+                  </DropdownMenuItem>
+                ) : null}
+              </>
+            ) : undefined;
 
           return (
-            <div className="flex justify-end gap-2">
-              {handleCalculate && payRun.status !== "Finalized" ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={isProcessing}
-                  onClick={() => handleCalculate(payRun)}
-                >
-                  Calculate
-                </Button>
-              ) : null}
-
-              {payRun.status !== "Draft" ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link href={`/payroll/pay-runs/${payRun.id}` as Route}>
-                    Review
-                  </Link>
-                </Button>
-              ) : null}
-
-              {handleFinalize && payRun.status === "Calculated" ? (
-                <Button
-                  size="sm"
-                  disabled={isProcessing}
-                  onClick={() => handleFinalize(payRun)}
-                >
-                  Finalize
-                </Button>
-              ) : null}
-
-              {handleDelete && payRun.status !== "Finalized" ? (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  disabled={isProcessing}
-                  onClick={() => handleDelete(payRun)}
-                >
-                  Delete
-                </Button>
-              ) : null}
-            </div>
+            <DataTableActions
+              itemId={itemId}
+              handleDelete={canDelete ? handleDelete : undefined}
+              currentlyProcessing={currentlyProcessing}
+              detailsLink={
+                payRun.status !== "Draft"
+                  ? `/payroll/pay-runs/${payRun.id}`
+                  : undefined
+              }
+              extraItems={extraItems}
+            />
           );
         },
-      });
-    }
+      },
+    ];
 
     return columns;
   }, [currentlyProcessing, handleCalculate, handleDelete, handleFinalize]);

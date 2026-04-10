@@ -42,7 +42,7 @@ export function PayrollPayRunsList() {
   const { filter, reset, isActive, raw } = useDataTableFilters(
     payrollPayRunFiltersSchema
   );
-  const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<number>>(
+  const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
     new Set()
   );
   const [payRunForHours, setPayRunForHours] = useState<PayrollPayRun | null>(
@@ -105,7 +105,7 @@ export function PayrollPayRunsList() {
       onSettled: (_, __, input) => {
         setCurrentlyProcessing((current) => {
           const next = new Set(current);
-          next.delete(input.payRunId);
+          next.delete(input.payRunId.toString());
           return next;
         });
       },
@@ -124,7 +124,7 @@ export function PayrollPayRunsList() {
       onSettled: (_, __, input) => {
         setCurrentlyProcessing((current) => {
           const next = new Set(current);
-          next.delete(input.payRunId);
+          next.delete(input.payRunId.toString());
           return next;
         });
       },
@@ -143,7 +143,7 @@ export function PayrollPayRunsList() {
       onSettled: (_, __, input) => {
         setCurrentlyProcessing((current) => {
           const next = new Set(current);
-          next.delete(input.payRunId);
+          next.delete(input.payRunId.toString());
           return next;
         });
       },
@@ -176,7 +176,9 @@ export function PayrollPayRunsList() {
       return;
     }
 
-    setCurrentlyProcessing((current) => new Set(current).add(payRun.id));
+    setCurrentlyProcessing((current) =>
+      new Set(current).add(payRun.id.toString())
+    );
     calculateMutation.mutate({
       payRunId: payRun.id,
       employeeHours: [],
@@ -193,7 +195,9 @@ export function PayrollPayRunsList() {
       description:
         "Are you sure you want to finalize this pay run? This is irreversible and may trigger STP lodgement in Employment Hero.",
       onConfirm: () => {
-        setCurrentlyProcessing((current) => new Set(current).add(payRun.id));
+        setCurrentlyProcessing((current) =>
+          new Set(current).add(payRun.id.toString())
+        );
         finalizeMutation.mutate({
           payRunId: payRun.id,
         });
@@ -208,7 +212,9 @@ export function PayrollPayRunsList() {
       units: number;
     }[];
   }) => {
-    setCurrentlyProcessing((current) => new Set(current).add(input.payRunId));
+    setCurrentlyProcessing((current) =>
+      new Set(current).add(input.payRunId.toString())
+    );
 
     try {
       await calculateMutation.mutateAsync(input);
@@ -217,8 +223,16 @@ export function PayrollPayRunsList() {
     }
   };
 
-  const handleDelete = (payRun: PayrollPayRun) => {
-    if (!canWrite || payRun.status === "Finalized") {
+  const handleDelete = (targetItemId: string) => {
+    if (!canWrite) {
+      return;
+    }
+
+    const payRun = payRuns?.items.find(
+      (item) => item.id.toString() === targetItemId
+    );
+
+    if (!payRun || payRun.status === "Finalized") {
       return;
     }
 
@@ -227,9 +241,9 @@ export function PayrollPayRunsList() {
       description:
         "Are you sure you want to delete this pay run? This removes the draft from Employment Hero.",
       onConfirm: () => {
-        setCurrentlyProcessing((current) => new Set(current).add(payRun.id));
+        setCurrentlyProcessing((current) => new Set(current).add(targetItemId));
         deleteMutation.mutate({
-          payRunId: payRun.id,
+          payRunId: Number(targetItemId),
         });
       },
     });

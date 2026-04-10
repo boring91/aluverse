@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
+import { parseAsString, useQueryState } from "nuqs";
 import { toast } from "sonner";
 import { DataTable, useDataTable } from "@/components/data-table";
 import { PageLoader } from "@/components/page-loader";
@@ -23,7 +24,8 @@ export function PayrollEmployeesList() {
 
   const canRead = hasPermission("payroll.read");
   const canWrite = hasPermission("payroll.write");
-  const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<number>>(
+  const [itemId, setItemId] = useQueryState("itemId", parseAsString);
+  const [currentlyProcessing, setCurrentlyProcessing] = useState<Set<string>>(
     new Set()
   );
 
@@ -47,7 +49,7 @@ export function PayrollEmployeesList() {
       onSettled: (_, __, input) => {
         setCurrentlyProcessing((current) => {
           const next = new Set(current);
-          next.delete(input.id);
+          next.delete(input.id.toString());
           return next;
         });
       },
@@ -68,7 +70,7 @@ export function PayrollEmployeesList() {
       onSettled: (_, __, input) => {
         setCurrentlyProcessing((current) => {
           const next = new Set(current);
-          next.delete(input.id);
+          next.delete(input.id.toString());
           return next;
         });
       },
@@ -86,6 +88,37 @@ export function PayrollEmployeesList() {
     })
   );
 
+  const handleUpdate = (targetItemId: string) => {
+    if (!canWrite) {
+      return;
+    }
+    setItemId(targetItemId);
+  };
+
+  const handleDelete = (targetItemId: string) => {
+    if (!canWrite) {
+      return;
+    }
+
+    const employee = employees?.items.find(
+      (item) => item.id.toString() === targetItemId
+    );
+    const fullName =
+      `${employee?.firstName ?? ""} ${employee?.surname ?? ""}`.trim() ||
+      "this employee";
+
+    confirm({
+      title: "Delete employee",
+      description: `Are you sure you want to delete ${fullName}? This permanently removes the employee from Employment Hero.`,
+      onConfirm: () => {
+        setCurrentlyProcessing((current) => new Set(current).add(targetItemId));
+        deleteMutation.mutate({
+          id: Number(targetItemId),
+        });
+      },
+    });
+  };
+
   const handleSendOnboardingEmail = (
     employee: NonNullable<typeof employees>["items"][number]
   ) => {
@@ -93,7 +126,8 @@ export function PayrollEmployeesList() {
       return;
     }
 
-    setCurrentlyProcessing((current) => new Set(current).add(employee.id));
+    const processingId = employee.id.toString();
+    setCurrentlyProcessing((current) => new Set(current).add(processingId));
     onboardingMutation.mutate(
       {
         employeeId: employee.id,
@@ -106,7 +140,7 @@ export function PayrollEmployeesList() {
         onSettled: () => {
           setCurrentlyProcessing((current) => {
             const next = new Set(current);
-            next.delete(employee.id);
+            next.delete(processingId);
             return next;
           });
         },
@@ -121,39 +155,18 @@ export function PayrollEmployeesList() {
       return;
     }
 
-    setCurrentlyProcessing((current) => new Set(current).add(employee.id));
+    setCurrentlyProcessing((current) =>
+      new Set(current).add(employee.id.toString())
+    );
     activateMutation.mutate({ id: employee.id });
   };
 
-  const handleDeleteEmployee = (
-    employee: NonNullable<typeof employees>["items"][number]
-  ) => {
-    if (!canWrite) {
-      return;
-    }
-
-    const fullName =
-      `${employee.firstName ?? ""} ${employee.surname ?? ""}`.trim() ||
-      "this employee";
-
-    confirm({
-      title: "Delete employee",
-      description: `Are you sure you want to delete ${fullName}? This permanently removes the employee from Employment Hero.`,
-      onConfirm: () => {
-        setCurrentlyProcessing((current) => new Set(current).add(employee.id));
-        deleteMutation.mutate({
-          id: employee.id,
-        });
-      },
-    });
-  };
-
   const columns = usePayrollEmployeesColumns(
-    canWrite,
     currentlyProcessing,
+    canWrite ? handleUpdate : undefined,
+    canWrite ? handleDelete : undefined,
     canWrite ? handleSendOnboardingEmail : undefined,
-    canWrite ? handleActivateEmployee : undefined,
-    canWrite ? handleDeleteEmployee : undefined
+    canWrite ? handleActivateEmployee : undefined
   );
 
   if (isAccessPending) {
@@ -172,8 +185,17 @@ export function PayrollEmployeesList() {
     <>
       {canWrite ? (
         <CreatePayrollEmployee
-          open={dataTable.openCreateSheet}
-          onOpenChange={dataTable.setOpenCreateSheet}
+          open={dataTable.openCreateSheet || !!itemId}
+          onOpenChange={(value) => {
+            if (value) {
+              dataTable.setOpenCreateSheet(true);
+              return;
+            }
+
+            setItemId(null);
+            dataTable.setOpenCreateSheet(false);
+          }}
+          itemId={itemId}
         />
       ) : null}
 

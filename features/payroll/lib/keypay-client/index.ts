@@ -340,6 +340,38 @@ export const keypayClient = {
     });
   },
 
+  updateEmployee: async (id: number, data: KeypayCreateEmployeeInput) => {
+    const [locations, payCategories] = await Promise.all([
+      request<KeypayLocation[]>({
+        path: "/location",
+      }),
+      request<KeypayPayCategory[]>({
+        path: "/paycategory",
+      }),
+    ]);
+
+    const primaryLocation = getPrimaryLocationName(locations);
+    const primaryPayCategory = getPrimaryPayCategoryName(
+      payCategories,
+      data.employmentType
+    );
+    const { hoursPerWeek, automaticallyPayEmployee } = getEmployeeHoursDefaults(
+      data.employmentType
+    );
+
+    return await request<KeypayEmployeeWriteResult>({
+      path: `/employee/unstructured/${id}`,
+      method: "PUT",
+      body: {
+        ...data,
+        primaryLocation,
+        primaryPayCategory,
+        hoursPerWeek: data.hoursPerWeek ?? hoursPerWeek,
+        automaticallyPayEmployee,
+      },
+    });
+  },
+
   sendOnboardingEmail: async (data: KeypaySendOnboardingEmailInput) => {
     // The self-service endpoint creates a new employee if `id` is omitted.
     // Always send the existing employee ID when inviting from Aluverse.
