@@ -67,9 +67,11 @@ export function PayrollPaySchedulesList() {
   const frequencies = new Set(
     (paySchedules ?? []).map((schedule) => schedule.frequency).filter(Boolean)
   );
-  const missingFrequencies = expectedScheduleFrequencies.filter(
-    (frequency) => !frequencies.has(frequency)
-  );
+  const missingFrequencies = paySchedules
+    ? expectedScheduleFrequencies.filter(
+        (frequency) => !frequencies.has(frequency)
+      )
+    : [];
   const columns = usePayrollPaySchedulesColumns(
     canWrite
       ? (targetItemId) => {

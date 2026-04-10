@@ -284,7 +284,7 @@ export function CreatePayrollEmployee({ open, onOpenChange, itemId }: Props) {
               </div>
             </FieldGroup>
 
-            {!hasPaySchedules ? (
+            {paySchedules && !hasPaySchedules ? (
               <p className="text-muted-foreground text-sm">
                 No pay schedules are configured yet. Create the weekly and
                 monthly schedules before adding employees.
