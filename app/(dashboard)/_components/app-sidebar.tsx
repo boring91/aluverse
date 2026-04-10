@@ -84,6 +84,13 @@ const mainItems = [
     permission: "loans.read" satisfies Permission,
   },
   {
+    id: "payroll",
+    label: "Payroll",
+    link: "/payroll/employees",
+    icon: UsersIcon,
+    permission: "payroll.read" satisfies Permission,
+  },
+  {
     id: "budget",
     label: "Budget",
     link: "/budgets",

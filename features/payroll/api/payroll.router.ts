@@ -13,7 +13,13 @@ import {
 
 export const payrollRouter = createTRPCRouter({
   listEmployees: permissionProcedure("payroll.read").query(async () => {
-    return await keypayClient.listEmployees();
+    const items = await keypayClient.listEmployees();
+
+    return {
+      items,
+      count: items.length,
+      filteredCount: items.length,
+    };
   }),
 
   getEmployee: permissionProcedure("payroll.read")
@@ -31,9 +37,7 @@ export const payrollRouter = createTRPCRouter({
   getOnboardingUrl: permissionProcedure("payroll.write")
     .input(getPayrollOnboardingUrlSchema)
     .mutation(async ({ input }) => {
-      const { employeeId, ...data } = input;
-
-      return await keypayClient.getOnboardingUrl(employeeId, data);
+      return await keypayClient.getOnboardingUrl(input.employeeId);
     }),
 
   listPaySchedules: permissionProcedure("payroll.read").query(async () => {

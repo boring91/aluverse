@@ -5,7 +5,6 @@ import {
   KeypayEmployeeWriteResult,
   KeypayFinalizePayRunOptions,
   KeypayFinalizePayRunResult,
-  KeypayOnboardingInput,
   KeypayOnboardingUrl,
   KeypayPayRun,
   KeypayPaySchedule,
@@ -116,15 +115,11 @@ export const keypayClient = {
       body: data,
     }),
 
-  getOnboardingUrl: async (
-    employeeId: number,
-    data: Omit<KeypayOnboardingInput, "id"> = {}
-  ) => {
+  getOnboardingUrl: async (employeeId: number) => {
     const response = await request<{ url?: string } | null>({
       path: "/employeeonboarding/initiateselfservice",
       method: "POST",
       body: {
-        ...data,
         id: employeeId,
       },
     });
