@@ -32,10 +32,22 @@ export type RawKeypayEmployee = {
   hoursPerWeek?: number | null;
   status?: "Active" | "Terminated" | "Incomplete" | null;
   dateCreated?: string | null;
+  taxFileNumber?: string | null;
+  bankAccount1_BSB?: string | null;
+  bankAccount1_AccountNumber?: string | null;
+  superFund1_FundName?: string | null;
 };
 
-export type KeypayEmployee = Omit<RawKeypayEmployee, "rate"> & {
+export type KeypayEmployee = Omit<
+  RawKeypayEmployee,
+  | "rate"
+  | "taxFileNumber"
+  | "bankAccount1_BSB"
+  | "bankAccount1_AccountNumber"
+  | "superFund1_FundName"
+> & {
   rateInCents: KeypayMoneyInCents | null;
+  hasCompletedOnboarding: boolean;
 };
 
 export type KeypayCreateEmployeeInput = {

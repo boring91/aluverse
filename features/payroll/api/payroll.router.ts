@@ -1,6 +1,7 @@
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import { keypayClient } from "../lib/keypay-client";
 import {
+  activatePayrollEmployeeSchema,
   calculatePayrollPayRunSchema,
   createPayrollEmployeeSchema,
   createPayrollPayScheduleSchema,
@@ -41,6 +42,12 @@ export const payrollRouter = createTRPCRouter({
     .input(createPayrollEmployeeSchema)
     .mutation(async ({ input }) => {
       return await keypayClient.createEmployee(input);
+    }),
+
+  activateEmployee: permissionProcedure("payroll.write")
+    .input(activatePayrollEmployeeSchema)
+    .mutation(async ({ input }) => {
+      return await keypayClient.activateEmployee(input.id);
     }),
 
   sendOnboardingEmail: permissionProcedure("payroll.write")

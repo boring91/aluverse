@@ -34,16 +34,37 @@ type KeypayPayCategory = {
 // while applying for their real TFN. Employment Hero replaces it during self-service.
 const TFN_PLACEHOLDER = "111111111";
 
+function checkOnboardingComplete(employee: RawKeypayEmployee) {
+  const hasTfn =
+    !!employee.taxFileNumber && employee.taxFileNumber !== TFN_PLACEHOLDER;
+  const hasBankAccount =
+    !!employee.bankAccount1_BSB && !!employee.bankAccount1_AccountNumber;
+  const hasSuperFund = !!employee.superFund1_FundName;
+
+  return hasTfn && hasBankAccount && hasSuperFund;
+}
+
 function toCents(value: number | null | undefined) {
   return value == null ? null : Math.round(value * 100);
 }
 
 function mapEmployee(employee: RawKeypayEmployee): KeypayEmployee {
-  const { rate, ...rest } = employee;
+  // Strip sensitive fields (TFN, bank, super) from the client response
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const {
+    rate,
+    taxFileNumber,
+    bankAccount1_BSB,
+    bankAccount1_AccountNumber,
+    superFund1_FundName,
+    ...rest
+  } = employee;
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   return {
     ...rest,
     rateInCents: toCents(rate),
+    hasCompletedOnboarding: checkOnboardingComplete(employee),
   };
 }
 
@@ -168,6 +189,13 @@ export const keypayClient = {
     request<null>({
       path: `/employee/${id}`,
       method: "DELETE",
+    }),
+
+  activateEmployee: async (id: number) =>
+    request<KeypayEmployeeWriteResult>({
+      path: `/employee/unstructured/${id}`,
+      method: "PUT",
+      body: { status: "Active" },
     }),
 
   createEmployee: async (data: KeypayCreateEmployeeInput) => {

@@ -41,6 +41,7 @@ export function usePayrollEmployeesColumns(
   canWrite: boolean,
   currentlyProcessing: Set<number>,
   handleSendOnboardingEmail: ((employee: PayrollEmployee) => void) | undefined,
+  handleActivateEmployee: ((employee: PayrollEmployee) => void) | undefined,
   handleDeleteEmployee: ((employee: PayrollEmployee) => void) | undefined
 ) {
   return useMemo<ColumnDef<PayrollEmployee>[]>(() => {
@@ -133,16 +134,40 @@ export function usePayrollEmployeesColumns(
       },
     ];
 
-    if (canWrite && (handleSendOnboardingEmail || handleDeleteEmployee)) {
+    if (
+      canWrite &&
+      (handleSendOnboardingEmail ||
+        handleActivateEmployee ||
+        handleDeleteEmployee)
+    ) {
       columns.push({
         id: "actions",
         cell: ({ row }) => {
           const employee = row.original;
           const isProcessing = currentlyProcessing.has(employee.id);
+          const isIncomplete = employee.status === "Incomplete";
+          const showActivate =
+            isIncomplete &&
+            employee.hasCompletedOnboarding &&
+            handleActivateEmployee;
+          const showOnboarding =
+            isIncomplete &&
+            !employee.hasCompletedOnboarding &&
+            handleSendOnboardingEmail;
 
           return (
             <div className="flex justify-end gap-2">
-              {handleSendOnboardingEmail ? (
+              {showActivate ? (
+                <Button
+                  size="sm"
+                  variant="default"
+                  disabled={isProcessing}
+                  onClick={() => handleActivateEmployee(employee)}
+                >
+                  Activate
+                </Button>
+              ) : null}
+              {showOnboarding ? (
                 <Button
                   size="sm"
                   variant="outline"
@@ -172,6 +197,7 @@ export function usePayrollEmployeesColumns(
   }, [
     canWrite,
     currentlyProcessing,
+    handleActivateEmployee,
     handleDeleteEmployee,
     handleSendOnboardingEmail,
   ]);

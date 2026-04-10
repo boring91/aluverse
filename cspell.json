@@ -37,7 +37,8 @@
     "eofy",
     "ytd",
     "rebranded",
-    "xero"
+    "xero",
+    "bsb"
   ],
   "ignoreWords": ["idx"],
   "ignorePaths": [

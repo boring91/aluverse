@@ -54,6 +54,27 @@ export function PayrollEmployeesList() {
     })
   );
 
+  const activateMutation = useMutation(
+    trpc.payroll.activateEmployee.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(
+          trpc.payroll.listEmployees.queryOptions()
+        );
+        toast.success("Employee activated successfully.");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSettled: (_, __, input) => {
+        setCurrentlyProcessing((current) => {
+          const next = new Set(current);
+          next.delete(input.id);
+          return next;
+        });
+      },
+    })
+  );
+
   const onboardingMutation = useMutation(
     trpc.payroll.sendOnboardingEmail.mutationOptions({
       onSuccess: ({ email }) => {
@@ -93,6 +114,17 @@ export function PayrollEmployeesList() {
     );
   };
 
+  const handleActivateEmployee = (
+    employee: NonNullable<typeof employees>["items"][number]
+  ) => {
+    if (!canWrite) {
+      return;
+    }
+
+    setCurrentlyProcessing((current) => new Set(current).add(employee.id));
+    activateMutation.mutate({ id: employee.id });
+  };
+
   const handleDeleteEmployee = (
     employee: NonNullable<typeof employees>["items"][number]
   ) => {
@@ -120,6 +152,7 @@ export function PayrollEmployeesList() {
     canWrite,
     currentlyProcessing,
     canWrite ? handleSendOnboardingEmail : undefined,
+    canWrite ? handleActivateEmployee : undefined,
     canWrite ? handleDeleteEmployee : undefined
   );
 
