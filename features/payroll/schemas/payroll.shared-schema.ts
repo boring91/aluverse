@@ -138,6 +138,11 @@ export const getPayrollPayRunSchema = z.object({
   payRunId: keypayPayRunIdSchema,
 });
 
+export const getPayrollPayRunEmployeeSchema = z.object({
+  payRunId: keypayPayRunIdSchema,
+  employeeId: keypayEmployeeIdSchema,
+});
+
 export const createPayrollPayRunFormSchema = z.object({
   payScheduleId: z.string().min(1),
   periodEndingDate: z.date(),

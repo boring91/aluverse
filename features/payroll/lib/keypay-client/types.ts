@@ -276,6 +276,29 @@ export type KeypayPayRunGrandTotal = {
   superContributionInCents: KeypayMoneyInCents | null;
 };
 
+export type RawKeypayEmployeeBankAccount = {
+  id: number;
+  employeeId: number;
+  accountType?: "Electronic" | "ManualDeposit" | "CashOrCheque" | "Bpay" | null;
+  bsb?: string | null;
+  accountName?: string | null;
+  accountNumber?: string | null;
+  allocatedPercentage?: number | null;
+  fixedAmount?: number | null;
+  allocateBalance?: boolean | null;
+};
+
+export type KeypayPayRunBankPayment = {
+  employeeId: number;
+  employeeName: string | null;
+  bankAccountId: number;
+  accountType: "Electronic" | "ManualDeposit" | "CashOrCheque" | "Bpay" | null;
+  bsb: string | null;
+  accountName: string | null;
+  accountNumber: string | null;
+  amountInCents: KeypayMoneyInCents;
+};
+
 export type KeypayPayRunDetails = {
   payRun: KeypayPayRun & {
     payScheduleName: string | null;
@@ -283,6 +306,17 @@ export type KeypayPayRunDetails = {
   };
   employees: KeypayPayRunEmployeeTotal[];
   grandTotal: KeypayPayRunGrandTotal;
+};
+
+export type RawKeypayPayRunBankPayment = {
+  employeeId: number;
+  employeeFirstName?: string | null;
+  employeeSurname?: string | null;
+  accountType?: string | null;
+  bsb?: string | null;
+  accountName?: string | null;
+  accountNumber?: string | null;
+  amount?: number | null;
 };
 
 export type KeypayStpStatus = {

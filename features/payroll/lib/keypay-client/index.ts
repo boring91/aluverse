@@ -8,6 +8,7 @@ import {
   KeypayFinalizePayRunOptions,
   KeypayFinalizePayRunResult,
   KeypayPayRun,
+  KeypayPayRunBankPayment,
   KeypayPayRunDetails,
   KeypayPayRunEmployeeTotal,
   KeypayPayRunGrandTotal,
@@ -20,7 +21,9 @@ import {
   KeypaySuperContribution,
   KeypayYtdReportEntry,
   RawKeypayEmployee,
+  RawKeypayEmployeeBankAccount,
   RawKeypayPayRun,
+  RawKeypayPayRunBankPayment,
   RawKeypayPayRunDetails,
   RawKeypayPayRunEarningsLinesResponse,
   RawKeypayPayRunEmployeeTotal,
@@ -167,6 +170,81 @@ function mapPayRunGrandTotal(
     paygWithholdingInCents: toCents(grandTotal.paygWithholdingAmount),
     superContributionInCents: toCents(grandTotal.superContribution),
   };
+}
+
+// Employment Hero allocates net pay across an employee's bank accounts in this order:
+// fixed amounts first, then percentage allocations of the original net, then the
+// `allocateBalance` account receives whatever is left.
+function allocateNetPay(
+  netPayInCents: number,
+  accounts: RawKeypayEmployeeBankAccount[]
+) {
+  const amountsById = new Map<number, number>();
+  let remaining = netPayInCents;
+
+  for (const account of accounts) {
+    if (account.fixedAmount != null && !account.allocateBalance) {
+      const amountInCents = Math.min(
+        toCents(account.fixedAmount) ?? 0,
+        remaining
+      );
+      amountsById.set(account.id, amountInCents);
+      remaining -= amountInCents;
+    }
+  }
+
+  for (const account of accounts) {
+    if (
+      account.fixedAmount == null &&
+      account.allocatedPercentage != null &&
+      !account.allocateBalance
+    ) {
+      const amountInCents = Math.round(
+        (netPayInCents * account.allocatedPercentage) / 100
+      );
+      const allocated = Math.min(amountInCents, Math.max(0, remaining));
+      amountsById.set(account.id, allocated);
+      remaining -= allocated;
+    }
+  }
+
+  const balanceAccount = accounts.find((account) => account.allocateBalance);
+  if (balanceAccount) {
+    amountsById.set(balanceAccount.id, Math.max(0, remaining));
+  }
+
+  return amountsById;
+}
+
+function buildPayRunBankPayments(
+  employees: KeypayPayRunEmployeeTotal[],
+  bankAccountsByEmployeeId: Map<number, RawKeypayEmployeeBankAccount[]>
+): KeypayPayRunBankPayment[] {
+  return employees.flatMap((employee) => {
+    if (employee.isExcluded || employee.netEarningsInCents == null) {
+      return [];
+    }
+
+    const accounts = bankAccountsByEmployeeId.get(employee.employeeId) ?? [];
+    if (accounts.length === 0) {
+      return [];
+    }
+
+    const amountsById = allocateNetPay(employee.netEarningsInCents, accounts);
+
+    return accounts
+      .map((account) => ({
+        employeeId: employee.employeeId,
+        employeeName: employee.employeeName,
+        bankAccountId: account.id,
+        accountType: account.accountType ?? null,
+        bsb: account.bsb ?? null,
+        accountName: account.accountName ?? null,
+        accountNumber: account.accountNumber ?? null,
+        amountInCents: amountsById.get(account.id) ?? 0,
+      }))
+      .filter((payment) => payment.amountInCents > 0);
+  });
 }
 
 function getCurrentFinancialYearRange(referenceDate = new Date()) {
@@ -569,6 +647,7 @@ export const keypayClient = {
     const paySchedule = paySchedules.find(
       (item) => item.id === payRun.payScheduleId
     );
+    const employees = details.payRunTotals.map(mapPayRunEmployeeTotal);
 
     return {
       payRun: {
@@ -576,9 +655,69 @@ export const keypayClient = {
         payScheduleName: paySchedule?.name ?? null,
         status: getPayRunStatus(payRun, summary, earningsLines),
       },
-      employees: details.payRunTotals.map(mapPayRunEmployeeTotal),
+      employees,
       grandTotal: mapPayRunGrandTotal(details.grandTotal),
     };
+  },
+
+  // Returns the bank transfer rows for a single employee on a pay run.
+  //
+  // Scoped to one employee so opening the bank details modal only costs ~2 API calls
+  // regardless of how many employees are on the pay run. Finalized pay runs take the
+  // authoritative amounts from `/payrun/{id}/payments`; non-finalized pay runs compute
+  // the allocation locally from the employee's bank account config.
+  getPayRunEmployeeBankPayments: async (
+    payRunId: number,
+    employeeId: number
+  ): Promise<KeypayPayRunBankPayment[]> => {
+    const details = await request<RawKeypayPayRunDetails>({
+      path: `/payrun/${payRunId}/details`,
+    });
+
+    if (details.payRun.isFinalised) {
+      const payments = await request<RawKeypayPayRunBankPayment[]>({
+        path: `/payrun/${payRunId}/payments`,
+      });
+
+      return payments
+        .filter((payment) => payment.employeeId === employeeId)
+        .map((payment) => {
+          const fullName = `${payment.employeeFirstName ?? ""} ${
+            payment.employeeSurname ?? ""
+          }`.trim();
+
+          return {
+            employeeId: payment.employeeId,
+            employeeName: fullName || null,
+            bankAccountId: 0,
+            accountType:
+              (payment.accountType as KeypayPayRunBankPayment["accountType"]) ??
+              null,
+            bsb: payment.bsb ?? null,
+            accountName: payment.accountName ?? null,
+            accountNumber: payment.accountNumber ?? null,
+            amountInCents: toCents(payment.amount) ?? 0,
+          } satisfies KeypayPayRunBankPayment;
+        })
+        .filter((payment) => payment.amountInCents > 0);
+    }
+
+    const rawEmployee = details.payRunTotals.find(
+      (total) => total.employeeId === employeeId
+    );
+
+    if (!rawEmployee) {
+      return [];
+    }
+
+    const accounts = await request<RawKeypayEmployeeBankAccount[]>({
+      path: `/employee/${employeeId}/bankaccount`,
+    });
+
+    return buildPayRunBankPayments(
+      [mapPayRunEmployeeTotal(rawEmployee)],
+      new Map([[employeeId, accounts]])
+    );
   },
 
   deletePayRun: async (payRunId: number) =>

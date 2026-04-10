@@ -5,7 +5,7 @@ import { notFound, useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { inferRouterOutputs } from "@trpc/server";
 import { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertCircleIcon,
   ArrowLeft,
@@ -36,6 +36,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useTitle } from "@/hooks/use-title";
 import { AppRouter } from "@/trpc/routers/_app";
 import { useTRPC } from "@/trpc/client";
+import { PayrollPayRunBankDetailsModal } from "../components/payroll-pay-run-bank-details-modal";
 
 type PayRunDetails =
   inferRouterOutputs<AppRouter>["payroll"]["getPayRunDetails"];
@@ -86,6 +87,8 @@ export function PayrollPayRunDetailView() {
   const canRead = hasPermission("payroll.read");
   const canWrite = hasPermission("payroll.write");
   const dataTable = useDataTable({ pageSize: 100 });
+  const [bankDetailsEmployee, setBankDetailsEmployee] =
+    useState<PayRunEmployee | null>(null);
 
   const { data, isLoading, isError } = useQuery(
     trpc.payroll.getPayRunDetails.queryOptions(
@@ -210,8 +213,22 @@ export function PayrollPayRunDetailView() {
           </p>
         ),
       },
+      {
+        id: "actions",
+        cell: ({ row }) => (
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBankDetailsEmployee(row.original)}
+            >
+              Bank details
+            </Button>
+          </div>
+        ),
+      },
     ],
-    []
+    [setBankDetailsEmployee]
   );
 
   const tableData = data
@@ -269,6 +286,18 @@ export function PayrollPayRunDetailView() {
 
   return (
     <PageContainer>
+      <PayrollPayRunBankDetailsModal
+        open={!!bankDetailsEmployee}
+        onOpenChange={(open) => {
+          if (!open) {
+            setBankDetailsEmployee(null);
+          }
+        }}
+        payRunId={payRunId}
+        employeeId={bankDetailsEmployee?.employeeId ?? null}
+        employeeName={bankDetailsEmployee?.employeeName ?? null}
+      />
+
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4 border-b pb-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">

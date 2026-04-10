@@ -8,6 +8,7 @@ import {
   createPayrollPayRunSchema,
   finalizePayrollPayRunSchema,
   getPayrollEmployeeSchema,
+  getPayrollPayRunEmployeeSchema,
   getPayrollPayRunSchema,
   getPayrollPayScheduleSchema,
   getPayrollStpStatusSchema,
@@ -118,6 +119,15 @@ export const payrollRouter = createTRPCRouter({
     .input(getPayrollPayRunSchema)
     .query(async ({ input }) => {
       return await keypayClient.getPayRunDetails(input.payRunId);
+    }),
+
+  getPayRunEmployeeBankPayments: permissionProcedure("payroll.read")
+    .input(getPayrollPayRunEmployeeSchema)
+    .query(async ({ input }) => {
+      return await keypayClient.getPayRunEmployeeBankPayments(
+        input.payRunId,
+        input.employeeId
+      );
     }),
 
   getPayRunEmployeeHours: permissionProcedure("payroll.read")
