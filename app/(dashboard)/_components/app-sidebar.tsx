@@ -86,39 +86,42 @@ const mainItems = [
     permission: "loans.read" satisfies Permission,
   },
   {
-    id: "payroll",
-    label: "Payroll",
+    id: "budget",
+    label: "Budget",
+    link: "/budgets",
+    icon: WalletIcon,
+    permission: "budgetCategories.read" satisfies Permission,
+  },
+] as const;
+
+const payrollItems = [
+  {
+    id: "employees",
+    label: "Employees",
     link: "/payroll/employees",
     icon: UsersIcon,
     permission: "payroll.read" satisfies Permission,
   },
   {
-    id: "payrollPaySchedules",
+    id: "paySchedules",
     label: "Pay Schedules",
     link: "/payroll/pay-schedules",
     icon: CalendarRangeIcon,
     permission: "payroll.read" satisfies Permission,
   },
   {
-    id: "payrollPayRuns",
+    id: "payRuns",
     label: "Pay Runs",
     link: "/payroll/pay-runs",
     icon: ReceiptTextIcon,
     permission: "payroll.read" satisfies Permission,
   },
   {
-    id: "payrollSettings",
-    label: "Payroll Settings",
+    id: "settings",
+    label: "Settings",
     link: "/payroll/settings",
     icon: SettingsIcon,
     permission: "payroll.read" satisfies Permission,
-  },
-  {
-    id: "budget",
-    label: "Budget",
-    link: "/budgets",
-    icon: WalletIcon,
-    permission: "budgetCategories.read" satisfies Permission,
   },
 ] as const;
 
@@ -171,6 +174,7 @@ const settingsItems = [
 
 type SidebarItem =
   | (typeof mainItems)[number]
+  | (typeof payrollItems)[number]
   | (typeof gstItems)[number]
   | (typeof toolsItems)[number]
   | (typeof settingsItems)[number];
@@ -280,6 +284,10 @@ export function AppSidebar() {
     ? mainItems
     : mainItems.filter((item) => hasItemAccess(item));
 
+  const visiblePayrollItems = isPending
+    ? payrollItems
+    : payrollItems.filter((item) => hasItemAccess(item));
+
   const visibleGstItems = isPending
     ? gstItems
     : gstItems.filter((item) => hasItemAccess(item));
@@ -308,6 +316,32 @@ export function AppSidebar() {
                 {visibleMainItems.map((item) => (
                   <SidebarMenuItem
                     key={isPending ? `main-loading-${item.id}` : item.id}
+                  >
+                    {isPending ? (
+                      <SidebarMenuSkeleton showIcon />
+                    ) : (
+                      <SidebarMenuButton asChild isActive={isActive(item.link)}>
+                        <Link href={item.link as Route}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {visiblePayrollItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Payroll</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visiblePayrollItems.map((item) => (
+                  <SidebarMenuItem
+                    key={isPending ? `payroll-loading-${item.id}` : item.id}
                   >
                     {isPending ? (
                       <SidebarMenuSkeleton showIcon />

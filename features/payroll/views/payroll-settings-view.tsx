@@ -96,7 +96,7 @@ export const PayrollSettingsView = () => {
   return (
     <PageContainer>
       <div className="flex flex-col gap-6">
-        <h1 className="font-bold text-2xl">Payroll settings</h1>
+        <h1 className="font-bold text-2xl">Settings</h1>
 
         <div className="space-y-6">
           <section className="space-y-3">

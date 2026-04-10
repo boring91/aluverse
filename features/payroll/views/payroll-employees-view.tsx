@@ -32,7 +32,7 @@ export function PayrollEmployeesView() {
 
   return (
     <PageContainer>
-      <h1 className="font-bold text-2xl">Payroll employees</h1>
+      <h1 className="font-bold text-2xl">Employees</h1>
 
       <PayrollEmployeesList />
     </PageContainer>
