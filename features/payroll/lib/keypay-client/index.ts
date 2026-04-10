@@ -67,11 +67,15 @@ function toCents(value: number | null | undefined) {
   return value == null ? null : Math.round(value * 100);
 }
 
+// Keypay's canonical employmentType is the spaced label ("Full Time" / "Part Time" /
+// "Casual"). The rest of Aluverse uses the camelCase enum, so this client is the single
+// boundary that translates in both directions — no other layer sees the spaced form.
 function mapEmployee(employee: RawKeypayEmployee): KeypayEmployee {
   // Strip sensitive fields (TFN, bank, super) from the client response
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const {
     rate,
+    employmentType,
     taxFileNumber,
     bankAccount1_BSB,
     bankAccount1_AccountNumber,
@@ -82,6 +86,14 @@ function mapEmployee(employee: RawKeypayEmployee): KeypayEmployee {
 
   return {
     ...rest,
+    employmentType:
+      employmentType === "Full Time"
+        ? "FullTime"
+        : employmentType === "Part Time"
+          ? "PartTime"
+          : employmentType === "Casual"
+            ? "Casual"
+            : null,
     rateInCents: toCents(rate),
     hasCompletedOnboarding: checkOnboardingComplete(employee),
   };
@@ -450,6 +462,12 @@ export const keypayClient = {
       method: "POST",
       body: {
         ...data,
+        employmentType:
+          data.employmentType === "FullTime"
+            ? "Full Time"
+            : data.employmentType === "PartTime"
+              ? "Part Time"
+              : "Casual",
         taxFileNumber: TFN_PLACEHOLDER,
         primaryLocation,
         primaryPayCategory,
@@ -483,6 +501,12 @@ export const keypayClient = {
       method: "PUT",
       body: {
         ...data,
+        employmentType:
+          data.employmentType === "FullTime"
+            ? "Full Time"
+            : data.employmentType === "PartTime"
+              ? "Part Time"
+              : "Casual",
         primaryLocation,
         primaryPayCategory,
         hoursPerWeek: data.hoursPerWeek ?? hoursPerWeek,

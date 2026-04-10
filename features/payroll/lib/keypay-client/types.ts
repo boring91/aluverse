@@ -27,7 +27,9 @@ export type RawKeypayEmployee = {
   mobilePhone?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  employmentType?: KeypayEmploymentType | null;
+  // Keypay returns labels like "Full Time" / "Part Time" / "Casual" on read,
+  // but accepts the camelCase enum on write — see mapEmployee for normalization.
+  employmentType?: string | null;
   paySchedule?: string | null;
   primaryPayCategory?: string | null;
   primaryLocation?: string | null;
@@ -45,11 +47,13 @@ export type RawKeypayEmployee = {
 export type KeypayEmployee = Omit<
   RawKeypayEmployee,
   | "rate"
+  | "employmentType"
   | "taxFileNumber"
   | "bankAccount1_BSB"
   | "bankAccount1_AccountNumber"
   | "superFund1_FundName"
 > & {
+  employmentType: KeypayEmploymentType | null;
   rateInCents: KeypayMoneyInCents | null;
   hasCompletedOnboarding: boolean;
 };
