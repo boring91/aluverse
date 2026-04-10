@@ -170,4 +170,8 @@ export const payrollRouter = createTRPCRouter({
   getSuperContributions: permissionProcedure("payroll.read").query(async () => {
     return await keypayClient.getSuperContributions();
   }),
+
+  getDashboardStats: permissionProcedure("payroll.read").query(async () => {
+    return await keypayClient.getPayrollDashboardStats();
+  }),
 });

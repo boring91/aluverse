@@ -319,6 +319,36 @@ export type RawKeypayPayRunBankPayment = {
   amount?: number | null;
 };
 
+export type RawKeypayPayRunActivityEntry = {
+  employeeId: number;
+  locationId?: number | null;
+  location?: string | null;
+  firstName?: string | null;
+  surname?: string | null;
+  totalHours?: number | null;
+  grossEarnings?: number | null;
+  taxableEarnings?: number | null;
+  paygWithholding?: number | null;
+  superContributions?: number | null;
+  employerContributions?: number | null;
+  netEarnings?: number | null;
+};
+
+export type KeypayPayrollDashboardStats = {
+  ytdGrossInCents: KeypayMoneyInCents;
+  ytdPaygInCents: KeypayMoneyInCents;
+  ytdSuperInCents: KeypayMoneyInCents;
+  ytdNetInCents: KeypayMoneyInCents;
+  quarterPaygInCents: KeypayMoneyInCents;
+  quarterSuperInCents: KeypayMoneyInCents;
+  lastFinalizedPayRun: {
+    id: number;
+    datePaid: string | null;
+    dateFinalized: string | null;
+    payScheduleId: number;
+  } | null;
+};
+
 export type KeypayStpStatus = {
   status: string | null;
   detail: string | null;

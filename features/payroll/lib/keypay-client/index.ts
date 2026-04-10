@@ -13,6 +13,7 @@ import {
   KeypayPayRunEmployeeTotal,
   KeypayPayRunGrandTotal,
   KeypayPayRunListItem,
+  KeypayPayrollDashboardStats,
   KeypayPaySchedule,
   KeypayPayScheduleWriteInput,
   KeypaySendOnboardingEmailInput,
@@ -23,6 +24,7 @@ import {
   RawKeypayEmployee,
   RawKeypayEmployeeBankAccount,
   RawKeypayPayRun,
+  RawKeypayPayRunActivityEntry,
   RawKeypayPayRunBankPayment,
   RawKeypayPayRunDetails,
   RawKeypayPayRunEarningsLinesResponse,
@@ -936,6 +938,70 @@ export const keypayClient = {
         },
       })
     ).map(mapSuperContribution);
+  },
+
+  getPayrollDashboardStats: async (): Promise<KeypayPayrollDashboardStats> => {
+    const fiscalYear = getCurrentFinancialYearRange();
+    const quarter = getCurrentQuarterRange();
+
+    const [ytdActivity, quarterActivity, payRuns] = await Promise.all([
+      request<RawKeypayPayRunActivityEntry[]>({
+        path: "/report/payrunactivity",
+        searchParams: {
+          fromDate: fiscalYear.fromDate,
+          toDate: fiscalYear.toDate,
+        },
+      }),
+      request<RawKeypayPayRunActivityEntry[]>({
+        path: "/report/payrunactivity",
+        searchParams: {
+          fromDate: quarter.fromDate,
+          toDate: quarter.toDate,
+        },
+      }),
+      request<RawKeypayPayRun[]>({
+        path: "/payrun",
+      }),
+    ]);
+
+    const sumToCents = (
+      entries: RawKeypayPayRunActivityEntry[],
+      key: keyof RawKeypayPayRunActivityEntry
+    ) => {
+      return entries.reduce((total, entry) => {
+        const value = entry[key];
+        return typeof value === "number"
+          ? total + (toCents(value) ?? 0)
+          : total;
+      }, 0);
+    };
+
+    const finalizedPayRuns = payRuns
+      .filter((payRun) => payRun.isFinalised)
+      .map(mapPayRun)
+      .sort((a, b) => {
+        const aTime = a.datePaid ? new Date(a.datePaid).getTime() : 0;
+        const bTime = b.datePaid ? new Date(b.datePaid).getTime() : 0;
+        return bTime - aTime;
+      });
+    const lastFinalizedPayRun = finalizedPayRuns[0] ?? null;
+
+    return {
+      ytdGrossInCents: sumToCents(ytdActivity, "grossEarnings"),
+      ytdPaygInCents: sumToCents(ytdActivity, "paygWithholding"),
+      ytdSuperInCents: sumToCents(ytdActivity, "superContributions"),
+      ytdNetInCents: sumToCents(ytdActivity, "netEarnings"),
+      quarterPaygInCents: sumToCents(quarterActivity, "paygWithholding"),
+      quarterSuperInCents: sumToCents(quarterActivity, "superContributions"),
+      lastFinalizedPayRun: lastFinalizedPayRun
+        ? {
+            id: lastFinalizedPayRun.id,
+            datePaid: lastFinalizedPayRun.datePaid ?? null,
+            dateFinalized: lastFinalizedPayRun.dateFinalized,
+            payScheduleId: lastFinalizedPayRun.payScheduleId,
+          }
+        : null,
+    };
   },
 };
 

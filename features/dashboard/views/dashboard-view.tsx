@@ -16,6 +16,7 @@ import { PaymentStatus } from "../components/payment-status";
 import { ProjectPipeline } from "../components/project-pipeline";
 import { EfficiencyMetrics } from "../components/efficiency-metrics";
 import { GeneralOverview } from "../components/general-overview";
+import { PayrollOverview } from "../components/payroll-overview";
 import { PeriodComparisonSection } from "../components/period-comparison";
 import { DateRange } from "@/components/date-range";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
@@ -90,6 +91,9 @@ export const DashboardView = () => {
 
       {/* General Overview */}
       <GeneralOverview dateRange={dateRange} />
+
+      {/* Payroll */}
+      <PayrollOverview />
 
       {/* Period Comparison */}
       <PeriodComparisonSection dateRange={dateRange} />

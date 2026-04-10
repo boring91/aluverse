@@ -39,7 +39,8 @@
     "rebranded",
     "xero",
     "bsb",
-    "bpay"
+    "bpay",
+    "fytd"
   ],
   "ignoreWords": ["idx"],
   "ignorePaths": [
