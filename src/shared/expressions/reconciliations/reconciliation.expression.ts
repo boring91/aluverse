@@ -1,0 +1,27 @@
+import type { ExpressionBuilder } from "kysely";
+import type { DB } from "@/db/types";
+
+export const reconciliationRevenue = (
+  eb: ExpressionBuilder<DB, "reconciliations">,
+) => revenueOrCost(eb, "income");
+
+export const reconciliationCost = (
+  eb: ExpressionBuilder<DB, "reconciliations">,
+) => revenueOrCost(eb, "expense");
+
+const revenueOrCost = (
+  eb: ExpressionBuilder<DB, "reconciliations">,
+  type: "income" | "expense",
+) =>
+  eb.and([
+    type === "income"
+      ? eb("reconciliations.amount", ">", eb.lit(0))
+      : eb("reconciliations.amount", "<", eb.lit(1)),
+    eb("reconciliationGroup", "not in", [
+      "loan",
+      "gst_payable",
+      "tax",
+      "refund",
+      "refunded",
+    ]),
+  ]);

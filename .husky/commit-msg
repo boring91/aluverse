@@ -1,22 +1,5 @@
 #!/usr/bin/env sh
+set -e
 
-# Run commitlint first
-bun commitlint --edit "$1"
-
-# Run cspell on the commit message
-# Create a temporary file with the commit message
-temp_file=$(mktemp)
-cat "$1" > "$temp_file"
-
-# Check spelling - exit code will be non-zero if errors are found
-if ! bun cspell check --config cspell.json "$temp_file" --no-color; then
-  echo ""
-  echo "Error: Commit message contains spelling errors."
-  echo "Please fix the spelling errors above and try again."
-  rm -f "$temp_file"
-  exit 1
-fi
-
-# Clean up temp file
-rm -f "$temp_file"
-
+bun run commitlint "$1"
+bun run commit-spellcheck "$1"

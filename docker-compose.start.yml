@@ -1,0 +1,33 @@
+name: aluverse-start
+
+x-start-build: &start-build
+  build:
+    context: .
+    dockerfile: Dockerfile.start
+  image: aluverse-start
+  restart: "no"
+  networks:
+    - dokploy-network
+  environment:
+    DATABASE_URL: $DATABASE_URL
+
+services:
+  migrator:
+    <<: *start-build
+    command: ["bun", "run", "db:migrate"]
+
+  seeder:
+    <<: *start-build
+    environment:
+      DATABASE_URL: $DATABASE_URL
+      ADMIN_EMAIL: $ADMIN_EMAIL
+      ADMIN_PASSWORD: $ADMIN_PASSWORD
+      ADMIN_NAME: $ADMIN_NAME
+    command: ["bun", "run", "scripts/seed-init.ts"]
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+
+networks:
+  dokploy-network:
+    external: true

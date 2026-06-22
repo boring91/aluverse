@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
-bun lint-staged
+set -e
 
+bun run precommit
