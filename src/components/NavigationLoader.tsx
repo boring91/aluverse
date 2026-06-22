@@ -10,16 +10,21 @@ import { useEffect, useState } from "react";
 export function NavigationLoader() {
   const isLoading = useRouterState({ select: (s) => s.isLoading });
   const pendingPath = useRouterState({ select: (s) => s.location.pathname });
+  // Only the search params changed (same pathname) — skip the overlay so
+  // filtering/paginating in place doesn't flash a full-screen loader.
+  const isSearchOnlyChange = useRouterState({
+    select: (s) => s.location.pathname === s.resolvedLocation?.pathname,
+  });
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading || isSearchOnlyChange) {
       setVisible(false);
       return;
     }
     const id = setTimeout(() => setVisible(true), 150);
     return () => clearTimeout(id);
-  }, [isLoading]);
+  }, [isLoading, isSearchOnlyChange]);
 
   if (!visible) {
     return null;
