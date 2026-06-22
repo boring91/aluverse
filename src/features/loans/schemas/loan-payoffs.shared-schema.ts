@@ -6,7 +6,9 @@ export const listLoanPayoffSchema = listSchema.safeExtend({
 });
 
 export const createLoanPayoffSchema = z.object({
-  amount: z.number().min(1),
+  amount: z.number().refine((amount) => amount !== 0, {
+    message: "Loan payoff amount cannot be zero",
+  }),
   date: z.date(),
   notes: z.string().nullable().optional(),
 });

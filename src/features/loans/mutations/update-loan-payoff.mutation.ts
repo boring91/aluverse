@@ -1,6 +1,8 @@
 import type { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import type { updateLoanPayoffSchema } from "../schemas/loan-payoffs.shared-schema";
+import { getLoanPayoffAmountSignError } from "../lib/loan-payoff-sign";
 
 export async function updateLoanPayoffMutation(
   data: z.infer<typeof updateLoanPayoffSchema>,
@@ -9,9 +11,22 @@ export async function updateLoanPayoffMutation(
     // Get the current loan payoff to check for reconciliationId and amount
     const payoff = await tx
       .selectFrom("loanPayoffs")
-      .select(["reconciliationId", "amount"])
-      .where("id", "=", data.id)
+      .innerJoin("loans", "loans.id", "loanPayoffs.loanId")
+      .select([
+        "loanPayoffs.reconciliationId",
+        "loanPayoffs.amount",
+        "loans.type as loanType",
+      ])
+      .where("loanPayoffs.id", "=", data.id)
       .executeTakeFirstOrThrow();
+
+    const signError = getLoanPayoffAmountSignError(
+      payoff.loanType,
+      data.amount,
+    );
+    if (signError) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: signError });
+    }
 
     // Only delete reconciliation if amount has changed
     const amountChanged = data.amount !== payoff.amount;
@@ -27,7 +42,7 @@ export async function updateLoanPayoffMutation(
     return await tx
       .updateTable("loanPayoffs")
       .set(data)
-      .where("id", "=", data.id)
+      .where("loanPayoffs.id", "=", data.id)
       .returning(["id"])
       .executeTakeFirstOrThrow();
   });

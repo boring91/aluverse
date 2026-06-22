@@ -232,6 +232,13 @@
       "when": 1775293307239,
       "tag": "0032_gst_payable_reconciliation",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1775293307240,
+      "tag": "0033_normalize_loan_signs",
+      "breakpoints": true
     }
   ]
 }
