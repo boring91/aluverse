@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1.7
+#
+# One-shot image for database lifecycle tasks, run by docker-compose.start.yml:
+#   - migrator: `drizzle-kit migrate` (applies src/db/migrations, then exits)
+#   - seeder:   `scripts/seed-init.ts` (admin-if-none, then exits)
+#
+# Both compose services build from this single image and override the command.
+# It keeps devDependencies because drizzle-kit lives there.
+#
+# Build (add `--platform linux/amd64` for a non-host target arch):
+#   docker build -f Dockerfile.start -t aluverse-start .
+
+FROM oven/bun:1-slim
+WORKDIR /app
+
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+
+# Everything the migrate config + seed script resolve at runtime: the schema and
+# migrations, the drizzle config, the seed script, and tsconfig. The `@/*` import
+# map lives in package.json (already copied above).
+COPY tsconfig.json ./
+COPY src ./src
+COPY scripts ./scripts

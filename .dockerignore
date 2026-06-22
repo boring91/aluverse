@@ -1,0 +1,32 @@
+# Build context excludes. Critically keeps the host's (macOS) node_modules and
+# prior .output out of the image so `bun install` produces Linux binaries.
+node_modules
+.output
+.nitro
+.tanstack
+.vite
+.vinxi
+.wrangler
+dist
+dist-ssr
+
+# VCS, secrets, local tooling. Keep .gitignore in the context: Tailwind's
+# scanner reads it to skip .output during the build — dropping it makes the
+# SSR and client CSS builds diverge and 404 the stylesheet.
+.git
+.husky
+.vscode
+.env
+.env.*
+!.env.example
+*.local
+
+# Docs / planning / scratch — not needed at build or runtime
+PHASE_*.md
+PLAN.md
+README.md
+AGENTS.md
+CLAUDE.md
+scratch
+todos.json
+*.log

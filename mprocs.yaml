@@ -1,0 +1,10 @@
+# Runs the whole dev stack in one terminal: `bun run dev`.
+# Each pane is independently restartable (select it, press `r`); `q` quits all.
+procs:
+  infra:
+    shell: "docker compose -f docker-compose.dev.yml up"
+    # Stop the containers when mprocs exits.
+    stop:
+      send-keys: ["<C-c>"]
+  app:
+    shell: "bun run dev:app"

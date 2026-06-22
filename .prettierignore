@@ -39,6 +39,7 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lock
+src/routeTree.gen.ts
 
 # Database
 *.db
