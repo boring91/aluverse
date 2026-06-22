@@ -118,7 +118,7 @@ export const MiscList = ({ projectId }: Props) => {
     new Set(),
   );
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     if (!canDelete) {
       return;
     }
@@ -127,8 +127,8 @@ export const MiscList = ({ projectId }: Props) => {
       title: "Delete",
       description: "Are you sure you want to delete this item?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };
@@ -156,8 +156,8 @@ export const MiscList = ({ projectId }: Props) => {
 
   const deleteAction = useMutation(
     trpc.projectMisc.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: (deletedMisc) => {
+        const id = deletedMisc.id;
         queryClient.invalidateQueries(
           trpc.projectMisc.list.queryOptions({
             projectId,

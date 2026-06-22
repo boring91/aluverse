@@ -19,7 +19,7 @@ type Props = {
 };
 
 export function AddressField({ label, placeholder }: Props) {
-  const field = useFieldContext<string>();
+  const field = useFieldContext<string | null | undefined>();
   const showErrors =
     !field.state.meta.isValid &&
     (field.state.meta.isTouched || field.form.state.submissionAttempts > 0);
@@ -74,7 +74,7 @@ export function AddressField({ label, placeholder }: Props) {
             },
           );
 
-        if (suggestions && suggestions.length > 0) {
+        if (suggestions.length > 0) {
           setPredictions(
             suggestions
               .filter(

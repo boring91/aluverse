@@ -158,9 +158,7 @@ export function usePayrollEmployeesColumns(
 
           return (
             <Badge variant="outline">
-              {employmentType
-                ? (employmentTypeLabels[employmentType] ?? employmentType)
-                : "—"}
+              {employmentType ? employmentTypeLabels[employmentType] : "—"}
             </Badge>
           );
         },
@@ -220,7 +218,7 @@ export function usePayrollEmployeesColumns(
                 {showActivate ? (
                   <DropdownMenuItem
                     disabled={isProcessing}
-                    onClick={() => handleActivateEmployee?.(employee)}
+                    onClick={() => handleActivateEmployee(employee)}
                   >
                     Activate
                   </DropdownMenuItem>
@@ -228,7 +226,7 @@ export function usePayrollEmployeesColumns(
                 {showOnboarding ? (
                   <DropdownMenuItem
                     disabled={isProcessing || !employee.emailAddress}
-                    onClick={() => handleSendOnboardingEmail?.(employee)}
+                    onClick={() => handleSendOnboardingEmail(employee)}
                   >
                     Send onboarding email
                   </DropdownMenuItem>

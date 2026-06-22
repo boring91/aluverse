@@ -45,29 +45,32 @@ type FilterRuntimeValue =
   | Date
   | undefined;
 
+type FilterRuntimeValueForSchema<TSchema> =
+  UnwrapZodType<TSchema> extends z.ZodObject<{
+    from: z.ZodTypeAny;
+    to: z.ZodTypeAny;
+  }>
+    ? DateRange
+    : UnwrapZodType<TSchema> extends z.ZodEnum<
+          Record<string, "true" | "false" | "all">
+        >
+      ? BooleanFilterValue
+      : UnwrapZodType<TSchema> extends z.ZodString
+        ? string
+        : UnwrapZodType<TSchema> extends z.ZodNumber
+          ? number
+          : UnwrapZodType<TSchema> extends z.ZodDate
+            ? Date
+            : UnwrapZodType<TSchema> extends z.ZodEnum<infer U>
+              ? U extends Record<string, infer E>
+                ? E
+                : unknown
+              : unknown;
+
 // Map filter values to their runtime types (before transforms)
 type FilterRuntimeValues<T extends z.ZodObject<z.ZodRawShape>> = {
   [K in keyof z.input<T>]-?: K extends keyof T["shape"]
-    ? UnwrapZodType<T["shape"][K]> extends z.ZodObject<{
-        from: z.ZodTypeAny;
-        to: z.ZodTypeAny;
-      }>
-      ? DateRange
-      : UnwrapZodType<T["shape"][K]> extends z.ZodEnum<
-            Record<string, "true" | "false" | "all">
-          >
-        ? BooleanFilterValue
-        : UnwrapZodType<T["shape"][K]> extends z.ZodString
-          ? string
-          : UnwrapZodType<T["shape"][K]> extends z.ZodNumber
-            ? number
-            : UnwrapZodType<T["shape"][K]> extends z.ZodDate
-              ? Date
-              : UnwrapZodType<T["shape"][K]> extends z.ZodEnum<infer U>
-                ? U extends Record<string, infer E>
-                  ? E
-                  : unknown
-                : unknown
+    ? FilterRuntimeValueForSchema<T["shape"][K]> | undefined
     : unknown;
 };
 
@@ -108,8 +111,7 @@ function isDateRangeFilter(
       const isFromDate =
         shape.from instanceof z.ZodDate ||
         shape.from instanceof z.ZodOptional ||
-        (fromDef &&
-          typeof fromDef === "object" &&
+        (typeof fromDef === "object" &&
           "schema" in fromDef &&
           (fromDef as { schema: z.ZodTypeAny }).schema instanceof z.ZodDate);
 
@@ -134,16 +136,12 @@ function isSingleDateFilter(schema: z.ZodTypeAny): boolean {
 // Helper to check if a schema is a boolean filter
 function isBooleanFilter(schema: z.ZodTypeAny): boolean {
   if (schema instanceof z.ZodEnum) {
-    // In Zod v4, enum values are accessed differently
-    const def = schema._def;
-    if (def && typeof def === "object" && "values" in def) {
-      const values = def.values as readonly string[];
-      return (
-        values.includes("true") &&
-        values.includes("false") &&
-        values.includes("all")
-      );
-    }
+    const values = schema.options as readonly string[];
+    return (
+      values.includes("true") &&
+      values.includes("false") &&
+      values.includes("all")
+    );
   }
   // Also check for optional boolean filters
   if (schema instanceof z.ZodOptional) {
@@ -151,12 +149,9 @@ function isBooleanFilter(schema: z.ZodTypeAny): boolean {
   }
   // Check for transformed boolean filters - in Zod v4, transforms might be handled differently
   // Try to access the inner schema if it exists
-  const def = schema._def;
-  if (def && typeof def === "object" && "schema" in def) {
-    const innerSchema = (def as { schema: z.ZodTypeAny }).schema;
-    if (innerSchema) {
-      return isBooleanFilter(innerSchema);
-    }
+  const innerSchema = (schema._def as { schema?: unknown }).schema;
+  if (innerSchema instanceof z.ZodType) {
+    return isBooleanFilter(innerSchema);
   }
   return false;
 }
@@ -167,12 +162,9 @@ function getBaseSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
     return getBaseSchema(schema._def.innerType as z.ZodTypeAny);
   }
   // Check for transformed schemas (effects) - in Zod v4, check _def.schema
-  const def = schema._def;
-  if (def && typeof def === "object" && "schema" in def) {
-    const innerSchema = (def as { schema: z.ZodTypeAny }).schema;
-    if (innerSchema) {
-      return getBaseSchema(innerSchema);
-    }
+  const innerSchema = (schema._def as { schema?: unknown }).schema;
+  if (innerSchema instanceof z.ZodType) {
+    return getBaseSchema(innerSchema);
   }
   return schema;
 }

@@ -913,7 +913,7 @@ export const keypayClient = {
 
     return {
       ...result,
-      superPayments: result.superPayments ?? [],
+      superPayments: result.superPayments,
     } satisfies KeypayFinalizePayRunResult;
   },
 
@@ -1030,7 +1030,7 @@ export const keypayClient = {
         const bTime = b.datePaid ? new Date(b.datePaid).getTime() : 0;
         return bTime - aTime;
       });
-    const lastFinalizedPayRun = finalizedPayRuns[0] ?? null;
+    const lastFinalizedPayRun = finalizedPayRuns.at(0) ?? null;
 
     return {
       ytdGrossInCents: sumToCents(ytdActivity, "grossEarnings"),

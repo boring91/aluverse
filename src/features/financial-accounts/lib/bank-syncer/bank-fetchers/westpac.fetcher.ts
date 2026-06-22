@@ -316,14 +316,14 @@ export async function getWestpacTransactions(
   const load = async (after: string | null) => {
     const params: Record<string, string> = {
       status: "posted",
-      size: options?.size?.toString() ?? "100",
+      size: options.size?.toString() ?? "100",
     };
 
-    if (options?.since) {
+    if (options.since) {
       params["from_date"] = options.since.toISOString();
     }
 
-    if (options?.until) {
+    if (options.until) {
       params["to_date"] = options.until.toISOString();
     }
 

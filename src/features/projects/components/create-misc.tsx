@@ -67,7 +67,7 @@ export function CreateMisc({
           queryClient.invalidateQueries(
             trpc.projectMisc.get.queryOptions({ id: itemId }),
           );
-        } else if (created && onItemCreated) {
+        } else if (onItemCreated) {
           onItemCreated(created.id);
         }
         onOpenChange(false);

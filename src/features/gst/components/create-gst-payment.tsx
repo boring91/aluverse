@@ -54,7 +54,7 @@ export function CreateGstPayment({
     trpc.gst.createPayment.mutationOptions({
       onSuccess: (created) => {
         queryClient.invalidateQueries(trpc.gst.listPayments.queryOptions({}));
-        if (!isUpdate && created?.id) {
+        if (!isUpdate && created.id) {
           onCreated?.(created.id);
         }
         onOpenChange(false);

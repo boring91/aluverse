@@ -104,7 +104,7 @@ export function CalculatePayrollPayRun({
     }
 
     const employeeHours = employees.map((employee) => {
-      const rawValue = hoursByEmployeeId[employee.id]?.trim() ?? "";
+      const rawValue = hoursByEmployeeId[employee.id].trim();
 
       if (rawValue === "") {
         return {

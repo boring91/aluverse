@@ -53,7 +53,7 @@ export async function updateReconciliationWithRelatedItem(
       // Ensure that the reconciled payoff amount matches the reconciliation amount
       const { amount } = await tx
         .selectFrom("loanPayoffs")
-        .where("id", "=", reconciliation.loanPayoff?.id)
+        .where("id", "=", reconciliation.loanPayoff.id)
         .select("amount")
         .executeTakeFirstOrThrow();
 
@@ -72,7 +72,7 @@ export async function updateReconciliationWithRelatedItem(
       // Ensure that the reconciled loan amount matches the reconciliation amount
       const { amount } = await tx
         .selectFrom("loans")
-        .where("id", "=", reconciliation.loan?.id)
+        .where("id", "=", reconciliation.loan.id)
         .select("amount")
         .executeTakeFirstOrThrow();
 
@@ -134,7 +134,7 @@ export async function updateReconciliationWithRelatedItem(
     // Reset other reconciliations that reference the same loan id
     await tx
       .deleteFrom("reconciliations")
-      .where("loanId", "=", reconciliation.loan?.id)
+      .where("loanId", "=", reconciliation.loan.id)
       .where("id", "<>", reconciliation.id)
       .execute();
   }

@@ -72,7 +72,7 @@ export const LoanDetailView = () => {
     <>
       {canUpdate ? (
         <CreateLoan
-          open={canUpdate && openCreateSheet}
+          open={openCreateSheet}
           onOpenChange={setOpenCreateSheet}
           itemId={data.id}
         />

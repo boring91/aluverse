@@ -56,7 +56,7 @@ export function CreateProject({
             trpc.projects.get.queryOptions({ id: itemId }),
           );
         }
-        if (!isUpdate && created?.id) {
+        if (!isUpdate && created.id) {
           onCreated?.(created.id);
         }
         onOpenChange(false);

@@ -36,14 +36,14 @@ export function LoginView() {
   }, [data?.user, isPending, navigate]);
 
   const signInAction = useMutation({
-    mutationFn: (data: FormSchema) => signIn.email(data),
-    onSuccess: (data) => {
-      if (data.error?.code === "INVALID_EMAIL_OR_PASSWORD") {
+    mutationFn: (formData: FormSchema) => signIn.email(formData),
+    onSuccess: (result) => {
+      if (result.error?.code === "INVALID_EMAIL_OR_PASSWORD") {
         toast.error("Invalid email or password");
         return;
       }
 
-      if (data.error) {
+      if (result.error) {
         toast.error("Unknown error has occurred");
         return;
       }

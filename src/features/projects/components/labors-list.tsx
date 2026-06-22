@@ -137,7 +137,7 @@ export const LaborsList = ({ projectId }: Props) => {
     new Set(),
   );
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     if (!canDelete) {
       return;
     }
@@ -146,8 +146,8 @@ export const LaborsList = ({ projectId }: Props) => {
       title: "Delete",
       description: "Are you sure you want to delete this item?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };
@@ -175,8 +175,8 @@ export const LaborsList = ({ projectId }: Props) => {
 
   const deleteAction = useMutation(
     trpc.projectLabors.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: (deletedLabor) => {
+        const id = deletedLabor.id;
         queryClient.invalidateQueries(
           trpc.projectLabors.list.queryOptions({
             projectId,

@@ -8,7 +8,7 @@ export async function syncFinancialAccountWithBankMutation(id: string) {
     .select(["syncWithBank"])
     .executeTakeFirstOrThrow();
 
-  if (!account?.syncWithBank) {
+  if (!account.syncWithBank) {
     return 0;
   }
 

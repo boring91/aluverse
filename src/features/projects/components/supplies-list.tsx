@@ -145,7 +145,7 @@ export const SuppliesList = ({ projectId }: Props) => {
     new Set(),
   );
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     if (!canDelete) {
       return;
     }
@@ -154,8 +154,8 @@ export const SuppliesList = ({ projectId }: Props) => {
       title: "Delete",
       description: "Are you sure you want to delete this item?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };
@@ -183,8 +183,8 @@ export const SuppliesList = ({ projectId }: Props) => {
 
   const deleteAction = useMutation(
     trpc.projectSupplies.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: (deletedSupply) => {
+        const id = deletedSupply.id;
         queryClient.invalidateQueries(
           trpc.projectSupplies.list.queryOptions({
             projectId,

@@ -39,7 +39,7 @@ export const EnumFilter = <T,>({
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs text-muted-foreground">{label}</Label>
       <Select
-        value={(value as string) ?? "all"}
+        value={value == null ? "all" : String(value)}
         onValueChange={(val) =>
           control.set(val === "all" ? undefined : (val as T))
         }
@@ -47,9 +47,7 @@ export const EnumFilter = <T,>({
         <SelectTrigger className="h-9 w-full">
           <SelectValue placeholder={placeholder ?? "All"}>
             {(selectedValue) =>
-              labelByValue.get((selectedValue as string) ?? "all") ??
-              placeholder ??
-              "All"
+              labelByValue.get(selectedValue as string) ?? placeholder ?? "All"
             }
           </SelectValue>
         </SelectTrigger>

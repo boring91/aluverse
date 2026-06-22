@@ -33,6 +33,6 @@ export async function getExpensesStatsQuery(input: DashboardDateRange) {
 
   return expensesByGroup.map((item) => ({
     reconciliationGroup: item.reconciliationGroup,
-    total: Math.abs(item.total ?? 0),
+    total: Math.abs(item.total),
   }));
 }

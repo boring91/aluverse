@@ -56,17 +56,20 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange }) => {
     });
   }, [value]);
 
-  const validateDate = (field: keyof DateParts, value: number): boolean => {
+  const validateDate = (
+    field: keyof DateParts,
+    candidateValue: number,
+  ): boolean => {
     if (
-      (field === "day" && (value < 1 || value > 31)) ||
-      (field === "month" && (value < 1 || value > 12)) ||
-      (field === "year" && (value < 1000 || value > 9999))
+      (field === "day" && (candidateValue < 1 || candidateValue > 31)) ||
+      (field === "month" && (candidateValue < 1 || candidateValue > 12)) ||
+      (field === "year" && (candidateValue < 1000 || candidateValue > 9999))
     ) {
       return false;
     }
 
     // Validate the day of the month
-    const newDate = { ...date, [field]: value };
+    const newDate = { ...date, [field]: candidateValue };
     const d = new Date(newDate.year, newDate.month - 1, newDate.day);
     return (
       d.getFullYear() === newDate.year &&
@@ -767,41 +770,30 @@ export const DateRange: FC<DateRangePickerProps> = ({
                   {rangeCompare != null && (
                     <div className="flex gap-2">
                       <DateInput
-                        value={rangeCompare?.from}
+                        value={rangeCompare.from}
                         onChange={(date) => {
-                          if (rangeCompare) {
-                            const compareToDate =
-                              rangeCompare.to == null || date > rangeCompare.to
-                                ? date
-                                : rangeCompare.to;
-                            setRangeCompare((prevRangeCompare) => ({
-                              ...prevRangeCompare,
-                              from: date,
-                              to: compareToDate,
-                            }));
-                          } else {
-                            setRangeCompare({
-                              from: date,
-                              to: getCurrentTime(),
-                            });
-                          }
+                          const compareToDate =
+                            rangeCompare.to == null || date > rangeCompare.to
+                              ? date
+                              : rangeCompare.to;
+                          setRangeCompare((prevRangeCompare) => ({
+                            ...prevRangeCompare,
+                            from: date,
+                            to: compareToDate,
+                          }));
                         }}
                       />
                       <div className="py-1">-</div>
                       <DateInput
-                        value={rangeCompare?.to}
+                        value={rangeCompare.to}
                         onChange={(date) => {
-                          if (rangeCompare && rangeCompare.from) {
-                            const compareFromDate =
-                              date < rangeCompare.from
-                                ? date
-                                : rangeCompare.from;
-                            setRangeCompare({
-                              ...rangeCompare,
-                              from: compareFromDate,
-                              to: date,
-                            });
-                          }
+                          const compareFromDate =
+                            date < rangeCompare.from ? date : rangeCompare.from;
+                          setRangeCompare({
+                            ...rangeCompare,
+                            from: compareFromDate,
+                            to: date,
+                          });
                         }}
                       />
                     </div>
@@ -834,7 +826,7 @@ export const DateRange: FC<DateRangePickerProps> = ({
                   mode="range"
                   onSelect={(value: { from?: Date; to?: Date } | undefined) => {
                     if (value?.from != null) {
-                      setRange({ from: value.from, to: value?.to });
+                      setRange({ from: value.from, to: value.to });
                     }
                   }}
                   selected={range}

@@ -4,6 +4,16 @@ import { db } from "@/db";
 import type { DB } from "@/db/types";
 import type { banks } from "./constants";
 
+const transactionFetchers = {
+  westpac: getWestpacTransactions,
+} satisfies Record<
+  (typeof banks)[number],
+  (
+    accountId: string,
+    options: { since?: Date; until?: Date },
+  ) => Promise<Insertable<DB["transactions"]>[]>
+>;
+
 export async function syncWithBank(
   bank: (typeof banks)[number],
   accountId: string,
@@ -25,14 +35,11 @@ export async function syncWithBank(
       : undefined;
   }
 
-  let transactions: Insertable<DB["transactions"]>[] = [];
-
-  switch (bank) {
-    case "westpac":
-      console.log({ since, until });
-      transactions = await getWestpacTransactions(accountId, { since, until });
-      break;
-  }
+  console.log({ since, until });
+  const transactions = await transactionFetchers[bank](accountId, {
+    since,
+    until,
+  });
 
   if (!transactions.length) return 0;
 

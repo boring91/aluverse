@@ -81,13 +81,13 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
     setSelectedReconciliationTransaction,
   ] = useState<Transaction | null>(null);
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     confirm({
       title: "Delete",
       description: "Are you sure you want to delete this item?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };
@@ -97,6 +97,8 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
   const { filter, reset, isActive, raw } = useDataTableFilters(
     transactionFiltersSchema,
   );
+  const fromAmount = filter.fromAmount.value;
+  const toAmount = filter.toAmount.value;
 
   const queryClient = useQueryClient();
   const trpc = useTRPC();
@@ -112,9 +114,8 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
             typeof raw.budgetCategoryId === "string"
               ? raw.budgetCategoryId
               : undefined,
-          fromAmount:
-            raw.fromAmount === undefined ? undefined : raw.fromAmount * 100,
-          toAmount: raw.toAmount === undefined ? undefined : raw.toAmount * 100,
+          fromAmount: fromAmount === undefined ? undefined : fromAmount * 100,
+          toAmount: toAmount === undefined ? undefined : toAmount * 100,
         },
       },
       {
@@ -126,8 +127,8 @@ export const TransactionsList = ({ mode = "account", accountId }: Props) => {
 
   const deleteAction = useMutation(
     trpc.transactions.delete.mutationOptions({
-      onSuccess: (data) => {
-        const transaction = data;
+      onSuccess: (deletedTransaction) => {
+        const transaction = deletedTransaction;
         queryClient.invalidateQueries(
           trpc.transactions.list.queryOptions({ accountId }),
         );

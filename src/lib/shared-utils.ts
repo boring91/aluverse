@@ -13,7 +13,7 @@ function getZodFieldDefault(schema: z.ZodType): unknown {
     return result.data;
   }
 
-  const issue = result.error?.issues[0];
+  const issue = result.error.issues.at(0);
   if (issue && issue.code === "invalid_type") {
     switch (issue.expected) {
       case "string":

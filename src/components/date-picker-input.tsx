@@ -46,9 +46,9 @@ export const DatePickerInput = ({ value, onChange, placeholder }: Props) => {
           mode="single"
           selected={value ?? undefined}
           defaultMonth={value ?? undefined}
-          onSelect={(value) => {
+          onSelect={(selectedDate) => {
             setOpen(false);
-            onChange(value);
+            onChange(selectedDate);
           }}
         />
       </PopoverContent>

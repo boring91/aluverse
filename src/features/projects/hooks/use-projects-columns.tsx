@@ -61,7 +61,7 @@ export const useProjectsColumns = (
           const project = row.original;
           return (
             <div className="flex flex-col gap-1">
-              {project.visitDate && <p>{project.visitDate?.toDateString()}</p>}
+              {project.visitDate && <p>{project.visitDate.toDateString()}</p>}
               {project.startDate && (
                 <p className="text-muted-foreground text-xs">
                   {`${project.startDate.toDateString()} - ${project.endDate?.toDateString() ?? "N/A"}`}

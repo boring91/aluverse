@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function NumberField({ label }: Props) {
-  const field = useFieldContext<number | "">();
+  const field = useFieldContext<number | "" | null | undefined>();
   const showErrors =
     !field.state.meta.isValid &&
     (field.state.meta.isTouched || field.form.state.submissionAttempts > 0);

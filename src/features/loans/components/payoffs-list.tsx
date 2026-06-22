@@ -103,7 +103,7 @@ export const PayoffsList = ({ loanId }: Props) => {
     new Set(),
   );
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     if (!canDelete) {
       return;
     }
@@ -112,8 +112,8 @@ export const PayoffsList = ({ loanId }: Props) => {
       title: "Delete",
       description: "Are you sure you want to delete this item?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };
@@ -141,8 +141,8 @@ export const PayoffsList = ({ loanId }: Props) => {
 
   const deleteAction = useMutation(
     trpc.loanPayoffs.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: (deletedPayoff) => {
+        const id = deletedPayoff.id;
         queryClient.invalidateQueries(
           trpc.loanPayoffs.list.queryOptions({
             loanId,

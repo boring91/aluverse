@@ -112,7 +112,7 @@ export function useReconciliationForm({
         projectId: data.project?.id ?? undefined,
         projectStream: data.projectStream ?? undefined,
         projectItemId: data.projectItemId ?? undefined,
-        isGst: data.isGst ?? true,
+        isGst: data.isGst,
         loanId: data.loan?.id ?? undefined,
         isPayoff: data.isPayoff ?? false,
         loanPayoffId: data.loanPayoff?.id ?? undefined,
@@ -130,7 +130,7 @@ export function useReconciliationForm({
     }
 
     return {
-      description: defaults.description ?? "",
+      description: defaults.description,
       amount: defaults.remainingAmount / 100,
       isGst: true,
       isPayoff: false,

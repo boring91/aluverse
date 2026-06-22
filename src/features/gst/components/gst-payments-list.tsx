@@ -39,7 +39,7 @@ export const GstPaymentsList = () => {
     new Set(),
   );
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     if (!canDelete) {
       return;
     }
@@ -48,8 +48,8 @@ export const GstPaymentsList = () => {
       title: "Delete",
       description: "Are you sure you want to delete this GST payment?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };

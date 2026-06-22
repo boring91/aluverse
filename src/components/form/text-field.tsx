@@ -15,7 +15,7 @@ export function TextField({
   type = "text",
   placeholder,
 }: Props) {
-  const field = useFieldContext<string>();
+  const field = useFieldContext<string | null | undefined>();
   const showErrors =
     !field.state.meta.isValid &&
     (field.state.meta.isTouched || field.form.state.submissionAttempts > 0);

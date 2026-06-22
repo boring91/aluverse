@@ -55,9 +55,7 @@ export const BooleanFilter = ({
         <SelectTrigger className="h-9 w-full">
           <SelectValue placeholder={placeholder ?? "All"}>
             {(selectedValue) =>
-              labelByValue.get((selectedValue as string) ?? "all") ??
-              placeholder ??
-              "All"
+              labelByValue.get(selectedValue as string) ?? placeholder ?? "All"
             }
           </SelectValue>
         </SelectTrigger>

@@ -47,7 +47,7 @@ export const ReconciliationsList = ({
     new Set(),
   );
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     if (!canDelete) {
       return;
     }
@@ -56,8 +56,8 @@ export const ReconciliationsList = ({
       title: "Delete",
       description: "Are you sure you want to delete this item?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };
@@ -85,8 +85,8 @@ export const ReconciliationsList = ({
 
   const deleteAction = useMutation(
     trpc.reconciliations.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: (deletedReconciliation) => {
+        const id = deletedReconciliation.id;
         queryClient.invalidateQueries(
           trpc.reconciliations.list.queryOptions({ transactionId }),
         );

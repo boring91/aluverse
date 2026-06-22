@@ -37,7 +37,7 @@ const getUserRoleIds = (user: UserAccess | null) => {
   }
 
   return user.roles.flatMap((role) => {
-    if (role && typeof role === "object" && "id" in role && role.id) {
+    if (typeof role === "object" && "id" in role && role.id) {
       return [role.id];
     }
 

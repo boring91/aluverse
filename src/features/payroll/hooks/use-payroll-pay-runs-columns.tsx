@@ -150,7 +150,7 @@ export function usePayrollPayRunsColumns(
                 {showCalculate ? (
                   <DropdownMenuItem
                     disabled={isProcessing}
-                    onClick={() => handleCalculate?.(payRun)}
+                    onClick={() => handleCalculate(payRun)}
                   >
                     Calculate
                   </DropdownMenuItem>
@@ -158,7 +158,7 @@ export function usePayrollPayRunsColumns(
                 {showFinalize ? (
                   <DropdownMenuItem
                     disabled={isProcessing}
-                    onClick={() => handleFinalize?.(payRun)}
+                    onClick={() => handleFinalize(payRun)}
                   >
                     Finalize
                   </DropdownMenuItem>

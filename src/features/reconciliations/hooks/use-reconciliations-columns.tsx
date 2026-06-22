@@ -70,18 +70,14 @@ export const useReconciliationsColumns = (
         cell: ({ row }) => {
           const item = row.original;
           return (
-            item.reconciliationGroup && (
-              <div className="flex flex-col gap-1 items-center">
-                <ReconciliationGroupBadge group={item.reconciliationGroup} />
-                <div className="text-xs text-muted-foreground flex gap-2">
-                  {item.project && <span>{item.project.humanId}</span>}
-                  {item.budgetCategory && (
-                    <span>{item.budgetCategory.name}</span>
-                  )}
-                  {item.isGst && <span>with GST</span>}
-                </div>
+            <div className="flex flex-col gap-1 items-center">
+              <ReconciliationGroupBadge group={item.reconciliationGroup} />
+              <div className="text-xs text-muted-foreground flex gap-2">
+                {item.project && <span>{item.project.humanId}</span>}
+                {item.budgetCategory && <span>{item.budgetCategory.name}</span>}
+                {item.isGst && <span>with GST</span>}
               </div>
-            )
+            </div>
           );
         },
       },

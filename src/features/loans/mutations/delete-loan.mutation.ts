@@ -23,7 +23,9 @@ export async function deleteLoanMutation(id: string) {
     const reconciliationIds = [
       loan.reconciliationId,
       ...loan.payoffs.map((x) => x.reconciliationId),
-    ].filter((id): id is string => !!id);
+    ].filter(
+      (reconciliationId): reconciliationId is string => !!reconciliationId,
+    );
 
     if (reconciliationIds.length) {
       await tx
@@ -35,7 +37,7 @@ export async function deleteLoanMutation(id: string) {
     // Remove all payoffs
     const payoffIds = loan.payoffs
       .map((x) => x.id)
-      .filter((id): id is string => !!id);
+      .filter((payoffId): payoffId is string => !!payoffId);
     if (payoffIds.length) {
       await tx.deleteFrom("loanPayoffs").where("id", "in", payoffIds).execute();
     }

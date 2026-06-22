@@ -44,8 +44,8 @@ export const FinancialAccountsListView = () => {
   );
   const deleteAction = useMutation(
     trpc.financialAccounts.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: (deletedAccount) => {
+        const id = deletedAccount.id;
         queryClient.invalidateQueries(
           trpc.financialAccounts.list.queryOptions(),
         );

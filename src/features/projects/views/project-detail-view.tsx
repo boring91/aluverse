@@ -65,7 +65,7 @@ export const ProjectDetailView = () => {
     <>
       {canUpdate ? (
         <CreateProject
-          open={canUpdate && openCreateSheet}
+          open={openCreateSheet}
           onOpenChange={setOpenCreateSheet}
           itemId={data.id}
         />

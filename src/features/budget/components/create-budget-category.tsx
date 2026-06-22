@@ -56,7 +56,7 @@ export function CreateBudgetCategory({
           );
         }
 
-        if (!isUpdate && created?.id) {
+        if (!isUpdate && created.id) {
           onCreated?.(created.id);
         }
 

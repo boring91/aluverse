@@ -81,10 +81,10 @@ export const useDataTable = ({
   // Convert URL state (1-based page) to PaginationState (0-based pageIndex)
   const pagination = useMemo<PaginationState>(
     () => ({
-      pageIndex: (state.page ?? defaultPageIndex + 1) - 1, // Convert 1-based to 0-based
-      pageSize: state.size ?? defaultPageSize,
+      pageIndex: state.page - 1, // Convert 1-based to 0-based
+      pageSize: state.size,
     }),
-    [state.page, state.size, defaultPageIndex, defaultPageSize],
+    [state.page, state.size],
   );
 
   // Convert URL state to SortingState

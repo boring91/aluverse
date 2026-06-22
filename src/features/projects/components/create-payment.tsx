@@ -67,7 +67,7 @@ export function CreatePayment({
           queryClient.invalidateQueries(
             trpc.projectPayments.get.queryOptions({ id: itemId }),
           );
-        } else if (created && onItemCreated) {
+        } else if (onItemCreated) {
           onItemCreated(created.id);
         }
         onOpenChange(false);

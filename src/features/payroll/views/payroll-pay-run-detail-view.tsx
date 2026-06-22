@@ -479,7 +479,7 @@ export function PayrollPayRunDetailView() {
                       </span>
                     ) : null}
                   </div>
-                  {stpFailed && stpStatus?.detail ? (
+                  {stpFailed && stpStatus.detail ? (
                     <Alert variant="destructive">
                       <AlertCircleIcon />
                       <AlertTitle>STP lodgement failed</AlertTitle>

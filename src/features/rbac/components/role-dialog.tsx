@@ -29,20 +29,17 @@ import type { Permission } from "../schemas/rbac.shared-schema";
 
 type Role = inferRouterOutputs<AppRouter>["rbac"]["listRoles"]["items"][number];
 
-const permissionGroups = permissions.reduce(
-  (acc, permission) => {
-    const [resource] = permission.split(".");
+const permissionGroups = permissions.reduce<
+  Partial<Record<string, Permission[]>>
+>((acc, permission) => {
+  const [resource] = permission.split(".");
+  const group = acc[resource] ?? [];
 
-    if (!acc[resource]) {
-      acc[resource] = [];
-    }
+  group.push(permission);
+  acc[resource] = group;
 
-    acc[resource].push(permission);
-
-    return acc;
-  },
-  {} as Record<string, Permission[]>,
-);
+  return acc;
+}, {}) as Record<string, Permission[]>;
 
 const permissionSet = new Set<string>(permissions);
 
@@ -61,7 +58,6 @@ const normalizeRolePermissions = (role: Role | null) => {
     }
 
     if (
-      item &&
       typeof item === "object" &&
       "permission" in item &&
       typeof item.permission === "string" &&
@@ -160,7 +156,7 @@ export function RoleDialog({ open, onOpenChange, role }: Props) {
       permissions: selectedPermissions,
     };
 
-    if (isUpdate && role) {
+    if (role) {
       await updateRoleAction.mutateAsync(
         updateRoleSchema.parse({
           id: role.id,

@@ -17,8 +17,8 @@ export function useProjectItems(
     pagination: { pageSize: -1, pageIndex: 0 },
   };
 
-  const makeOptions = (enabled: boolean) => ({
-    enabled: !!projectId && enabled,
+  const makeOptions = (isEnabled: boolean) => ({
+    enabled: !!projectId && isEnabled,
   });
 
   const { data: supplies } = useQuery(

@@ -37,11 +37,11 @@ export async function getPeriodComparisonQuery(input: DashboardDateRange) {
   });
 
   // Calculate percentage changes
-  const calculateChange = (current: number, previous: number) => {
-    if (previous === 0) {
-      return current !== 0 ? 1 : 0;
+  const calculateChange = (currentValue: number, previousValue: number) => {
+    if (previousValue === 0) {
+      return currentValue !== 0 ? 1 : 0;
     }
-    return (current - previous) / Math.abs(previous);
+    return (currentValue - previousValue) / Math.abs(previousValue);
   };
 
   return {

@@ -62,7 +62,7 @@ export const BudgetCategoryDetailView = () => {
     <>
       {canUpdate ? (
         <CreateBudgetCategory
-          open={canUpdate && openCreateSheet}
+          open={openCreateSheet}
           onOpenChange={setOpenCreateSheet}
           itemId={data.id}
         />

@@ -59,7 +59,7 @@ export function CreateBudgetCategoryAllocation({
           queryClient.invalidateQueries(
             trpc.budgetCategoryAllocations.get.queryOptions({ id: itemId }),
           );
-        } else if (created?.id) {
+        } else if (created.id) {
           onItemCreated?.(created.id);
         }
 

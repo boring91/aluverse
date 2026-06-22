@@ -68,7 +68,7 @@ export function CreateLoanPayoff({
           queryClient.invalidateQueries(
             trpc.loanPayoffs.get.queryOptions({ id: itemId }),
           );
-        } else if (created && onItemCreated) {
+        } else if (onItemCreated) {
           onItemCreated(created.id);
         }
 

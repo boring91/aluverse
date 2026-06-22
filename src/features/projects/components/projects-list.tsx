@@ -42,7 +42,7 @@ export const ProjectsList = () => {
     new Set(),
   );
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = (deleteItemId: string) => {
     if (!canDelete) {
       return;
     }
@@ -51,8 +51,8 @@ export const ProjectsList = () => {
       title: "Delete",
       description: "Are you sure you want to delete this item?",
       onConfirm: () => {
-        setCurrentlyProcessing((set) => new Set(set.add(itemId)));
-        deleteAction.mutate({ id: itemId });
+        setCurrentlyProcessing((set) => new Set(set.add(deleteItemId)));
+        deleteAction.mutate({ id: deleteItemId });
       },
     });
   };
@@ -83,8 +83,8 @@ export const ProjectsList = () => {
 
   const deleteAction = useMutation(
     trpc.projects.delete.mutationOptions({
-      onSuccess: (data) => {
-        const id = data.id;
+      onSuccess: (deletedProject) => {
+        const id = deletedProject.id;
         queryClient.invalidateQueries(
           trpc.projects.list.queryOptions({
             pagination: dataTable.pagination,

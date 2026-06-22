@@ -82,7 +82,7 @@ export const DashboardView = () => {
           initialDateTo={toDate}
           onUpdate={({ range }) => {
             setQueryDates({
-              from: range.from ?? null,
+              from: range.from,
               to: range.to ?? null,
             });
           }}

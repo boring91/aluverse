@@ -50,23 +50,26 @@ export const CreateProjectItem = forwardRef<CreateProjectItemHandle, Props>(
         projectId,
         pagination: { pageSize: -1, pageIndex: 0 },
       };
-      if (currentStream === "supplies") {
-        queryClient.invalidateQueries(
-          trpc.projectSupplies.list.queryOptions(queryInput),
-        );
-      } else if (currentStream === "labors") {
-        queryClient.invalidateQueries(
-          trpc.projectLabors.list.queryOptions(queryInput),
-        );
-      } else if (currentStream === "misc") {
-        queryClient.invalidateQueries(
-          trpc.projectMisc.list.queryOptions(queryInput),
-        );
-      } else if (currentStream === "payments") {
-        queryClient.invalidateQueries(
-          trpc.projectPayments.list.queryOptions(queryInput),
-        );
-      }
+      const invalidateByStream = {
+        supplies: () =>
+          queryClient.invalidateQueries(
+            trpc.projectSupplies.list.queryOptions(queryInput),
+          ),
+        labors: () =>
+          queryClient.invalidateQueries(
+            trpc.projectLabors.list.queryOptions(queryInput),
+          ),
+        misc: () =>
+          queryClient.invalidateQueries(
+            trpc.projectMisc.list.queryOptions(queryInput),
+          ),
+        payments: () =>
+          queryClient.invalidateQueries(
+            trpc.projectPayments.list.queryOptions(queryInput),
+          ),
+      } satisfies Record<Stream, () => void>;
+
+      invalidateByStream[currentStream]();
     };
 
     const handleCreated = (currentStream: Stream) => (itemId: string) => {

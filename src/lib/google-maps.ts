@@ -1,9 +1,14 @@
 type PlacesLibrary = google.maps.PlacesLibrary;
-type GoogleWindow = Window &
-  typeof globalThis & {
-    google?: typeof google;
-    __googleMapsCallback?: () => void;
-  };
+type GoogleMapsBootstrap = Partial<typeof google.maps> & {
+  importLibrary?: (name: string) => Promise<unknown>;
+};
+type GoogleBootstrap = {
+  maps?: GoogleMapsBootstrap;
+};
+type GoogleWindow = Window & {
+  google?: GoogleBootstrap;
+  __googleMapsCallback?: () => void;
+};
 
 let loadPromise: Promise<PlacesLibrary> | null = null;
 
@@ -21,9 +26,8 @@ export function loadGoogleMapsPlaces(): Promise<PlacesLibrary> {
     // Bootstrap loader approach - creates importLibrary function before script loads
     const googleWindow = window as GoogleWindow;
     const g =
-      googleWindow.google ||
-      (googleWindow.google = {} as unknown as typeof google);
-    const m = g.maps || (g.maps = {} as unknown as typeof google.maps);
+      googleWindow.google || (googleWindow.google = {} as GoogleBootstrap);
+    const m = g.maps || (g.maps = {} as GoogleMapsBootstrap);
 
     if (m.importLibrary) {
       // Already initialized
