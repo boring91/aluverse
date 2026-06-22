@@ -26,7 +26,7 @@ export const listBudgetCategoryAllocationSchema = listSchema.safeExtend({
 });
 
 export const createBudgetCategoryAllocationSchema = z.object({
-  amount: z.number().min(1),
+  amount: z.number().min(0),
   effectiveDate: z.date(),
 });
 
