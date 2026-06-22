@@ -54,6 +54,9 @@ export const permissions = [
   "loanPayoffs.update",
   "loanPayoffs.delete",
 
+  "payroll.read",
+  "payroll.write",
+
   "users.read",
   "users.create",
   "users.update",
