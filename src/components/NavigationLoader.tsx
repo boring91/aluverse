@@ -1,6 +1,8 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import { cn } from "@/lib/client-utils";
+
 /**
  * Full-screen overlay shown while the router resolves the next route. It keys
  * off `isLoading` (true for the whole navigation/commit cycle, even when routes
@@ -26,12 +28,14 @@ export function NavigationLoader() {
     return () => clearTimeout(id);
   }, [isLoading, isSearchOnlyChange]);
 
-  if (!visible) {
-    return null;
-  }
-
+  // Stay mounted and just transition opacity, so it fades both in and out.
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-background/85 backdrop-blur-sm duration-200">
+    <div
+      className={cn(
+        "fixed inset-0 z-100 flex items-center justify-center bg-background/85 backdrop-blur-sm transition-opacity duration-200",
+        visible ? "opacity-100" : "pointer-events-none opacity-0",
+      )}
+    >
       <div className="flex flex-col items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="inline-block size-1.5 animate-pulse rounded-full bg-amber" />
