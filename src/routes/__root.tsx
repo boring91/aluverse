@@ -8,7 +8,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { NuqsAdapter } from "nuqs/adapters/react";
 
-import { NavigationProgress } from "@/components/NavigationProgress";
+import { ApiActivityIndicator } from "@/components/ApiActivityIndicator";
+import { NavigationLoader } from "@/components/NavigationLoader";
 import { Toaster } from "@/components/ui/sonner";
 import { getSessionFunction } from "@/features/auth/functions/get-session.function";
 import { useTheme } from "@/hooks/use-theme";
@@ -67,9 +68,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className={theme === "dark" ? "dark" : undefined}>
-        <NavigationProgress />
+        <NavigationLoader />
         <NuqsAdapter>
           <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+            <ApiActivityIndicator />
             <ConfirmDialogProvider>
               <div className="flex min-h-dvh flex-col overflow-clip">
                 {children}

@@ -143,3 +143,22 @@ body,
     transform: translateX(-100%);
   }
 }
+
+@layer utilities {
+  .blink {
+    animation: blink 1.4s steps(2, start) infinite;
+  }
+  @keyframes blink {
+    to {
+      visibility: hidden;
+    }
+  }
+  @keyframes nav-scan {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(300%);
+    }
+  }
+}
