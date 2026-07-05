@@ -10,6 +10,11 @@ import { Progress } from "@/components/ui/progress";
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
 
 export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
+  const remainingAllocation =
+    project.usedAllocation === null
+      ? null
+      : (1 - project.usedAllocation) * project.allocation;
+
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
       {/* Amount paid */}
@@ -53,18 +58,28 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
               <p className="text-xs">
                 Remaining:{" "}
                 <span className="font-mono">
-                  {formatCurrency(
-                    (1 - project.usedAllocation) * project.allocation,
-                  )}
+                  {formatCurrency(remainingAllocation ?? 0)}
+                </span>
+                <span className="text-muted-foreground"> / </span>
+                <span className="font-mono text-muted-foreground">
+                  {formatCurrency(project.allocation)}
                 </span>
               </p>
             </div>
           )}
 
           {project.allocationOverrun && (
-            <p className="text-sm">
-              Overrun: {formatPercent(project.allocationOverrun)}
-            </p>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm">
+                Overrun: {formatPercent(project.allocationOverrun)}
+              </p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Total allocation:{" "}
+                <span className="font-mono">
+                  {formatCurrency(project.allocation)}
+                </span>
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
