@@ -70,6 +70,12 @@ export const DataTable = <TData, TValue>({
     setControlledColumnVisibility ?? setInternalColumnVisibility;
 
   const isServerSide = !!controlledSorting || !!setControlledSorting;
+  const pageCount =
+    data && pagination.pageSize > 0
+      ? Math.ceil(data.filteredCount / pagination.pageSize)
+      : data && data.filteredCount > 0
+        ? 1
+        : 0;
 
   const table = useReactTable({
     data: data?.items ?? [],
@@ -88,6 +94,7 @@ export const DataTable = <TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
     manualPagination: true,
     manualSorting: isServerSide,
+    pageCount,
     rowCount: data?.filteredCount,
     onPaginationChange: setPagination,
   });
