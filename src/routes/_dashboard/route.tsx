@@ -18,11 +18,11 @@ export const Route = createFileRoute("/_dashboard")({
 
 function DashboardLayout() {
   return (
-    <SidebarProvider>
+    <SidebarProvider className="fixed inset-0 h-dvh min-h-0 overflow-hidden">
       <AppSidebar />
-      <div className="flex h-screen w-full flex-col overflow-hidden">
+      <div className="flex h-full min-w-0 w-full flex-col overflow-hidden">
         <AppHeader className="shrink-0" />
-        <main className="grow overflow-auto">
+        <main className="min-h-0 grow overflow-auto">
           <Outlet />
         </main>
       </div>
