@@ -1,5 +1,3 @@
-"use client";
-
 import { PageLoader } from "@/components/page-loader";
 import {
   Card,

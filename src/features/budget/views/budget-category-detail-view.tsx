@@ -1,5 +1,3 @@
-"use client";
-
 import { useParams } from "@tanstack/react-router";
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";

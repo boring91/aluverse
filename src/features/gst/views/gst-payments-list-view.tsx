@@ -1,5 +1,3 @@
-"use client";
-
 import { PageContainer } from "@/components/page-container";
 import { GstPaymentsList } from "@/features/gst/components/gst-payments-list";
 import { useTitle } from "@/hooks/use-title";

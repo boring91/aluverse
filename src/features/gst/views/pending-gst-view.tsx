@@ -1,5 +1,3 @@
-"use client";
-
 import { DateRange } from "@/components/date-range";
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";

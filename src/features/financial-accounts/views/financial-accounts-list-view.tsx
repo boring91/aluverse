@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { useTitle } from "@/hooks/use-title";
 import { useTRPC } from "@/trpc";

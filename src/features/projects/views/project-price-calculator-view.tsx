@@ -1,5 +1,3 @@
-"use client";
-
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";
 import { ProjectPriceCalculator } from "@/features/projects/components/project-price-calculator";

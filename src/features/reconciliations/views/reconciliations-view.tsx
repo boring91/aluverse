@@ -1,5 +1,3 @@
-"use client";
-
 import { PageContainer } from "@/components/page-container";
 import { useTitle } from "@/hooks/use-title";
 import { TransactionsList } from "@/features/financial-accounts/components/transactions-list";

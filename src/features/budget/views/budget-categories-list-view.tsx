@@ -1,5 +1,3 @@
-"use client";
-
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";
 import { BudgetCategoriesList } from "@/features/budget/components/budget-categories-list";

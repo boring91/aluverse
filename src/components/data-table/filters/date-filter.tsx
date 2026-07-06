@@ -1,5 +1,3 @@
-"use client";
-
 import type { FilterControl } from "../types";
 import { Label } from "@/components/ui/label";
 import { DatePickerInput } from "@/components/date-picker-input";

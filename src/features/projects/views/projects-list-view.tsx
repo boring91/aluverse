@@ -1,5 +1,3 @@
-"use client";
-
 import { PageContainer } from "@/components/page-container";
 import { ProjectsList } from "@/features/projects/components/projects-list";
 import { useTitle } from "@/hooks/use-title";

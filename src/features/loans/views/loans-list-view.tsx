@@ -1,5 +1,3 @@
-"use client";
-
 import { PageContainer } from "@/components/page-container";
 import { LoansList } from "@/features/loans/components/loans-list";
 import { useTitle } from "@/hooks/use-title";

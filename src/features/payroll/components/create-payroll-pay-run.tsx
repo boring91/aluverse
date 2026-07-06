@@ -1,5 +1,3 @@
-"use client";
-
 import type { z } from "zod";
 import { useEffect, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

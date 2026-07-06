@@ -1,5 +1,3 @@
-"use client";
-
 import { PageContainer } from "@/components/page-container";
 import { PageLoader } from "@/components/page-loader";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";

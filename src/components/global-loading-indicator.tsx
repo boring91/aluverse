@@ -1,5 +1,3 @@
-"use client";
-
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { cn } from "@/lib/client-utils";
 
