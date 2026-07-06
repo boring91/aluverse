@@ -1,13 +1,83 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import { cn } from "@/lib/client-utils";
 import type { AppRouter } from "@/trpc/router";
 import type { inferRouterOutputs } from "@trpc/server";
 import { Progress } from "@/components/ui/progress";
+import { InfoIcon } from "lucide-react";
 
 type Project = inferRouterOutputs<AppRouter>["projects"]["get"];
+
+const CostBreakdown = ({ project }: { project: Project }) => {
+  const rows = [
+    { label: "Supplies", value: project.suppliesCost, dot: "bg-violet-500" },
+    { label: "Labor", value: project.laborCost, dot: "bg-amber-500" },
+    { label: "Miscellaneous", value: project.miscCost, dot: "bg-teal-500" },
+    {
+      label: "Budget allocation",
+      value: -project.budgetAllocationCost,
+      dot: "bg-sky-500",
+    },
+  ];
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        aria-label="Cost breakdown"
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-foreground/20 -m-1 rounded-none p-1 transition-colors outline-none focus-visible:ring-2"
+      >
+        <InfoIcon className="size-4" />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-64 gap-0 p-0">
+        <div className="border-b px-3 py-2">
+          <p className="text-sm font-medium">Cost breakdown</p>
+          <p className="text-muted-foreground text-xs">
+            Reconciled expenses so far
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 px-3 py-2.5">
+          {rows.map((row) => (
+            <div
+              key={row.label}
+              className="flex items-center justify-between gap-3"
+            >
+              <span className="flex items-center gap-2 text-muted-foreground">
+                <span className={cn("size-1.5 rounded-full", row.dot)} />
+                {row.label}
+              </span>
+              <span
+                className={cn("font-mono tabular-nums", {
+                  "text-rose-500": row.value < 0,
+                })}
+              >
+                {formatCurrency(row.value)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-between gap-3 border-t px-3 py-2 font-medium">
+          <span>Total</span>
+          <span className="font-mono tabular-nums text-rose-500">
+            {formatCurrency(project.cost)}
+          </span>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
   const remainingAllocation =
@@ -36,6 +106,9 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
           <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
             Cost
           </CardTitle>
+          <CardAction>
+            <CostBreakdown project={project} />
+          </CardAction>
         </CardHeader>
         <CardContent className=" text-xl font-semibold text-rose-500 flex flex-col gap-4">
           <p className="font-mono">{formatCurrency(project.cost)}</p>

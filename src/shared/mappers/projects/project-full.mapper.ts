@@ -1,7 +1,10 @@
 import type { DB } from "@/db/types";
 import {
+  laborCost,
+  miscCost,
   projectAllocation,
   projectAllocationOverrun,
+  projectBudgetAllocationCost,
   projectCost,
   projectDaysOverdue,
   projectMargin,
@@ -10,6 +13,7 @@ import {
   projectPriceExcGst,
   projectProfit,
   projectUsedAllocation,
+  suppliesCost,
   unreconciledItemsCount,
 } from "@/shared/expressions/projects/project.expression";
 import type { ExpressionBuilder, SelectExpression } from "kysely";
@@ -33,6 +37,10 @@ export const projectFullMapper = (eb: ExpressionBuilder<DB, "projects">) =>
     projectDaysOverdue(eb).as("daysOverdue"),
     projectProfit(eb).as("profit"),
     projectCost(eb).as("cost"),
+    suppliesCost(eb).as("suppliesCost"),
+    laborCost(eb).as("laborCost"),
+    miscCost(eb).as("miscCost"),
+    projectBudgetAllocationCost(eb).as("budgetAllocationCost"),
     projectPaid(eb).as("paid"),
     projectMarkup(eb).as("effectiveMarkup"),
     projectMargin(eb).as("effectiveMargin"),

@@ -152,6 +152,23 @@ export const miscCost = (
 export const projectOutstanding = (eb: ExpressionBuilder<DB, "projects">) =>
   eb("price", "-", projectPaid);
 
+export const projectBudgetAllocationCost = (
+  eb: ExpressionBuilder<DB, "projects">,
+  from?: Date,
+  to?: Date,
+) => {
+  from ??= new Date(0);
+  to ??= new Date(2100, 0, 1);
+
+  return eb
+    .case()
+    .when(eb.and([eb("startDate", ">=", from), eb("startDate", "<", to)]))
+    .then(eb("budgetUnits", "*", eb.ref("budgetUnitValue")))
+    .else(0)
+    .end()
+    .$notNull();
+};
+
 export const projectCost = (
   eb: ExpressionBuilder<DB, "projects">,
   from?: Date,
@@ -169,12 +186,7 @@ export const projectCost = (
           miscCost(eb, from, to),
         ),
         "-",
-        eb
-          .case()
-          .when(eb.and([eb("startDate", ">=", from), eb("startDate", "<", to)]))
-          .then(eb("budgetUnits", "*", eb.ref("budgetUnitValue")))
-          .else(0)
-          .end(),
+        projectBudgetAllocationCost(eb, from, to),
       ),
     )
     .$notNull();
