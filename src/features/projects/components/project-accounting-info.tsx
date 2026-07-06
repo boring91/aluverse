@@ -84,6 +84,10 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
     project.usedAllocation === null
       ? null
       : (1 - project.usedAllocation) * project.allocation;
+  const allocationOverrunAmount = Math.max(
+    0,
+    Math.abs(project.cost) - project.allocation,
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
@@ -144,7 +148,10 @@ export const ProjectAccountingInfo = ({ project }: { project: Project }) => {
           {project.allocationOverrun && (
             <div className="flex flex-col gap-1">
               <p className="text-sm">
-                Overrun: {formatPercent(project.allocationOverrun)}
+                Overrun: {formatPercent(project.allocationOverrun)}{" "}
+                <span className="font-mono">
+                  ({formatCurrency(allocationOverrunAmount)})
+                </span>
               </p>
               <p className="text-xs font-medium text-muted-foreground">
                 Total allocation:{" "}
