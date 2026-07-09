@@ -5,8 +5,6 @@
 
 import type { ColumnType } from "kysely";
 
-export type FinancialAccountBankSyncers = "westpac";
-
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U>
     ? ColumnType<S, I | undefined, U>
@@ -97,9 +95,9 @@ export interface DrizzleDrizzleMigrations {
 
 export interface FinancialAccounts {
   createdAt: Generated<Timestamp>;
+  frolloAccountId: string | null;
   id: Generated<string>;
   name: string;
-  syncWithBank: FinancialAccountBankSyncers | null;
   updatedAt: Generated<Timestamp>;
 }
 

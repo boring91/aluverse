@@ -1,9 +1,18 @@
 import crypto from "node:crypto";
-import type { DB } from "@/db/types";
-import type { Insertable } from "kysely";
-import { toUuid } from "@/lib/utils";
+import { createServerOnlyFn } from "@tanstack/react-start";
 
-type Transaction = Insertable<DB["transactions"]>;
+export type FrolloAccount = {
+  id: string;
+  name: string;
+  accountNumber: string;
+};
+
+type FrolloAccountResponse = {
+  id: number;
+  account_name: string;
+  nick_name?: string;
+  account_number: string;
+};
 
 type AuthResult = {
   access_token: string;
@@ -14,8 +23,9 @@ type AuthResult = {
   scope?: string;
 };
 
-type FrolloTransaction = {
+export type FrolloTransaction = {
   id: number;
+  account_id: number;
   baseType: "credit" | "debit";
   status: "posted" | "pending";
   post_date: string;
@@ -29,21 +39,34 @@ type FrolloTransaction = {
   };
 };
 
+type FrolloCredentials = {
+  clientId: string;
+  tenantId: string;
+  username: string;
+  password: string;
+};
+
 const AUTH_BASE_URL = "https://auth.frollo.com.au";
+const API_BASE_URL = "https://api.frollo.com.au/api/v2";
 const SCOPES = "offline_access openid email client";
-const CLIENT_ID = process.env.FROLLO_CLIENT_ID!;
-const TENANT_ID = process.env.FROLLO_TENANT_ID!;
 const REDIRECT_URI = "frollo://authorize";
 
-async function login(username: string, password: string) {
+const getFrolloCredentials = createServerOnlyFn(() => ({
+  clientId: process.env.FROLLO_CLIENT_ID!,
+  tenantId: process.env.FROLLO_TENANT_ID!,
+  username: process.env.FROLLO_USERNAME!,
+  password: process.env.FROLLO_PASSWORD!,
+}));
+
+async function login(credentials: FrolloCredentials) {
   console.log("Logging in...");
-  const generateRandomString = (length: number): string =>
+  const generateRandomString = (length: number) =>
     crypto.randomBytes(length).toString("base64url").slice(0, length);
 
-  const generateCodeChallenge = (codeVerifier: string): string =>
+  const generateCodeChallenge = (codeVerifier: string) =>
     crypto.createHash("sha256").update(codeVerifier).digest("base64url");
 
-  const parseCookies = (response: Response): Map<string, string> => {
+  const parseCookies = (response: Response) => {
     const cookies = new Map<string, string>();
     const setCookieHeaders = response.headers.getSetCookie();
     for (const cookie of setCookieHeaders) {
@@ -59,7 +82,7 @@ async function login(username: string, password: string) {
   const mergeCookies = (
     existing: Map<string, string>,
     newCookies: Map<string, string>,
-  ): Map<string, string> => {
+  ) => {
     const merged = new Map(existing);
     for (const [name, value] of newCookies) {
       merged.set(name, value);
@@ -67,7 +90,7 @@ async function login(username: string, password: string) {
     return merged;
   };
 
-  const cookiesToHeader = (cookies: Map<string, string>): string =>
+  const cookiesToHeader = (cookies: Map<string, string>) =>
     Array.from(cookies.entries())
       .map(([name, value]) => `${name}=${value}`)
       .join("; ");
@@ -87,7 +110,7 @@ async function login(username: string, password: string) {
     scope: SCOPES,
     code_challenge: codeChallenge,
     redirect_uri: REDIRECT_URI,
-    client_id: CLIENT_ID,
+    client_id: credentials.clientId,
     state,
   });
 
@@ -111,7 +134,7 @@ async function login(username: string, password: string) {
   // Step 2: POST login credentials
   const loginBody = new URLSearchParams({
     captcha_token: "",
-    client_id: CLIENT_ID,
+    client_id: credentials.clientId,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
     "metaData.device.name": "iPhone/iPod Safari",
@@ -124,13 +147,13 @@ async function login(username: string, password: string) {
     response_type: "code",
     scope: SCOPES,
     state,
-    tenantId: TENANT_ID,
+    tenantId: credentials.tenantId,
     timezone: "Australia/Sydney",
     user_code: "",
     showPasswordField: "true",
     userVerifyingPlatformAuthenticatorAvailable: "true",
-    loginId: username,
-    password: password,
+    loginId: credentials.username,
+    password: credentials.password,
     __cb_rememberDevice: "false",
     rememberDevice: "true",
   });
@@ -211,7 +234,7 @@ async function login(username: string, password: string) {
     code: authCode,
     code_verifier: codeVerifier,
     redirect_uri: REDIRECT_URI,
-    client_id: CLIENT_ID,
+    client_id: credentials.clientId,
     grant_type: "authorization_code",
   });
 
@@ -238,14 +261,14 @@ async function login(username: string, password: string) {
   return tokenData;
 }
 
-async function refresh(refreshToken: string) {
+async function refresh(refreshToken: string, clientId: string) {
   console.log("Refreshing token...");
   const url = `${AUTH_BASE_URL}/oauth2/token/`;
 
   const body = new URLSearchParams({
     refresh_token: refreshToken,
     grant_type: "refresh_token",
-    client_id: CLIENT_ID,
+    client_id: clientId,
   });
 
   const headers = {
@@ -275,113 +298,150 @@ async function refresh(refreshToken: string) {
   return data;
 }
 
-export async function getWestpacTransactions(
-  accountId: string,
-  options: {
-    since?: Date;
-    until?: Date;
-    size?: number;
-  } = {},
-) {
-  const baseUrl = "https://api.frollo.com.au/api/v2";
+const apiHeaders = {
+  Host: "api.frollo.com.au",
+  "X-Api-Version": "2.29",
+  "X-Software-Version": "SDK6.3.2-B632/APP3.34.0-B107301",
+  "Accept-Encoding": "gzip, deflate, br",
+  "User-Agent": "Frollo/107301 CFNetwork/3860.300.31 Darwin/25.2.0",
+  Connection: "keep-alive",
+  Accept: "*/*",
+  "Accept-Language": "en-AU,en;q=0.9",
+  "X-Device-Version": "iOSVersion 26.2 (Build 23C55)",
+  "X-Bundle-Id": "frollo-swift-sdk.FrolloSDK.resources",
+};
 
-  let auth = await login(
-    process.env.FROLLO_USERNAME!,
-    process.env.FROLLO_PASSWORD!,
-  );
+export const listFrolloAccounts = createServerOnlyFn(async () => {
+  const credentials = getFrolloCredentials();
+  let auth = await login(credentials);
 
-  const headers = {
-    Host: "api.frollo.com.au",
-    "X-Api-Version": "2.29",
-    "X-Software-Version": "SDK6.3.2-B632/APP3.34.0-B107301",
-    "Accept-Encoding": "gzip, deflate, br",
-    "User-Agent": "Frollo/107301 CFNetwork/3860.300.31 Darwin/25.2.0",
-    Connection: "keep-alive",
-    Accept: "*/*",
-    "Accept-Language": "en-AU,en;q=0.9",
-    "X-Device-Version": "iOSVersion 26.2 (Build 23C55)",
-    "X-Bundle-Id": "frollo-swift-sdk.FrolloSDK.resources",
-  };
-
-  // syncing first
-  await fetch(`${baseUrl}/aggregation/provideraccounts/sync`, {
-    method: "POST",
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${auth.access_token}`,
-      "Content-Length": "0",
-    },
-  });
-
-  const load = async (after: string | null) => {
-    const params: Record<string, string> = {
-      status: "posted",
-      size: options.size?.toString() ?? "100",
-    };
-
-    if (options.since) {
-      params["from_date"] = options.since.toISOString();
-    }
-
-    if (options.until) {
-      params["to_date"] = options.until.toISOString();
-    }
-
-    if (after) {
-      params["after"] = after;
-    }
-
-    const query = new URLSearchParams(params);
-
-    const response = await fetch(
-      `${baseUrl}/aggregation/transactions?${query}`,
-      {
-        headers: {
-          ...headers,
-          Authorization: `Bearer ${auth.access_token}`,
-        },
+  const load = async () => {
+    let response = await fetch(`${API_BASE_URL}/aggregation/accounts`, {
+      headers: {
+        ...apiHeaders,
+        Authorization: `Bearer ${auth.access_token}`,
       },
-    );
+    });
 
     if (response.status === 401) {
-      auth = await refresh(auth.refresh_token);
-      return await load(after);
+      auth = await refresh(auth.refresh_token, credentials.clientId);
+      response = await fetch(`${API_BASE_URL}/aggregation/accounts`, {
+        headers: {
+          ...apiHeaders,
+          Authorization: `Bearer ${auth.access_token}`,
+        },
+      });
     }
 
     if (!response.ok) {
-      console.error("Failed to fetch transactions:", response.status);
-      return { transactions: [], after: null };
+      console.error("Failed to fetch Frollo accounts:", response.status);
+      return [];
     }
 
-    const json = (await response.json()) as {
-      data: FrolloTransaction[];
-      paging: { cursors: { before: string | null; after: string | null } };
-    };
+    const json = (await response.json()) as FrolloAccountResponse[];
 
-    return { transactions: json.data, after: json.paging.cursors.after };
+    return json.map((account) => ({
+      id: String(account.id),
+      name: account.nick_name ?? account.account_name,
+      accountNumber: account.account_number,
+    })) satisfies FrolloAccount[];
   };
 
-  const transactions = [];
-  let after = null;
+  return await load();
+});
 
-  do {
-    const { transactions: t, after: nextAfter } = await load(after);
-    transactions.push(...t);
-    after = nextAfter;
-  } while (after);
+export const fetchFrolloTransactions = createServerOnlyFn(
+  async (
+    frolloAccountId: string,
+    options: {
+      since?: Date;
+      until?: Date;
+      size?: number;
+    } = {},
+  ) => {
+    const credentials = getFrolloCredentials();
+    let auth = await login(credentials);
 
-  return transactions
-    .filter((x) => x.status === "posted")
-    .map((t) => {
-      return {
-        id: toUuid(t.id),
-        accountId,
-        // `post_date` is already a calendar date — keep the `YYYY-MM-DD` portion
-        // as-is. Round-tripping through `new Date()` would parse it as UTC
-        // midnight and shift the day on servers west of UTC.
-        date: t.post_date.slice(0, 10),
-        description: t.description.original,
-        amount: Math.round(t.amount.amount * 100),
+    // syncing first
+    await fetch(`${API_BASE_URL}/aggregation/provideraccounts/sync`, {
+      method: "POST",
+      headers: {
+        ...apiHeaders,
+        Authorization: `Bearer ${auth.access_token}`,
+        "Content-Length": "0",
+      },
+    });
+
+    const load = async (after: string | null) => {
+      const params: Record<string, string> = {
+        account_ids: frolloAccountId,
+        status: "posted",
+        size: options.size?.toString() ?? "100",
       };
-    }) satisfies Transaction[];
-}
+
+      if (options.since) {
+        params["from_date"] = options.since.toISOString();
+      }
+
+      if (options.until) {
+        params["to_date"] = options.until.toISOString();
+      }
+
+      if (after) {
+        params["after"] = after;
+      }
+
+      const query = new URLSearchParams(params);
+
+      let response = await fetch(
+        `${API_BASE_URL}/aggregation/transactions?${query}`,
+        {
+          headers: {
+            ...apiHeaders,
+            Authorization: `Bearer ${auth.access_token}`,
+          },
+        },
+      );
+
+      if (response.status === 401) {
+        auth = await refresh(auth.refresh_token, credentials.clientId);
+        response = await fetch(
+          `${API_BASE_URL}/aggregation/transactions?${query}`,
+          {
+            headers: {
+              ...apiHeaders,
+              Authorization: `Bearer ${auth.access_token}`,
+            },
+          },
+        );
+      }
+
+      if (!response.ok) {
+        console.error("Failed to fetch transactions:", response.status);
+        return { transactions: [], after: null };
+      }
+
+      const json = (await response.json()) as {
+        data: FrolloTransaction[];
+        paging: { cursors: { before: string | null; after: string | null } };
+      };
+
+      return { transactions: json.data, after: json.paging.cursors.after };
+    };
+
+    const transactions: FrolloTransaction[] = [];
+    let after: string | null = null;
+
+    do {
+      const { transactions: t, after: nextAfter } = await load(after);
+      transactions.push(...t);
+      after = nextAfter;
+    } while (after);
+
+    return transactions.filter(
+      (transaction) =>
+        transaction.status === "posted" &&
+        String(transaction.account_id) === frolloAccountId,
+    );
+  },
+);

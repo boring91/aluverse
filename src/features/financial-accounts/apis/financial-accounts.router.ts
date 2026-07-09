@@ -11,6 +11,7 @@ import { createFinancialAccountMutation } from "../mutations/create-financial-ac
 import { updateFinancialAccountMutation } from "../mutations/update-financial-account.mutation";
 import { deleteFinancialAccountMutation } from "../mutations/delete-financial-account.mutation";
 import { syncFinancialAccountWithBankMutation } from "../mutations/sync-financial-account-with-bank.mutation";
+import { listFrolloAccounts } from "../lib/frollo";
 
 export const financialAccountsRouter = createTRPCRouter({
   list: permissionProcedure("financialAccounts.read").query(async () => {
@@ -44,6 +45,12 @@ export const financialAccountsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       return await deleteFinancialAccountMutation(input.id);
     }),
+
+  listFrolloAccounts: permissionProcedure("financialAccounts.read").query(
+    async () => {
+      return await listFrolloAccounts();
+    },
+  ),
 
   syncWithBank: permissionProcedure("financialAccounts.update")
     .input(z.object({ id: z.uuid() }))

@@ -8,6 +8,6 @@ export const financialAccountFullMapper = (
   [
     "id",
     "name",
-    "syncWithBank",
+    "frolloAccountId",
     balance(eb).as("balance"),
   ] satisfies SelectExpression<DB, "financialAccounts">[];

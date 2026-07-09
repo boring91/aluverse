@@ -60,7 +60,7 @@ export const FinancialAccountsGrid = ({
                   )}
 
                   {/* Sync */}
-                  {canSync && account.syncWithBank && (
+                  {canSync && account.frolloAccountId && (
                     <Button
                       variant="ghost"
                       size="icon"

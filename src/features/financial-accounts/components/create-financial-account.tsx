@@ -16,7 +16,6 @@ import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc";
 import { createFinancialAccountSchema } from "../schemas/financial-accounts.shared-schema";
-import { banks } from "../lib/bank-syncer/constants";
 
 type Props = {
   open: boolean;
@@ -34,6 +33,14 @@ export function CreateFinancialAccount({ open, onOpenChange, itemId }: Props) {
       { id: itemId! },
       { enabled: isUpdate, ...formQueryOptions },
     ),
+  );
+
+  const frolloAccounts = useQuery(
+    trpc.financialAccounts.listFrolloAccounts.queryOptions(undefined, {
+      enabled: open,
+      staleTime: 5 * 60 * 1000,
+      ...formQueryOptions,
+    }),
   );
 
   const createAction = useMutation(
@@ -129,11 +136,26 @@ export function CreateFinancialAccount({ open, onOpenChange, itemId }: Props) {
               />
 
               <form.AppField
-                name="syncWithBank"
+                name="frolloAccountId"
                 children={(field) => (
                   <field.SelectField
-                    label="Sync with bank"
-                    items={banks.map((bank) => ({ value: bank, label: bank }))}
+                    label="Sync with bank account"
+                    placeholder={
+                      frolloAccounts.isPending
+                        ? "Loading accounts..."
+                        : undefined
+                    }
+                    items={(frolloAccounts.data ?? []).map((account) => ({
+                      value: account.id,
+                      label: (
+                        <span className="flex items-baseline gap-2">
+                          {account.name}
+                          <span className="text-muted-foreground">
+                            {account.accountNumber}
+                          </span>
+                        </span>
+                      ),
+                    }))}
                   />
                 )}
               />
