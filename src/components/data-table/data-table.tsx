@@ -160,7 +160,26 @@ export const DataTable = <TData, TValue>({
         </Table>
       </div>
       <DataTablePagination
-        table={table}
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        pageCount={pageCount}
+        onPageChange={(pageIndex) =>
+          setPagination({
+            pageIndex: Math.max(
+              0,
+              Math.min(pageIndex, Math.max(pageCount - 1, 0)),
+            ),
+            pageSize: pagination.pageSize,
+          })
+        }
+        onPageSizeChange={(pageSize) =>
+          setPagination({
+            pageIndex: Math.floor(
+              (pagination.pageIndex * pagination.pageSize) / pageSize,
+            ),
+            pageSize,
+          })
+        }
         count={data?.count}
         filteredCount={data?.filteredCount}
       />
