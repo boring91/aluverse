@@ -4,7 +4,7 @@ import {
   projectPaid,
 } from "@/shared/expressions/projects/project.expression";
 
-export async function getPaymentStatusQuery(from?: Date, to?: Date) {
+export async function getPaymentStatusQuery(from?: string, to?: string) {
   const query = db
     .selectFrom("projects")
     .leftJoin("projectPayments", "projectId", "projects.id")

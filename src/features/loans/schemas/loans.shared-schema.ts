@@ -1,14 +1,15 @@
 import { z } from "zod";
 import { loanTypes } from "@/lib/constants";
 import { listSchema, booleanFilterSchema } from "@/lib/shared-schemas";
+import { calendarDateSchema, nullableCalendarDateSchema } from "@/lib/date";
 
 export const createLoanSchema = z
   .object({
     type: z.enum(loanTypes),
     partyName: z.string().min(1),
     amount: z.number(),
-    date: z.date(),
-    dueDate: z.date().nullable().optional(),
+    date: calendarDateSchema,
+    dueDate: nullableCalendarDateSchema,
     notes: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
@@ -51,8 +52,8 @@ export const loanFiltersSchema = z.object({
   keyword: z.string().optional(),
   type: loanTypeFilterSchema,
   isPaidOff: booleanFilterSchema.optional(),
-  from: z.date().optional(),
-  to: z.date().optional(),
+  from: calendarDateSchema.optional(),
+  to: calendarDateSchema.optional(),
 });
 
 export type LoanFilters = z.infer<typeof loanFiltersSchema>;

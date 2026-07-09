@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { transactionReconciliationGroups } from "@/lib/constants";
 import { listSchema, booleanFilterSchema } from "@/lib/shared-schemas";
+import { calendarDateSchema } from "@/lib/date";
 
 export const transactionFiltersSchema = z.object({
   keyword: z.string().optional(),
-  from: z.date().optional(),
-  to: z.date().optional(),
+  from: calendarDateSchema.optional(),
+  to: calendarDateSchema.optional(),
   fromAmount: z.number().optional(),
   toAmount: z.number().optional(),
   isReconciled: booleanFilterSchema.optional(),
@@ -23,7 +24,7 @@ export const listTransactionSchema = listSchema.safeExtend({
 });
 
 export const createTransactionSchema = z.object({
-  date: z.date(),
+  date: calendarDateSchema,
   description: z.string().min(1),
   amount: z.number(),
 });

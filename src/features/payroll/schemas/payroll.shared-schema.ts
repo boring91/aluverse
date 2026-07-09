@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { employmentTypes } from "@/lib/constants";
+import { calendarDateSchema } from "@/lib/date";
 
-function toKeypayDateString(value: Date) {
-  return new Date(
-    Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()),
-  ).toISOString();
+// KeyPay expects a full ISO datetime; a calendar date maps to UTC midnight.
+function toKeypayDateString(value: string) {
+  return `${value}T00:00:00.000Z`;
 }
 
-export const keypayDateSchema = z.date().transform(toKeypayDateString);
+export const keypayDateSchema =
+  calendarDateSchema.transform(toKeypayDateString);
 
 export const optionalTrimmedStringSchema = z
   .string()
@@ -24,8 +25,7 @@ export const optionalEmailSchema = optionalTrimmedStringSchema.refine(
   },
 );
 
-export const optionalKeypayDateSchema = z
-  .date()
+export const optionalKeypayDateSchema = calendarDateSchema
   .nullable()
   .optional()
   .transform((value) => {
@@ -53,7 +53,7 @@ const createPayrollEmployeeBaseSchema = z.object({
 export const createPayrollEmployeeFormSchema =
   createPayrollEmployeeBaseSchema.safeExtend({
     payScheduleId: z.string().min(1),
-    startDate: z.date(),
+    startDate: calendarDateSchema,
   });
 
 export const createPayrollEmployeeSchema =
@@ -93,7 +93,7 @@ export const updatePayrollPayScheduleSchema =
 
 export const createPayrollPayRunFormSchema = z.object({
   payScheduleId: z.string().min(1),
-  periodEndingDate: z.date(),
+  periodEndingDate: calendarDateSchema,
 });
 
 export const payrollPayRunFiltersSchema = z.object({

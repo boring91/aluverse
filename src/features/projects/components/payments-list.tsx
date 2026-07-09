@@ -18,6 +18,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreatePayment } from "./create-payment";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import { useConfirm } from "@/lib/confirm-context";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
@@ -40,7 +41,7 @@ const useColumns = (
         ),
         cell: ({ row }) => {
           const item = row.original;
-          return <p>{item.date.toDateString()}</p>;
+          return <p>{formatCalendarDate(item.date)}</p>;
         },
       },
 

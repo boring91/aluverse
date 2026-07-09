@@ -1,4 +1,5 @@
 import { listSchema } from "@/lib/shared-schemas";
+import { calendarDateSchema } from "@/lib/date";
 import { z } from "zod";
 
 export const listProjectItemSchema = listSchema.safeExtend({
@@ -38,7 +39,7 @@ export const createProjectMiscWithProjectIdSchema =
   });
 
 export const createProjectPaymentSchema = z.object({
-  date: z.date(),
+  date: calendarDateSchema,
   amount: z.number(),
 });
 

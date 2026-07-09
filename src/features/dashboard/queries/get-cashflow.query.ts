@@ -3,6 +3,7 @@ import {
   getMonth,
   getYear,
 } from "@/shared/expressions/generic/date.expression";
+import { toDateString } from "@/lib/date";
 import { getCurrentTime } from "@/lib/utils";
 
 export async function getCashFlowQuery() {
@@ -11,7 +12,7 @@ export async function getCashFlowQuery() {
 
   return await db
     .selectFrom("transactions")
-    .where("date", ">=", oneYearAgo)
+    .where("date", ">=", toDateString(oneYearAgo))
     .groupBy((eb) => [getYear(eb.ref("date")), getMonth(eb.ref("date"))])
     .select((eb) => [
       eb.fn

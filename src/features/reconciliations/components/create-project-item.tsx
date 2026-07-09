@@ -10,7 +10,7 @@ import { CreateSupply } from "@/features/projects/components/create-supply";
 type Stream = (typeof projectStreams)[number];
 
 type ProjectItemPrefillData = {
-  date: Date;
+  date: string;
   amount: number;
   description: string;
 };

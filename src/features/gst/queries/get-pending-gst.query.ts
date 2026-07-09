@@ -4,6 +4,7 @@ import {
   reconciliationCost,
   reconciliationRevenue,
 } from "@/shared/expressions/reconciliations/reconciliation.expression";
+import { parseUtcDate } from "@/lib/date";
 import type { PendingGstInput } from "../schemas/gst.shared-schema";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -12,13 +13,10 @@ function extractGst(inclusiveAmount: number) {
   return (inclusiveAmount * GST_RATE) / (1 + GST_RATE);
 }
 
-const startOfDay = (date: Date) =>
-  new Date(Math.floor(date.getTime() / DAY_MS) * DAY_MS);
-
 const daysBetween = (from: Date, to: Date) =>
   Math.round((to.getTime() - from.getTime()) / DAY_MS);
 
-async function listReconciledGstPaymentsQuery(from: Date, to: Date) {
+async function listReconciledGstPaymentsQuery(from: string, to: string) {
   return await db
     .selectFrom("gstPayments")
     .where("reconciliationId", "is not", null)
@@ -36,8 +34,8 @@ function calculateRemittedAmount(
   let remitted = 0;
 
   for (const payment of payments) {
-    const periodFrom = startOfDay(payment.periodFrom);
-    const periodTo = startOfDay(payment.periodTo);
+    const periodFrom = parseUtcDate(payment.periodFrom);
+    const periodTo = parseUtcDate(payment.periodTo);
 
     if (periodFrom >= periodTo) {
       continue;
@@ -62,8 +60,8 @@ function calculateRemittedAmount(
 }
 
 export async function getPendingGstQuery(input: PendingGstInput) {
-  const from = startOfDay(input.from);
-  const to = startOfDay(input.to);
+  const from = parseUtcDate(input.from);
+  const to = parseUtcDate(input.to);
 
   if (from >= to) {
     return {
@@ -82,8 +80,8 @@ export async function getPendingGstQuery(input: PendingGstInput) {
       "transactions.id",
       "reconciliations.transactionId",
     )
-    .where("date", ">=", from)
-    .where("date", "<", to);
+    .where("date", ">=", input.from)
+    .where("date", "<", input.to);
 
   const [gstCollectedTotal, gstCreditsTotal, gstPayments] = await Promise.all([
     baseQuery
@@ -106,7 +104,7 @@ export async function getPendingGstQuery(input: PendingGstInput) {
       ])
       .executeTakeFirstOrThrow()
       .then((result) => result.total),
-    listReconciledGstPaymentsQuery(from, to),
+    listReconciledGstPaymentsQuery(input.from, input.to),
   ]);
 
   const gstCollected = extractGst(gstCollectedTotal);

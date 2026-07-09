@@ -20,7 +20,13 @@ import { DateRange } from "@/components/date-range";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 import { PageLoader } from "@/components/page-loader";
 import { getCurrentTime } from "@/lib/utils";
-import { parseAsIsoDateTime, useQueryStates } from "nuqs";
+import {
+  shiftDateString,
+  toDateString,
+  toExclusiveDateString,
+} from "@/lib/date";
+import { useQueryStates } from "nuqs";
+import { parseAsCalendarDate } from "@/lib/calendar-date-param";
 
 function getDefaultDateRange() {
   const from = getCurrentTime();
@@ -30,7 +36,7 @@ function getDefaultDateRange() {
   const to = new Date(from);
   to.setMonth(to.getMonth() + 1);
 
-  return { from, to };
+  return { from: toDateString(from), to: toDateString(to) };
 }
 
 const defaultRange = getDefaultDateRange();
@@ -43,8 +49,8 @@ export const DashboardView = () => {
 
   const [queryDates, setQueryDates] = useQueryStates(
     {
-      from: parseAsIsoDateTime.withDefault(defaultRange.from),
-      to: parseAsIsoDateTime.withDefault(defaultRange.to),
+      from: parseAsCalendarDate.withDefault(defaultRange.from),
+      to: parseAsCalendarDate.withDefault(defaultRange.to),
     },
     { shallow: false },
   );
@@ -77,11 +83,11 @@ export const DashboardView = () => {
       <div className="flex items-center justify-end">
         <DateRange
           initialDateFrom={fromDate}
-          initialDateTo={toDate}
+          initialDateTo={toDate ? shiftDateString(toDate, -1) : undefined}
           onUpdate={({ range }) => {
             setQueryDates({
-              from: range.from,
-              to: range.to ?? null,
+              from: toDateString(range.from),
+              to: range.to ? toExclusiveDateString(range.to) : null,
             });
           }}
         />

@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function DatePickerField({ label, placeholder }: Props) {
-  const field = useFieldContext<Date | null | undefined>();
+  const field = useFieldContext<string | null | undefined>();
   const showErrors =
     !field.state.meta.isValid &&
     (field.state.meta.isTouched || field.form.state.submissionAttempts > 0);

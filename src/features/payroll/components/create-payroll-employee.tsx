@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formQueryOptions } from "@/lib/client-utils";
+import { toDateString } from "@/lib/date";
 import { employmentTypeLabels, employmentTypes } from "@/lib/constants";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc";
@@ -42,7 +43,7 @@ function getFormValues(
   if (!employee) {
     return {
       employmentType: "FullTime",
-      startDate: new Date(),
+      startDate: toDateString(new Date()),
     };
   }
 
@@ -56,7 +57,9 @@ function getFormValues(
     emailAddress: employee.emailAddress ?? "",
     employmentType: employee.employmentType ?? "FullTime",
     payScheduleId: paySchedule?.id.toString() ?? "",
-    startDate: employee.startDate ? new Date(employee.startDate) : new Date(),
+    startDate: employee.startDate
+      ? toDateString(new Date(employee.startDate))
+      : toDateString(new Date()),
     rate: employee.rateInCents != null ? employee.rateInCents / 100 : undefined,
   };
 }

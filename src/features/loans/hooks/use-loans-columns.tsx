@@ -3,6 +3,7 @@ import {
   DataTableActions,
 } from "@/components/data-table";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import type { AppRouter } from "@/trpc/router";
@@ -55,10 +56,10 @@ export const useLoansColumns = (
           const loan = row.original;
           return (
             <div className="flex flex-col gap-1">
-              <p>{loan.date.toDateString()}</p>
+              <p>{formatCalendarDate(loan.date)}</p>
               {loan.dueDate && (
                 <p className="text-muted-foreground text-xs">
-                  Due date: {loan.dueDate.toDateString()}
+                  Due date: {formatCalendarDate(loan.dueDate)}
                 </p>
               )}
             </div>

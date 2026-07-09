@@ -18,7 +18,7 @@ import { useTRPC } from "@/trpc";
 import { createProjectPaymentSchema } from "../schemas/project-items.shared-schema";
 
 type PrefillData = {
-  date: Date;
+  date: string;
   amount: number;
 };
 

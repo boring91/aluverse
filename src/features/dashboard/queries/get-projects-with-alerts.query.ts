@@ -7,7 +7,7 @@ import {
 } from "@/shared/expressions/projects/project.expression";
 import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
 
-export async function getProjectsWithAlertsQuery(from?: Date, to?: Date) {
+export async function getProjectsWithAlertsQuery(from?: string, to?: string) {
   let query = db.selectFrom("projects");
 
   query = query.where((eb) => isProjectWithinRange(eb, from, to));

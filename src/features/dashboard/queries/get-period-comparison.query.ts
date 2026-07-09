@@ -1,3 +1,4 @@
+import { parseUtcDate, shiftDateString } from "@/lib/date";
 import type { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 import { getGeneralStatsQuery } from "./get-general-stats.query";
 
@@ -17,23 +18,18 @@ export async function getPeriodComparisonQuery(input: DashboardDateRange) {
   // Calculate current period metrics
   const current = await getGeneralStatsQuery({ from, to });
 
-  // Calculate previous period dates
-  // Get the duration of the current period
-  const periodDurationMs = to.getTime() - from.getTime();
-  const periodDurationDays = Math.ceil(
-    periodDurationMs / (1000 * 60 * 60 * 24),
+  // Previous period: the equal-length window immediately before the current
+  // one. Ranges are half-open, so the current `from` is the previous period's
+  // exclusive end, and its start is `from` shifted back by the duration.
+  const durationDays = Math.round(
+    (parseUtcDate(to).getTime() - parseUtcDate(from).getTime()) /
+      (1000 * 60 * 60 * 24),
   );
-
-  // Calculate previous period: shift back by the period duration
-  const previousTo = new Date(from);
-  previousTo.setDate(previousTo.getDate() - 1); // Day before current period starts
-  const previousFrom = new Date(previousTo);
-  previousFrom.setDate(previousFrom.getDate() - periodDurationDays + 1);
 
   // Calculate previous period metrics
   const previous = await getGeneralStatsQuery({
-    from: previousFrom,
-    to: previousTo,
+    from: shiftDateString(from, -durationDays),
+    to: from,
   });
 
   // Calculate percentage changes

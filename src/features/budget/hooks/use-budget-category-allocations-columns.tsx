@@ -3,6 +3,7 @@ import {
   DataTableColumnHeader,
 } from "@/components/data-table";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import type { AppRouter } from "@/trpc/router";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -25,7 +26,7 @@ export const useBudgetCategoryAllocationsColumns = (
         ),
         cell: ({ row }) => {
           const item = row.original;
-          return <p>{item.effectiveDate.toDateString()}</p>;
+          return <p>{formatCalendarDate(item.effectiveDate)}</p>;
         },
       },
       {

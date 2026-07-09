@@ -341,7 +341,8 @@ type DateRange = {
 
 const getMonthRange = (monthDate: Date): DateRange => {
   const from = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-  const to = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1);
+  // Last day of the month (inclusive) — day 0 of the next month.
+  const to = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
 
   return { from, to };
 };

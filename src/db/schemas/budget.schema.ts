@@ -23,7 +23,7 @@ export const budgetCategoryAllocations = pgTable(
       .references(() => budgetCategories.id, { onDelete: "cascade" })
       .notNull(),
     amount: integer().notNull(), // in cents
-    effectiveDate: date({ mode: "date" }).notNull(),
+    effectiveDate: date({ mode: "string" }).notNull(),
     ...auditColumns,
   },
 );

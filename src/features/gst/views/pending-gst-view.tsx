@@ -7,9 +7,15 @@ import { OverviewCard } from "@/features/dashboard/components/overview-card";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 import { useTitle } from "@/hooks/use-title";
 import { getCurrentTime } from "@/lib/utils";
+import {
+  shiftDateString,
+  toDateString,
+  toExclusiveDateString,
+} from "@/lib/date";
 import { useTRPC } from "@/trpc";
 import { useQuery } from "@tanstack/react-query";
-import { parseAsIsoDateTime, useQueryStates } from "nuqs";
+import { useQueryStates } from "nuqs";
+import { parseAsCalendarDate } from "@/lib/calendar-date-param";
 
 function getBasQuarterRange(date: Date) {
   const month = date.getMonth();
@@ -17,13 +23,18 @@ function getBasQuarterRange(date: Date) {
 
   const fromMonth = month >= 9 ? 9 : month >= 6 ? 6 : month >= 3 ? 3 : 0;
   const from = new Date(year, fromMonth, 1);
-  const to = new Date(year, fromMonth + 3, 1);
+  // Last day of the quarter (inclusive) — day 0 of the month after it.
+  const to = new Date(year, fromMonth + 3, 0);
 
   return { from, to };
 }
 
 function getDefaultDateRange() {
-  return getBasQuarterRange(getCurrentTime());
+  const range = getBasQuarterRange(getCurrentTime());
+  return {
+    from: toDateString(range.from),
+    to: toExclusiveDateString(range.to),
+  };
 }
 
 const defaultRange = getDefaultDateRange();
@@ -36,8 +47,8 @@ export const PendingGstView = () => {
 
   const [queryDates, setQueryDates] = useQueryStates(
     {
-      from: parseAsIsoDateTime.withDefault(defaultRange.from),
-      to: parseAsIsoDateTime.withDefault(defaultRange.to),
+      from: parseAsCalendarDate.withDefault(defaultRange.from),
+      to: parseAsCalendarDate.withDefault(defaultRange.to),
     },
     { shallow: false },
   );
@@ -88,7 +99,7 @@ export const PendingGstView = () => {
         <h1 className="font-bold text-2xl">Pending GST</h1>
         <DateRange
           initialDateFrom={fromDate}
-          initialDateTo={toDate}
+          initialDateTo={toDate ? shiftDateString(toDate, -1) : undefined}
           pageNavigation={{
             stepInMonths: 3,
             getRangeForDate: getBasQuarterRange,
@@ -97,8 +108,8 @@ export const PendingGstView = () => {
           }}
           onUpdate={({ range }) => {
             setQueryDates({
-              from: range.from,
-              to: range.to ?? null,
+              from: toDateString(range.from),
+              to: range.to ? toExclusiveDateString(range.to) : null,
             });
           }}
         />

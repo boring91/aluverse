@@ -4,7 +4,7 @@ import { useTRPC } from "@/trpc";
 import { CreateLoanPayoff as BaseCreateLoanPayoff } from "@/features/loans/components/create-loan-payoff";
 
 type LoanPayoffPrefillData = {
-  date: Date;
+  date: string;
   amount: number;
   description: string;
 };

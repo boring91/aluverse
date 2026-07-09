@@ -38,6 +38,13 @@ export type ReconciliationProjectStream =
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+/**
+ * Calendar dates (Postgres `date`) are represented as plain `YYYY-MM-DD`
+ * strings with no timezone. See `src/lib/date.ts` and the type-1082 parser in
+ * `src/db/index.ts`.
+ */
+export type CalendarDate = ColumnType<string, string, string>;
+
 export interface _PrismaMigrations {
   appliedStepsCount: Generated<number>;
   checksum: string;
@@ -77,7 +84,7 @@ export interface BudgetCategoryAllocations {
   amount: number;
   budgetCategoryId: string;
   createdAt: Generated<Timestamp>;
-  effectiveDate: Timestamp;
+  effectiveDate: CalendarDate;
   id: Generated<string>;
   updatedAt: Generated<Timestamp>;
 }
@@ -100,8 +107,8 @@ export interface GstPayments {
   amount: number;
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
-  periodFrom: Timestamp;
-  periodTo: Timestamp;
+  periodFrom: CalendarDate;
+  periodTo: CalendarDate;
   rate: number;
   reconciliationId: string | null;
   updatedAt: Generated<Timestamp>;
@@ -110,7 +117,7 @@ export interface GstPayments {
 export interface LoanPayoffs {
   amount: number;
   createdAt: Generated<Timestamp>;
-  date: Timestamp;
+  date: CalendarDate;
   id: Generated<string>;
   loanId: string;
   notes: string | null;
@@ -121,8 +128,8 @@ export interface LoanPayoffs {
 export interface Loans {
   amount: number;
   createdAt: Generated<Timestamp>;
-  date: Timestamp;
-  dueDate: Timestamp | null;
+  date: CalendarDate;
+  dueDate: CalendarDate | null;
   id: Generated<string>;
   notes: string | null;
   partyName: string;
@@ -155,7 +162,7 @@ export interface ProjectMisc {
 export interface ProjectPayments {
   amount: number;
   createdAt: Generated<Timestamp>;
-  date: Timestamp;
+  date: CalendarDate;
   id: Generated<string>;
   projectId: string;
   reconciliationId: string | null;
@@ -168,16 +175,16 @@ export interface Projects {
   budgetUnitValue: number;
   client: string;
   createdAt: Generated<Timestamp>;
-  endDate: Timestamp | null;
+  endDate: CalendarDate | null;
   humanId: string;
   id: Generated<string>;
   margin: number;
   meters: number | null;
   price: number;
-  startDate: Timestamp | null;
+  startDate: CalendarDate | null;
   title: string;
   updatedAt: Generated<Timestamp>;
-  visitDate: Timestamp | null;
+  visitDate: CalendarDate | null;
 }
 
 export interface ProjectSupplies {
@@ -243,7 +250,7 @@ export interface Transactions {
   accountId: string;
   amount: number;
   createdAt: Generated<Timestamp>;
-  date: Timestamp;
+  date: CalendarDate;
   description: string;
   id: Generated<string>;
   updatedAt: Generated<Timestamp>;

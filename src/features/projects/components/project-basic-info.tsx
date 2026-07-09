@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import { CalendarIcon, DollarSignIcon, RulerIcon } from "lucide-react";
 import type { AppRouter } from "@/trpc/router";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -18,7 +19,7 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-lg font-semibold">
-          {project.visitDate?.toDateString() ?? "-"}
+          {project.visitDate ? formatCalendarDate(project.visitDate) : "-"}
         </CardContent>
       </Card>
 
@@ -33,7 +34,7 @@ export const ProjectBasicInfo = ({ project }: { project: Project }) => {
         <CardContent className="font-mono text-lg font-semibold">
           {project.startDate && (
             <p>
-              {`${project.startDate.toDateString()} - ${project.endDate?.toDateString() ?? "N/A"}`}
+              {`${formatCalendarDate(project.startDate)} - ${project.endDate ? formatCalendarDate(project.endDate) : "N/A"}`}
             </p>
           )}
           {!project.startDate && <p>Not started yet</p>}

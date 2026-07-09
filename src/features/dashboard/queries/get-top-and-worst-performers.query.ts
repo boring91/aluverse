@@ -5,7 +5,10 @@ import {
 } from "@/shared/expressions/projects/project.expression";
 import { projectListMapper } from "@/shared/mappers/projects/project-list.mapper";
 
-export async function getTopAndWorstPerformersQuery(from?: Date, to?: Date) {
+export async function getTopAndWorstPerformersQuery(
+  from?: string,
+  to?: string,
+) {
   const query = db
     .selectFrom("projects")
     .where((eb) =>

@@ -4,7 +4,8 @@ import { DatePickerInput } from "@/components/date-picker-input";
 
 type Props = {
   label: string;
-  control: FilterControl<Date>;
+  // Calendar dates are `YYYY-MM-DD` strings, timezone-free.
+  control: FilterControl<string>;
   placeholder?: string;
 };
 

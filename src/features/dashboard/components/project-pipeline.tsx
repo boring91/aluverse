@@ -6,6 +6,7 @@ import { useTRPC } from "@/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardSection } from "./dashboard-section";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 
 export const ProjectPipeline = () => {
   const trpc = useTRPC();
@@ -81,9 +82,9 @@ export const ProjectPipeline = () => {
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <CalendarIcon className="h-3 w-3" />
                           {project.startDate
-                            ? `Started: ${project.startDate.toLocaleDateString()}`
+                            ? `Started: ${formatCalendarDate(project.startDate)}`
                             : project.visitDate
-                              ? `Starts: ${project.visitDate.toLocaleDateString()}`
+                              ? `Starts: ${formatCalendarDate(project.visitDate)}`
                               : "Not visited yet"}
                         </div>
                       </div>

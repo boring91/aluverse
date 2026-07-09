@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon } from "lucide-react";
+import { formatCalendarDate } from "@/lib/date";
 import type { AppRouter } from "@/trpc/router";
 import type { inferRouterOutputs } from "@trpc/server";
 
@@ -35,7 +36,7 @@ export const LoanBasicInfo = ({ loan }: { loan: Loan }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="font-mono text-lg font-semibold">
-          {loan.date.toDateString()}
+          {formatCalendarDate(loan.date)}
         </CardContent>
       </Card>
 
@@ -48,7 +49,7 @@ export const LoanBasicInfo = ({ loan }: { loan: Loan }) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="font-mono text-lg font-semibold">
-            {loan.dueDate.toDateString()}
+            {formatCalendarDate(loan.dueDate)}
           </CardContent>
         </Card>
       )}

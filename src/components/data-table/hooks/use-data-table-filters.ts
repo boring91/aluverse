@@ -6,6 +6,8 @@ import {
 } from "nuqs";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
+import { calendarDateSchema } from "@/lib/date";
+import { parseAsCalendarDate } from "@/lib/calendar-date-param";
 import type { FilterControl } from "@/components/data-table/types";
 
 // Re-export FilterControl for convenience
@@ -34,7 +36,8 @@ type BooleanFilterValue = "true" | "false" | "all" | undefined;
 type NuqsParser =
   | typeof parseAsString
   | typeof parseAsIsoDateTime
-  | typeof parseAsFloat;
+  | typeof parseAsFloat
+  | typeof parseAsCalendarDate;
 
 // Type for filter runtime values (union of all possible filter value types)
 type FilterRuntimeValue =
@@ -125,6 +128,11 @@ function isDateRangeFilter(
 function isNumberFilter(schema: z.ZodTypeAny): boolean {
   const baseSchema = getBaseSchema(schema);
   return baseSchema instanceof z.ZodNumber;
+}
+
+// Helper to check if a schema is a calendar-date (YYYY-MM-DD string) filter
+function isCalendarDateFilter(schema: z.ZodTypeAny): boolean {
+  return getBaseSchema(schema) === calendarDateSchema;
 }
 
 // Helper to check if a schema is a single date filter (not a date range)
@@ -228,6 +236,14 @@ export function useDataTableFilters<TSchema extends z.ZodObject<z.ZodRawShape>>(
         parsers[String(key)] = parseAsString;
         urlKeyMap[String(key)] = urlKey;
         filterTypes[String(key)] = "boolean";
+      } else if (isCalendarDateFilter(fieldSchema as z.ZodTypeAny)) {
+        // Calendar-date (YYYY-MM-DD) filter — normalize legacy ISO URL params
+        // to a calendar day so old links don't fail the strict tRPC schema.
+        const urlKey =
+          (options?.urlKeys?.[key] as string | undefined) ?? String(key);
+        parsers[String(key)] = parseAsCalendarDate;
+        urlKeyMap[String(key)] = urlKey;
+        filterTypes[String(key)] = "string";
       } else {
         // Unknown filter type - treat as string for now
         const urlKey =

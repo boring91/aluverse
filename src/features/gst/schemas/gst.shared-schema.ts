@@ -1,16 +1,17 @@
 import { z } from "zod";
 import { listSchema } from "@/lib/shared-schemas";
+import { calendarDateSchema } from "@/lib/date";
 
 export const pendingGstSchema = z.object({
-  from: z.date(),
-  to: z.date(),
+  from: calendarDateSchema,
+  to: calendarDateSchema,
 });
 
 export type PendingGstInput = z.infer<typeof pendingGstSchema>;
 
 export const createGstPaymentSchema = z.object({
-  periodFrom: z.date(),
-  periodTo: z.date(),
+  periodFrom: calendarDateSchema,
+  periodTo: calendarDateSchema,
   rate: z.number().min(0).max(1),
   amount: z.number().max(0),
 });
@@ -20,8 +21,8 @@ export const updateGstPaymentSchema = createGstPaymentSchema.safeExtend({
 });
 
 export const gstPaymentFiltersSchema = z.object({
-  from: z.date().optional(),
-  to: z.date().optional(),
+  from: calendarDateSchema.optional(),
+  to: calendarDateSchema.optional(),
 });
 
 export type GstPaymentFilters = z.infer<typeof gstPaymentFiltersSchema>;

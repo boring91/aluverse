@@ -22,6 +22,7 @@ import type { CreateLoanPayoffHandle } from "./create-loan-payoff";
 import { useLoanPayoffs } from "../hooks/use-loan-payoffs";
 import { useGstPayments } from "../hooks/use-gst-payments";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import { useStore } from "@tanstack/react-form";
 import type { useReconciliationForm } from "../hooks/use-reconciliation-form";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
@@ -31,7 +32,7 @@ import type { CreateGstPaymentHandle } from "./create-gst-payment";
 type FormApi = ReturnType<typeof useReconciliationForm>["form"];
 
 export type ReconciliationPrefillData = {
-  date: Date;
+  date: string;
   amount: number;
   description: string;
 };
@@ -299,7 +300,7 @@ export const ProjectFields = forwardRef<
                 label:
                   ("name" in item
                     ? `${item.name} - ${formatCurrency("amount" in item ? item.amount : "quantity" in item ? item.quantity * item.unitPrice : item.hours * item.rate)}`
-                    : `${item.date.toDateString()} - (${formatCurrency(item.amount)})`) +
+                    : `${formatCalendarDate(item.date)} - (${formatCurrency(item.amount)})`) +
                   ` - ${item.isReconciled ? "Reconciled" : "Not reconciled"}`,
               })) ?? []
             }
@@ -459,7 +460,7 @@ export const LoanFields = forwardRef<LoanFieldsHandle, LoanFieldsProps>(
                 items={
                   loanPayoffs?.map((payoff) => ({
                     value: payoff.id,
-                    label: `${payoff.date.toDateString()} - ${formatCurrency(payoff.amount)}`,
+                    label: `${formatCalendarDate(payoff.date)} - ${formatCurrency(payoff.amount)}`,
                   })) ?? []
                 }
                 isSearchable
@@ -558,7 +559,7 @@ export const GstPaymentFields = forwardRef<
               gstPayments?.map((item) => ({
                 value: item.id,
                 label:
-                  `${item.periodFrom.toDateString()} - ${item.periodTo.toDateString()} (${formatCurrency(item.amount)})` +
+                  `${formatCalendarDate(item.periodFrom)} - ${formatCalendarDate(item.periodTo)} (${formatCurrency(item.amount)})` +
                   ` - ${item.isReconciled ? "Reconciled" : "Not reconciled"}`,
               })) ?? []
             }

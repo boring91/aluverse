@@ -16,7 +16,7 @@ import { formQueryOptions } from "@/lib/client-utils";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc";
 import { createBudgetCategoryAllocationSchema } from "../schemas/budgets.shared-schema";
-import { getCurrentTime } from "@/lib/utils";
+import { toDateString } from "@/lib/date";
 
 type Props = {
   open: boolean;
@@ -97,7 +97,7 @@ export function CreateBudgetCategoryAllocation({
         ? data
           ? { ...data, amount: data.amount / 100 }
           : data
-        : { amount: 0, effectiveDate: getCurrentTime() },
+        : { amount: 0, effectiveDate: toDateString(new Date()) },
     ),
     validators: {
       onChange: createBudgetCategoryAllocationSchema,
@@ -122,7 +122,7 @@ export function CreateBudgetCategoryAllocation({
           ? data
             ? { ...data, amount: data.amount / 100 }
             : data
-          : { amount: 0, effectiveDate: getCurrentTime() },
+          : { amount: 0, effectiveDate: toDateString(new Date()) },
       ),
     );
   }, [form, open, data, isUpdate]);

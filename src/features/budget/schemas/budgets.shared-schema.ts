@@ -1,4 +1,5 @@
 import { booleanFilterSchema, listSchema } from "@/lib/shared-schemas";
+import { calendarDateSchema } from "@/lib/date";
 import { z } from "zod";
 
 const budgetCategorySchema = z.object({
@@ -27,7 +28,7 @@ export const listBudgetCategoryAllocationSchema = listSchema.safeExtend({
 
 export const createBudgetCategoryAllocationSchema = z.object({
   amount: z.number().min(0),
-  effectiveDate: z.date(),
+  effectiveDate: calendarDateSchema,
 });
 
 export const createBudgetCategoryAllocationWithBudgetCategoryIdSchema =

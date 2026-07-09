@@ -4,27 +4,42 @@ import {
   getMonth,
   getYear,
 } from "@/shared/expressions/generic/date.expression";
+import { parseUtcDate, shiftDateString, toDateString } from "@/lib/date";
 import { getCurrentTime } from "@/lib/utils";
 import type { DashboardDateRange } from "../schemas/dashboard.shared-schema";
 
 export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
   const now = getCurrentTime();
 
-  const oneYearAgo = new Date(now.setMonth(now.getMonth() - 12));
+  // Derive these from `now`'s components — never via setMonth/setDate, which
+  // mutate `now` in place and corrupt the values read afterwards.
+  const oneYearAgo = new Date(
+    now.getFullYear() - 1,
+    now.getMonth(),
+    now.getDate(),
+  );
 
-  const startOfMonth = new Date(now.setDate(1));
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const { from, to } = dateRange;
 
   const currentPeriod = {
-    from: from && to ? from : startOfMonth,
-    to: from && to ? to : now,
+    from: from && to ? from : toDateString(startOfMonth),
+    // Half-open upper bound: the first EXCLUDED day. Default to tomorrow so
+    // today's revenue is included (the query uses `date < to`).
+    to: from && to ? to : shiftDateString(toDateString(now), 1),
   };
 
-  const duration = currentPeriod.to.getDate() - currentPeriod.from.getDate();
+  // Previous period: the equal-length window immediately before the current
+  // one (half-open, so the current `from` is its exclusive end).
+  const durationDays = Math.round(
+    (parseUtcDate(currentPeriod.to).getTime() -
+      parseUtcDate(currentPeriod.from).getTime()) /
+      (1000 * 60 * 60 * 24),
+  );
 
   const previousPeriod = {
-    from: new Date(currentPeriod.from.getDate() - duration),
+    from: shiftDateString(currentPeriod.from, -durationDays),
     to: currentPeriod.from,
   };
 
@@ -81,7 +96,7 @@ export async function getRevenueStatsQuery(dateRange: DashboardDateRange) {
       "transactions.id",
       "reconciliations.transactionId",
     )
-    .where("date", ">=", oneYearAgo)
+    .where("date", ">=", toDateString(oneYearAgo))
     .where(reconciliationRevenue)
     .groupBy((eb) => [getYear(eb.ref("date")), getMonth(eb.ref("date"))])
     .select((eb) => [

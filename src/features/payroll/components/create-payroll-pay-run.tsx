@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formQueryOptions } from "@/lib/client-utils";
+import { toDateString } from "@/lib/date";
 import { getFormDefaults } from "@/lib/shared-utils";
 import { useTRPC } from "@/trpc";
 import { createPayrollPayRunFormSchema } from "../schemas/payroll.shared-schema";
@@ -32,7 +33,7 @@ function getFormValues(
 ) {
   return {
     payScheduleId: payScheduleId?.toString() ?? fallbackPayScheduleId ?? "",
-    periodEndingDate: new Date(),
+    periodEndingDate: toDateString(new Date()),
   } satisfies PayrollPayRunForm;
 }
 

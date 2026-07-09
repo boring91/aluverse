@@ -3,6 +3,7 @@ import {
   DataTableActions,
 } from "@/components/data-table";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import type { AppRouter } from "@/trpc/router";
@@ -29,8 +30,8 @@ export const useGstPaymentsColumns = (
           return (
             <div className="flex flex-col gap-1">
               <p className="font-medium">
-                {item.periodFrom.toLocaleDateString()} &ndash;{" "}
-                {item.periodTo.toLocaleDateString()}
+                {formatCalendarDate(item.periodFrom)} &ndash;{" "}
+                {formatCalendarDate(item.periodTo)}
               </p>
             </div>
           );

@@ -20,8 +20,8 @@ export const loans = pgTable("loans", {
   type: loanType().notNull(),
   partyName: varchar({ length: 1024 }).notNull(),
   amount: integer().notNull(), // in cents
-  date: date({ mode: "date" }).notNull(),
-  dueDate: date({ mode: "date" }),
+  date: date({ mode: "string" }).notNull(),
+  dueDate: date({ mode: "string" }),
   notes: text(),
   reconciliationId: uuid().references((): AnyPgColumn => reconciliations.id, {
     onDelete: "set null",
@@ -35,7 +35,7 @@ export const loanPayoffs = pgTable("loan_payoffs", {
     .references(() => loans.id, { onDelete: "cascade" })
     .notNull(),
   amount: integer().notNull(), // in cents
-  date: date({ mode: "date" }).notNull(),
+  date: date({ mode: "string" }).notNull(),
   notes: text(),
   reconciliationId: uuid().references((): AnyPgColumn => reconciliations.id, {
     onDelete: "set null",

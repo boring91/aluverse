@@ -1,17 +1,14 @@
 import { db } from "@/db";
+import { parseUtcDate } from "@/lib/date";
 
 type BudgetCategoryAllocation = {
   budgetCategoryId: string;
   amount: number;
-  effectiveDate: Date;
+  // `YYYY-MM-DD` calendar date.
+  effectiveDate: string;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-// Round to nearest UTC midnight to handle timezone offsets in client-sent dates
-// (e.g. midnight UTC+11 arrives as 13:00 UTC the previous day)
-const startOfDay = (date: Date) =>
-  new Date(Math.round(date.getTime() / DAY_MS) * DAY_MS);
 
 const startOfNextMonth = (date: Date) =>
   new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1));
@@ -32,7 +29,7 @@ async function listBudgetCategoriesQuery() {
     .execute();
 }
 
-async function listBudgetCategoryAllocationsBeforeQuery(date: Date) {
+async function listBudgetCategoryAllocationsBeforeQuery(date: string) {
   return await db
     .selectFrom("budgetCategoryAllocations")
     .where("effectiveDate", "<=", date)
@@ -42,7 +39,7 @@ async function listBudgetCategoryAllocationsBeforeQuery(date: Date) {
     .execute();
 }
 
-async function listBudgetCategoryAllocationsWithinRangeQuery(date: Date) {
+async function listBudgetCategoryAllocationsWithinRangeQuery(date: string) {
   return await db
     .selectFrom("budgetCategoryAllocations")
     .where("effectiveDate", "<", date)
@@ -53,12 +50,10 @@ async function listBudgetCategoryAllocationsWithinRangeQuery(date: Date) {
 }
 
 export async function getEffectiveBudgetCategoryAllocationsByDateQuery(
-  date: Date,
+  date: string,
 ) {
-  const normalizedDate = startOfDay(date);
   const categories = await listBudgetCategoriesQuery();
-  const allocations =
-    await listBudgetCategoryAllocationsBeforeQuery(normalizedDate);
+  const allocations = await listBudgetCategoryAllocationsBeforeQuery(date);
 
   const latestAllocationByCategoryId = new Map<string, number>();
 
@@ -100,10 +95,11 @@ function calculateProRatedAllocation(
   rangeEnd: Date,
   categoryAllocations: BudgetCategoryAllocation[],
 ) {
-  // Normalize DB dates to UTC midnight to match the range boundaries
+  // Parse the DB calendar dates to UTC-midnight Dates to match the range
+  // boundaries (which are also UTC midnight).
   const normalized = categoryAllocations.map((a) => ({
     ...a,
-    effectiveDate: startOfDay(a.effectiveDate),
+    effectiveDate: parseUtcDate(a.effectiveDate),
   }));
 
   let allocatedAmount = 0;
@@ -151,11 +147,11 @@ function calculateProRatedAllocation(
 }
 
 export async function getBudgetAllocatedAmountByDateRangeQuery(
-  from: Date,
-  to: Date,
+  from: string,
+  to: string,
 ) {
-  const rangeStart = startOfDay(from);
-  const rangeEnd = startOfDay(to);
+  const rangeStart = parseUtcDate(from);
+  const rangeEnd = parseUtcDate(to);
 
   if (rangeStart >= rangeEnd) {
     return {
@@ -167,7 +163,7 @@ export async function getBudgetAllocatedAmountByDateRangeQuery(
 
   const [categories, allocations] = await Promise.all([
     listBudgetCategoriesQuery(),
-    listBudgetCategoryAllocationsWithinRangeQuery(rangeEnd),
+    listBudgetCategoryAllocationsWithinRangeQuery(to),
   ]);
 
   const allocationsByCategory = groupAllocationsByCategory(allocations);

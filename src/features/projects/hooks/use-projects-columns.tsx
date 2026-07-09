@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/client-utils";
 import type { AppRouter } from "@/trpc/router";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 
 import { ProjectStatusBadge } from "../components/project-status-badge";
 
@@ -61,10 +62,12 @@ export const useProjectsColumns = (
           const project = row.original;
           return (
             <div className="flex flex-col gap-1">
-              {project.visitDate && <p>{project.visitDate.toDateString()}</p>}
+              {project.visitDate && (
+                <p>{formatCalendarDate(project.visitDate)}</p>
+              )}
               {project.startDate && (
                 <p className="text-muted-foreground text-xs">
-                  {`${project.startDate.toDateString()} - ${project.endDate?.toDateString() ?? "N/A"}`}
+                  {`${formatCalendarDate(project.startDate)} - ${project.endDate ? formatCalendarDate(project.endDate) : "N/A"}`}
                 </p>
               )}
             </div>

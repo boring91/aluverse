@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { listSchema } from "@/lib/shared-schemas";
+import { calendarDateSchema } from "@/lib/date";
 
 export const listLoanPayoffSchema = listSchema.safeExtend({
   loanId: z.uuid(),
@@ -9,7 +10,7 @@ export const createLoanPayoffSchema = z.object({
   amount: z.number().refine((amount) => amount !== 0, {
     message: "Loan payoff amount cannot be zero",
   }),
-  date: z.date(),
+  date: calendarDateSchema,
   notes: z.string().nullable().optional(),
 });
 

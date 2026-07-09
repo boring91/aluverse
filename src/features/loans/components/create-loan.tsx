@@ -19,7 +19,7 @@ import { useTRPC } from "@/trpc";
 import { createLoanSchema } from "../schemas/loans.shared-schema";
 
 type PrefillData = {
-  date: Date;
+  date: string;
   amount: number;
   notes: string;
 };

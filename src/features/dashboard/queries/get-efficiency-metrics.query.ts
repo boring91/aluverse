@@ -6,7 +6,7 @@ import {
   projectPaid,
 } from "@/shared/expressions/projects/project.expression";
 
-export async function getEfficiencyMetricsQuery(from?: Date, to?: Date) {
+export async function getEfficiencyMetricsQuery(from?: string, to?: string) {
   return await db
     .selectFrom("projects")
     .where((eb) => isProjectWithinRange(eb, from, to))

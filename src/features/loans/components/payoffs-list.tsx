@@ -18,6 +18,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreateLoanPayoff } from "./create-loan-payoff";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import { useConfirm } from "@/lib/confirm-context";
 import { useRbacAccess } from "@/features/rbac/hooks/use-rbac-access";
 import { PageLoader } from "@/components/page-loader";
@@ -39,7 +40,7 @@ const useColumns = (
         ),
         cell: ({ row }) => {
           const item = row.original;
-          return <p>{item.date.toDateString()}</p>;
+          return <p>{formatCalendarDate(item.date)}</p>;
         },
       },
 

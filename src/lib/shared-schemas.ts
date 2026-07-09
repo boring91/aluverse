@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { calendarDateSchema } from "@/lib/date";
 
 export const listSchema = z.object({
   pagination: z
@@ -18,8 +19,8 @@ export const listSchema = z.object({
 });
 
 export const dateRangeFilterSchema = z.object({
-  from: z.coerce.date().optional(),
-  to: z.coerce.date().optional(),
+  from: calendarDateSchema.optional(),
+  to: calendarDateSchema.optional(),
 });
 
 export const booleanFilterSchema = z

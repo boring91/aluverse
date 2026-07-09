@@ -4,6 +4,7 @@ import {
 } from "@/components/data-table";
 import { cn } from "@/lib/client-utils";
 import { formatCurrency } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/date";
 import type { AppRouter } from "@/trpc/router";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -25,7 +26,7 @@ export const useReconciliationsColumns = (
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="Date" />
         ),
-        cell: ({ row }) => row.original.transaction.date.toDateString(),
+        cell: ({ row }) => formatCalendarDate(row.original.transaction.date),
       },
       {
         accessorKey: "description",

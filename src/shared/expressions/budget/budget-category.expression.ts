@@ -12,7 +12,11 @@ export const currentMonthlyAllocation = (
       "=",
       "budgetCategories.id",
     )
-    .where("budgetCategoryAllocations.effectiveDate", "<=", sql<Date>`now()`)
+    .where(
+      "budgetCategoryAllocations.effectiveDate",
+      "<=",
+      sql<string>`CURRENT_DATE`,
+    )
     .orderBy("budgetCategoryAllocations.effectiveDate", "desc")
     .limit(1)
     .select("budgetCategoryAllocations.amount")

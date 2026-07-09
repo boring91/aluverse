@@ -16,9 +16,9 @@ export const projects = pgTable("projects", {
   humanId: varchar({ length: 32 }).notNull(),
   client: varchar({ length: 1024 }).notNull(),
   title: varchar({ length: 1024 }).notNull(),
-  visitDate: date({ mode: "date" }),
-  startDate: date({ mode: "date" }),
-  endDate: date({ mode: "date" }),
+  visitDate: date({ mode: "string" }),
+  startDate: date({ mode: "string" }),
+  endDate: date({ mode: "string" }),
   address: text(),
   meters: doublePrecision(),
   price: integer().notNull(),
@@ -75,7 +75,7 @@ export const projectPayments = pgTable("project_payments", {
     .references(() => projects.id, { onDelete: "cascade" })
     .notNull(),
   amount: integer().notNull(), // in cents
-  date: date({ mode: "date" }).notNull(),
+  date: date({ mode: "string" }).notNull(),
   reconciliationId: uuid().references(() => reconciliations.id, {
     onDelete: "set null",
   }),

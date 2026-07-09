@@ -11,8 +11,8 @@ import { auditColumns } from "../utils";
 
 export const gstPayments = pgTable("gst_payments", {
   id: uuid().primaryKey().defaultRandom(),
-  periodFrom: date({ mode: "date" }).notNull(),
-  periodTo: date({ mode: "date" }).notNull(),
+  periodFrom: date({ mode: "string" }).notNull(),
+  periodTo: date({ mode: "string" }).notNull(),
   rate: doublePrecision().notNull(),
   amount: integer().notNull(), // in cents
   reconciliationId: uuid().references((): AnyPgColumn => reconciliations.id, {

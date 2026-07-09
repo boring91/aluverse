@@ -376,7 +376,10 @@ export async function getWestpacTransactions(
       return {
         id: toUuid(t.id),
         accountId,
-        date: new Date(t.post_date),
+        // `post_date` is already a calendar date — keep the `YYYY-MM-DD` portion
+        // as-is. Round-tripping through `new Date()` would parse it as UTC
+        // midnight and shift the day on servers west of UTC.
+        date: t.post_date.slice(0, 10),
         description: t.description.original,
         amount: Math.round(t.amount.amount * 100),
       };

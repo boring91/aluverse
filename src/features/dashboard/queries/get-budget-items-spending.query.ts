@@ -1,13 +1,14 @@
 import { db } from "@/db";
 import { getBudgetAllocatedAmountByDateRangeQuery } from "@/features/budget/queries/get-effective-budget-category-allocations.query";
+import { toDateString } from "@/lib/date";
 import { getCurrentTime } from "@/lib/utils";
 
-export async function getBudgetItemsSpendingQuery(from?: Date, to?: Date) {
+export async function getBudgetItemsSpendingQuery(from?: string, to?: string) {
   const now = getCurrentTime();
   const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  from = from ?? currentMonth;
-  to = to ?? nextMonth;
+  from = from ?? toDateString(currentMonth);
+  to = to ?? toDateString(nextMonth);
 
   const [{ categories, allocatedByCategoryId }, spentRows] = await Promise.all([
     getBudgetAllocatedAmountByDateRangeQuery(from, to),

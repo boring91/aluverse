@@ -2,11 +2,12 @@ import type { ExpressionBuilder } from "kysely";
 import type { DB } from "@/db/types";
 import { getCurrentTime } from "@/lib/utils";
 import { GST_RATE } from "@/lib/constants";
+import { toDateString } from "@/lib/date";
 
 export const projectPaid = (
   eb: ExpressionBuilder<DB, "projects">,
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
 ) => {
   let exp = eb
     .selectFrom("projectPayments")
@@ -40,8 +41,8 @@ export const projectPaid = (
 
 export const suppliesCost = (
   eb: ExpressionBuilder<DB, "projects">,
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
 ) => {
   let exp = eb
     .selectFrom("projectSupplies")
@@ -78,8 +79,8 @@ export const suppliesCost = (
 
 export const laborCost = (
   eb: ExpressionBuilder<DB, "projects">,
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
 ) => {
   let exp = eb
     .selectFrom("projectLabors")
@@ -116,8 +117,8 @@ export const laborCost = (
 
 export const miscCost = (
   eb: ExpressionBuilder<DB, "projects">,
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
 ) => {
   let exp = eb
     .selectFrom("projectMisc")
@@ -154,11 +155,11 @@ export const projectOutstanding = (eb: ExpressionBuilder<DB, "projects">) =>
 
 export const projectBudgetAllocationCost = (
   eb: ExpressionBuilder<DB, "projects">,
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
 ) => {
-  from ??= new Date(0);
-  to ??= new Date(2100, 0, 1);
+  from ??= "0001-01-01";
+  to ??= "9999-12-31";
 
   return eb
     .case()
@@ -171,11 +172,11 @@ export const projectBudgetAllocationCost = (
 
 export const projectCost = (
   eb: ExpressionBuilder<DB, "projects">,
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
 ) => {
-  from ??= new Date(0);
-  to ??= new Date(2100, 0, 1);
+  from ??= "0001-01-01";
+  to ??= "9999-12-31";
 
   return eb
     .parens(
@@ -296,7 +297,7 @@ export const projectCompleted = (eb: ExpressionBuilder<DB, "projects">) =>
   ]);
 
 export const projectDaysOverdue = (eb: ExpressionBuilder<DB, "projects">) => {
-  const now = getCurrentTime();
+  const now = toDateString(getCurrentTime());
 
   return eb(
     eb
@@ -350,8 +351,8 @@ export const projectAllocationOverrun = (
 
 export const isProjectWithinRange = (
   eb: ExpressionBuilder<DB, "projects">,
-  from?: Date,
-  to?: Date,
+  from?: string,
+  to?: string,
 ) => {
   if (!from && !to) {
     return eb.lit(true);
